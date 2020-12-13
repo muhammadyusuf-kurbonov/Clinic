@@ -4,10 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
+class MainViewModel(val repository: ContactsRepository) : ViewModel() {
 
     private val _searchResult = MutableLiveData<SearchStates>(SearchStates.Loading)
 
@@ -16,8 +15,11 @@ class MainViewModel : ViewModel() {
     fun searchInDatabase(phone: String) {
         viewModelScope.launch {
             _searchResult.value = SearchStates.Loading
-            delay(2000)
-            _searchResult.value = SearchStates.NotFound
+            val result = repository.getContact(phone)
+            if (result == null)
+                _searchResult.value = SearchStates.NotFound
+            else
+                _searchResult.value = SearchStates.Found(result)
         }
     }
 
