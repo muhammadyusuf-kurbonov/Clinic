@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic
+package uz.muhammadyusuf.kurbonov.myclinic.activities
 
 import android.Manifest
 import android.content.pm.PackageManager
