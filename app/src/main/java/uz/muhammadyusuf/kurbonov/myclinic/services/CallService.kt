@@ -4,21 +4,22 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.telephony.TelephonyManager
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import android.widget.RemoteViews
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
-import uz.muhammadyusuf.kurbonov.myclinic.activities.CallHandlerActivity
+import uz.muhammadyusuf.kurbonov.myclinic.R
 
 
 class CallReceiver : BroadcastReceiver() {
 
     companion object {
         const val EXTRA_PHONE_NUMBER = "phone"
+        const val NOTIFICATION_ID = 155
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
+    override fun onReceive(context: Context, intent: Intent?) {
 
         if (BuildConfig.DEBUG)
             Timber.plant(Timber.DebugTree())
@@ -27,17 +28,28 @@ class CallReceiver : BroadcastReceiver() {
             val phoneState = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
             if (TelephonyManager.EXTRA_STATE_RINGING == phoneState) {
                 val phoneNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
-                val newIntent = Intent(context!!, CallHandlerActivity::class.java)
+
+                if (phoneNumber.isNullOrEmpty())
+                    return
+
                 Timber.d("$phoneNumber is calling")
-                newIntent.putExtra(EXTRA_PHONE_NUMBER, phoneNumber)
-                newIntent.addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP
-                )
-                MainScope().launch {
-                    delay(1000)
-                    context.startActivity(newIntent)
-                }
+                val notification = NotificationCompat.Builder(context, "clinic_info").apply {
+
+                    val view = RemoteViews(context.packageName, R.layout.toast_view)
+
+                    view.setTextViewText(R.id.tvName, "This is our patient")
+
+                    setSmallIcon(R.drawable.ic_launcher_foreground)
+
+                    setContent(view)
+
+                    priority = NotificationCompat.PRIORITY_MAX
+                }.build()
+
+                NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+
+            } else if (TelephonyManager.EXTRA_STATE_IDLE == phoneState) {
+                NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
             }
         }
     }

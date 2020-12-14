@@ -5,8 +5,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import org.koin.android.ext.android.inject
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.CallHandlerActivityBinding
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver
@@ -15,7 +15,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
 
 class CallHandlerActivity : AppCompatActivity() {
 
-    private val model by viewModels<MainViewModel>()
+    private val model by inject<MainViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
