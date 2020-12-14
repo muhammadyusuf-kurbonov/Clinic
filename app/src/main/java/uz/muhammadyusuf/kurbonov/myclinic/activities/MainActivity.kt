@@ -17,7 +17,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(arrayOf(Manifest.permission.READ_PHONE_STATE), 241)
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_CALL_LOG,
+                    Manifest.permission.REORDER_TASKS
+                ), 241
+            )
         }
 
     }
@@ -27,7 +33,9 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (grantResults.all {
+                it == PackageManager.PERMISSION_GRANTED
+            }) {
             Toast.makeText(this, "Thank you", Toast.LENGTH_SHORT).show()
         }
     }

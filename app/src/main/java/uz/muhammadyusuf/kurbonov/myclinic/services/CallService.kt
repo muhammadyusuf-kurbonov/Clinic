@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.EXTRA_PHONE_NUMBER
 import android.telephony.TelephonyManager
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.Bus
@@ -12,6 +15,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.activities.CallHandlerActivity
 
 
 class CallReceiver : BroadcastReceiver() {
+
     override fun onReceive(context: Context?, intent: Intent?) {
 
         if (BuildConfig.DEBUG)
@@ -22,14 +26,20 @@ class CallReceiver : BroadcastReceiver() {
             val newIntent = Intent(context!!, CallHandlerActivity::class.java)
             if (TelephonyManager.EXTRA_STATE_RINGING == phoneState) {
                 val phoneNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
-                Timber.d("$phoneNumber is calling")
-                newIntent.putExtra(EXTRA_PHONE_NUMBER, phoneNumber)
-                newIntent.addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                            Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
-                )
-                context.startActivity(newIntent)
+                if (!phoneNumber.isNullOrEmpty()) {
+                    Timber.d("$phoneNumber is calling")
+                    newIntent.putExtra(EXTRA_PHONE_NUMBER, phoneNumber)
+                    newIntent.addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                                Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                                Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                    )
+                    context.startActivity(newIntent)
+                    GlobalScope.launch {
+                        delay(1000)
+                        context.startActivity(newIntent)
+                    }
+                }
             }
             Bus.state.value = phoneState ?: ""
         }

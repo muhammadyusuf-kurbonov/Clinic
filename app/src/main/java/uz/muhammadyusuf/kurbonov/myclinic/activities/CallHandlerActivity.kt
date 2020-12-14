@@ -1,31 +1,41 @@
 package uz.muhammadyusuf.kurbonov.myclinic.activities
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.content.Intent.EXTRA_PHONE_NUMBER
 import android.os.Bundle
 import android.telephony.TelephonyManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.Bus
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ToastViewBinding
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.MainViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
 
+
 class CallHandlerActivity : AppCompatActivity() {
 
     private val model by viewModel<MainViewModel>()
+    private lateinit var binding: ToastViewBinding
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ToastViewBinding.inflate(layoutInflater)
+        binding = ToastViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        model.searchInDatabase(intent.extras?.getString(EXTRA_PHONE_NUMBER) ?: "")
+        Timber.d("Activity recreated")
+
+        val string = intent.extras?.getString(EXTRA_PHONE_NUMBER)
+        model.searchInDatabase(string ?: "")
+
 
         lifecycleScope.launch {
             launch {
@@ -52,14 +62,34 @@ class CallHandlerActivity : AppCompatActivity() {
                         }
                     }
                 }
-            }
 
-            Bus.state.collect {
-                if (it == TelephonyManager.EXTRA_STATE_IDLE)
-                    finish()
+                delay(2000)
+                recreate()
             }
         }
 
+        model.viewModelScope.launch {
+            Bus.state.collect {
+                if (it == TelephonyManager.EXTRA_STATE_IDLE) {
+                    delay(1500)
+                    Timber.d("Finish")
+                    finish()
+                }
+            }
+        }
 
+        lifecycleScope.launchWhenResumed {
+            while (true) {
+                delay(500)
+                binding.root.requestFocus()
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        (getSystemService(ACTIVITY_SERVICE) as ActivityManager).moveTaskToFront(
+            taskId, ActivityManager.MOVE_TASK_NO_USER_ACTION
+        )
     }
 }

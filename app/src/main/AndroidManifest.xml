@@ -3,6 +3,9 @@
     package="uz.muhammadyusuf.kurbonov.myclinic">
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
 
     <application
         android:name=".App"
@@ -22,13 +25,15 @@
 
         <activity
             android:name=".activities.CallHandlerActivity"
-            android:theme="@style/Theme.MyClinic.Transparent" />
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.TransparentActivity" />
 
         <receiver android:name=".services.CallReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>
