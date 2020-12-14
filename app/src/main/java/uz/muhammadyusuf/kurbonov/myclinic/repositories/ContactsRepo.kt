@@ -7,7 +7,7 @@ class ContactsRepo : ContactsRepository {
 
     private val contacts = listOf(
         Contact(name = "Muhammadyusuf", phoneNumber = "+998913975538"),
-        Contact(name = "Mansur", phoneNumber = "+998334081416")
+        Contact(name = "Mansur", phoneNumber = "+998337081416")
     )
 
     override suspend fun getContact(phone: String): Contact? {

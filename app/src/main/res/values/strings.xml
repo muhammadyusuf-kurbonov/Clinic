@@ -3,4 +3,5 @@
     <string name="main_label">Thank you. Please give me permission and I will be ready</string>
     <string name="before_number">Patient</string>
     <string name="after_number"> is calling</string>
+    <string name="open_medical_card">Open Card</string>
 </resources>
