@@ -1,42 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/ThemeOverlay.MaterialComponents"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:clickable="false"
-    android:focusable="false"
-    android:focusableInTouchMode="false">
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_margin="16dp"
         android:background="@android:color/white"
-        android:orientation="vertical">
+        android:padding="4dp"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+        android:textColor="@android:color/black"
+        tools:text="@tools:sample/first_names" />
 
-        <TextView
-            android:id="@+id/tvName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
-            android:textColor="@android:color/black"
-            tools:text="@tools:sample/first_names" />
-
-
-        <Button
-            android:id="@+id/btnCard"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginVertical="4dp"
-            android:text="@string/open_medical_card"
-            android:textColor="@color/primary"
-            app:icon="@drawable/ic_baseline_assignment_ind_24"
-            app:iconTint="@color/primary" />
-    </LinearLayout>
-</FrameLayout>
+    <Button
+        android:id="@+id/btnCard"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:drawableStart="@drawable/ic_baseline_assignment_ind_24"
+        android:drawablePadding="2dp"
+        android:elevation="0dp"
+        android:text="@string/open_medical_card"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+        android:textColor="@color/primary"></Button>
+</LinearLayout>

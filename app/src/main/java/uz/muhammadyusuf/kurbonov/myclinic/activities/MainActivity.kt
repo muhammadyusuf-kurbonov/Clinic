@@ -21,11 +21,14 @@ class MainActivity : AppCompatActivity() {
                 arrayOf(
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.REORDER_TASKS
+                    Manifest.permission.REORDER_TASKS,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                        Manifest.permission.FOREGROUND_SERVICE
+                    else "",
+                    "android.permission.READ_PRIVILEGED_PHONE_STATE"
                 ), 241
             )
         }
-
     }
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -39,4 +42,5 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Thank you", Toast.LENGTH_SHORT).show()
         }
     }
+
 }

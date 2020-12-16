@@ -2,6 +2,6 @@ package uz.muhammadyusuf.kurbonov.myclinic
 
 import kotlinx.coroutines.flow.MutableStateFlow
 
-object Bus {
-    val state = MutableStateFlow("")
+object EventBus {
+    val event = MutableStateFlow(0)
 }

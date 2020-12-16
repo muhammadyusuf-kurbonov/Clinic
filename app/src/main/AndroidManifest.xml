@@ -3,6 +3,10 @@
     package="uz.muhammadyusuf.kurbonov.myclinic">
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="false"
@@ -19,9 +23,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.CallHandlerActivity" />
 
-        <receiver android:name=".services.CallReceiver">
+        <service
+            android:name=".services.NotifierService"
+            android:foregroundServiceType="phoneCall" />
+
+        <receiver
+            android:name=".services.CallReceiver"
+            android:exported="true"
+            android:permission="android.permission.READ_PRIVILEGED_PHONE_STATE">
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
             </intent-filter>
