@@ -113,6 +113,34 @@ class NotifierService : JobIntentService() {
                 }
             )
 
+            if (states is SearchStates.Found) {
+                with(view) {
+                    val found = states as SearchStates.Found
+                    setTextViewText(R.id.tvPhone, (found).contact.phoneNumber)
+                    setTextViewText(
+                        R.id.tvAddress,
+                        "Home address: " + (found.contact.address?.toString() ?: "N/A")
+                    )
+                    setTextViewText(
+                        R.id.tvJob,
+                        "Working company: " + (found.contact.company?.name ?: "N/A")
+                    )
+                }
+            } else {
+                with(view) {
+                    val found = states as SearchStates.Found
+                    setTextViewText(R.id.tvPhone, (found).contact.phoneNumber)
+                    setTextViewText(
+                        R.id.tvAddress,
+                        "N/A"
+                    )
+                    setTextViewText(
+                        R.id.tvJob,
+                        "N/A"
+                    )
+                }
+            }
+
             notification.setContent(view)
             NotificationManagerCompat.from(this@NotifierService)
                 .notify(NOTIFICATION_ID, notification.build())

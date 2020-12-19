@@ -8,6 +8,8 @@ fun UserDTO.toContact(): Contact? {
     return Contact(
         id = item.id,
         name = item.name,
-        phoneNumber = item.phone
+        phoneNumber = item.phone,
+        address = item.address,
+        company = item.company
     )
 }

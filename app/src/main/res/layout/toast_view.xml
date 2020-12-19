@@ -9,17 +9,44 @@
 
     <TextView
         android:id="@+id/tvName"
+        style="@style/NotificationText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:padding="4dp"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-        android:textColor="@android:color/black"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
         tools:text="@tools:sample/first_names" />
+
+
+    <TextView
+        android:id="@+id/tvPhone"
+        style="@style/NotificationText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
+        tools:text="@tools:sample/us_phones" />
+
+
+    <TextView
+        android:id="@+id/tvJob"
+        style="@style/NotificationText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+        tools:text="@tools:sample/full_names" />
+
+    <TextView
+        android:id="@+id/tvAddress"
+        style="@style/NotificationText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+        tools:text="@tools:sample/full_names" />
+
 
     <Button
         android:id="@+id/btnCard"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
@@ -28,5 +55,5 @@
         android:elevation="0dp"
         android:text="@string/open_medical_card"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-        android:textColor="@color/primary"></Button>
+        android:textColor="@color/primary" />
 </LinearLayout>
