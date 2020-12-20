@@ -46,14 +46,14 @@ class NotifierService : JobIntentService() {
 
                 setOnlyAlertOnce(true)
 
+                setCustomBigContentView(view)
+
                 val pendingIntent = PendingIntent.getActivity(
                     this@NotifierService,
                     0,
                     Intent(this@NotifierService, MainActivity::class.java),
-                    0
+                    PendingIntent.FLAG_UPDATE_CURRENT
                 )
-
-//                addAction(R.drawable.ic_baseline_assignment_ind_24, "Open card", pendingIntent)
 
                 view.setOnClickPendingIntent(R.id.btnCard, pendingIntent)
                 priority = NotificationCompat.PRIORITY_MAX
@@ -142,6 +142,7 @@ class NotifierService : JobIntentService() {
             }
 
             notification.setContent(view)
+            notification.setCustomBigContentView(view)
             NotificationManagerCompat.from(this@NotifierService)
                 .notify(NOTIFICATION_ID, notification.build())
 
