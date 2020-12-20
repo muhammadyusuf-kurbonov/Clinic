@@ -128,8 +128,7 @@ class NotifierService : JobIntentService() {
                 }
             } else {
                 with(view) {
-                    val found = states as SearchStates.Found
-                    setTextViewText(R.id.tvPhone, (found).contact.phoneNumber)
+                    setTextViewText(R.id.tvPhone, phoneNumber)
                     setTextViewText(
                         R.id.tvAddress,
                         "N/A"
