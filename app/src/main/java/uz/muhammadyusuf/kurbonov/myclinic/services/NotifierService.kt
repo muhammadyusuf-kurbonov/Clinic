@@ -132,6 +132,7 @@ class NotifierService : JobIntentService() {
                 with(view) {
                     val found = states as SearchStates.Found
                     setTextViewText(R.id.tvPhone, (found).contact.phoneNumber)
+                    setTextViewText(R.id.tvBalance, "$ 400")
                     setTextViewText(
                         R.id.tvAddress,
                         "Home address: " + (found.contact.address?.toString() ?: "N/A")
@@ -161,7 +162,6 @@ class NotifierService : JobIntentService() {
                 .notify(NOTIFICATION_ID, notification.build())
 
             Timber.tag("lifecycle").d("Work stop")
-            awaitCancellation()
         }
 
         @Suppress("UNREACHABLE_CODE")

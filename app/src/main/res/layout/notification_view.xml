@@ -31,7 +31,6 @@
             tools:text="$400" />
     </LinearLayout>
 
-
     <TextView
         android:id="@+id/tvPhone"
         style="@style/NotificationText"
