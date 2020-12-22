@@ -47,7 +47,7 @@ class NotifierService : JobIntentService() {
             phoneNumber = intent?.extras?.getString(EXTRA_PHONE) ?: throw IllegalArgumentException()
         else
             return super.onStartCommand(intent, flags, startId)
-        val view = RemoteViews(packageName, R.layout.toast_view)
+        val view = RemoteViews(packageName, R.layout.notification_view)
 
         val notification = NotificationCompat.Builder(this, "clinic_info")
             .apply {
@@ -164,6 +164,7 @@ class NotifierService : JobIntentService() {
             awaitCancellation()
         }
 
+        @Suppress("UNREACHABLE_CODE")
         return super.onStartCommand(intent, flags, startId)
     }
 
