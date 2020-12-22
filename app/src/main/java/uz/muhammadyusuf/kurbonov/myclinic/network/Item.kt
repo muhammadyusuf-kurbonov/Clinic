@@ -1,5 +1,8 @@
 package uz.muhammadyusuf.kurbonov.myclinic.network
 
+import androidx.annotation.Keep
+
+@Keep
 data class Item(
     val address: Address,
     val company: Company,

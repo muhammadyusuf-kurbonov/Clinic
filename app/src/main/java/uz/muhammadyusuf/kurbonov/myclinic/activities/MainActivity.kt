@@ -1,11 +1,14 @@
 package uz.muhammadyusuf.kurbonov.myclinic.activities
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -28,6 +31,19 @@ class MainActivity : AppCompatActivity() {
                     "android.permission.READ_PRIVILEGED_PHONE_STATE"
                 ), 241
             )
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "clinic_info",
+                "Notifications for call identification",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+                .apply {
+                    enableVibration(false)
+                }
+            NotificationManagerCompat.from(this)
+                .createNotificationChannel(channel)
         }
     }
     override fun onRequestPermissionsResult(

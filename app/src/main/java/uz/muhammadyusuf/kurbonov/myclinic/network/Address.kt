@@ -1,5 +1,8 @@
 package uz.muhammadyusuf.kurbonov.myclinic.network
 
+import androidx.annotation.Keep
+
+@Keep
 data class Address(
     val city: String,
     val geo: Geo,

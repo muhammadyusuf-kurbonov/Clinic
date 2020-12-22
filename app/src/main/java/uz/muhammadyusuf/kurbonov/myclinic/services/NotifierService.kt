@@ -23,7 +23,6 @@ import java.net.UnknownHostException
 
 class NotifierService : JobIntentService() {
 
-
     private val searchService: UserSearchService by inject()
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(serviceJob + Dispatchers.Main)
@@ -31,13 +30,29 @@ class NotifierService : JobIntentService() {
 
     override fun onHandleWork(intent: Intent) {
         Timber.tag("lifecycle").d("onHandle work start")
-        if (!intent.extras?.getString(EXTRA_PHONE, "").isNullOrEmpty())
-            phoneNumber = intent.extras?.getString(EXTRA_PHONE) ?: throw IllegalArgumentException()
+
+    }
+
+    private lateinit var phoneNumber: String
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.tag("lifecycle").d("Destroyed")
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Timber.tag("lifecycle").d("Started")
+
+        if (!intent?.extras?.getString(EXTRA_PHONE, "").isNullOrEmpty())
+            phoneNumber = intent?.extras?.getString(EXTRA_PHONE) ?: throw IllegalArgumentException()
         else
-            return
+            return super.onStartCommand(intent, flags, startId)
         val view = RemoteViews(packageName, R.layout.toast_view)
+
         val notification = NotificationCompat.Builder(this, "clinic_info")
             .apply {
+
+
                 setContent(view)
 
                 setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -68,9 +83,9 @@ class NotifierService : JobIntentService() {
                 if (it == 1) {
                     NotificationManagerCompat.from(this@NotifierService)
                         .cancel(NOTIFICATION_ID)
-                    serviceJob.cancel()
                     stopForeground(true)
                     stopSelf()
+                    serviceJob.cancel()
                     Timber.d("Service job complete")
                 }
             }
@@ -78,7 +93,7 @@ class NotifierService : JobIntentService() {
 
         var states: SearchStates = SearchStates.Loading
 
-        runBlocking {
+        runBlocking(serviceScope.coroutineContext + Dispatchers.IO) {
             try {
                 withTimeout(10000) {
                     val user = searchService.searchUser(phoneNumber).execute()
@@ -145,20 +160,10 @@ class NotifierService : JobIntentService() {
             NotificationManagerCompat.from(this@NotifierService)
                 .notify(NOTIFICATION_ID, notification.build())
 
-            Timber.tag("lifecycle").d("onHandleWork stop")
+            Timber.tag("lifecycle").d("Work stop")
             awaitCancellation()
         }
-    }
 
-    private lateinit var phoneNumber: String
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Timber.tag("lifecycle").d("Destroyed")
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Timber.tag("lifecycle").d("Started")
         return super.onStartCommand(intent, flags, startId)
     }
 
