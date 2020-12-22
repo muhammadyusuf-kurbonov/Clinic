@@ -43,6 +43,8 @@ class NotifierService : JobIntentService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.tag("lifecycle").d("Started")
 
+        setTheme(R.style.Theme_MyClinic)
+
         if (!intent?.extras?.getString(EXTRA_PHONE, "").isNullOrEmpty())
             phoneNumber = intent?.extras?.getString(EXTRA_PHONE) ?: throw IllegalArgumentException()
         else
@@ -96,15 +98,13 @@ class NotifierService : JobIntentService() {
         runBlocking(serviceScope.coroutineContext + Dispatchers.IO) {
             try {
                 withTimeout(10000) {
-                    val user = searchService.searchUser(phoneNumber).execute()
-                    Timber.d("user is ${user.body()}")
-                    if (user.isSuccessful) {
-                        val body = user.body()!!
-                        if (body.code == "404")
-                            states = SearchStates.NotFound
-                        else if (body.code == "200")
-                            states = SearchStates.Found(body.toContact()!!)
-                    }
+                    val user = searchService.searchUser(phoneNumber)
+                    Timber.d("user is $user")
+
+                    if (user.code == "404")
+                        states = SearchStates.NotFound
+                    else if (user.code == "200")
+                        states = SearchStates.Found(user.toContact()!!)
                 }
             } catch (e: Exception) {
                 states = SearchStates.Error(e)
