@@ -10,7 +10,6 @@ import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.EventBus
 
-
 class CallReceiver : BroadcastReceiver() {
 
     companion object {
@@ -47,25 +46,3 @@ class CallReceiver : BroadcastReceiver() {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
