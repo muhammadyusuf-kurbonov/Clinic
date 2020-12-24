@@ -61,9 +61,9 @@ class NotifierService : JobIntentService() {
 
                 setOngoing(true)
 
-                setOnlyAlertOnce(true)
-
                 setCustomBigContentView(view)
+
+                setAutoCancel(false)
 
                 val pendingIntent = PendingIntent.getActivity(
                     this@NotifierService,

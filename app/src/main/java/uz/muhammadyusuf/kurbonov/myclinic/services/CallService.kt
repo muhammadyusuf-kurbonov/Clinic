@@ -30,6 +30,7 @@ class CallReceiver : BroadcastReceiver() {
             if (phoneNumber.isNullOrEmpty())
                 return
             if (TelephonyManager.EXTRA_STATE_RINGING == phoneState) {
+                EventBus.event.value = 0
                 val serviceIntent = Intent(context, NotifierService::class.java)
                 serviceIntent.putExtra(EXTRA_PHONE, phoneNumber)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
