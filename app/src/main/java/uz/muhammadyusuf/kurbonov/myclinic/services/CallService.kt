@@ -17,8 +17,6 @@ class CallReceiver : BroadcastReceiver() {
         const val EXTRA_PHONE = "phone"
     }
 
-    var started = false
-
     override fun onReceive(context: Context, intent: Intent?) {
 
         if (BuildConfig.DEBUG)
@@ -26,6 +24,8 @@ class CallReceiver : BroadcastReceiver() {
 
         if (intent!!.action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) {
             val phoneState = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
+
+            @Suppress("DEPRECATION")
             val phoneNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
             if (phoneNumber.isNullOrEmpty())
                 return
@@ -38,7 +38,6 @@ class CallReceiver : BroadcastReceiver() {
                 } else {
                     context.startService(serviceIntent)
                 }
-                started = true
             } else if (TelephonyManager.EXTRA_STATE_IDLE == phoneState) {
                 EventBus.event.value = 1
                 NotificationManagerCompat.from(context)

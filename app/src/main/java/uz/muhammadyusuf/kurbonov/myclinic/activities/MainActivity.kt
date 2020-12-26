@@ -6,9 +6,10 @@ import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
+import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -31,6 +32,8 @@ class MainActivity : AppCompatActivity() {
                     "android.permission.READ_PRIVILEGED_PHONE_STATE"
                 ), 241
             )
+        } else {
+            findViewById<TextView>(R.id.tvMain).text = "Ready!"
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -55,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         if (grantResults.all {
                 it == PackageManager.PERMISSION_GRANTED
             }) {
-            Toast.makeText(this, "Thank you", Toast.LENGTH_SHORT).show()
+            findViewById<TextView>(R.id.tvMain).text = "Ready!"
         }
     }
 
