@@ -8,7 +8,8 @@ import android.telephony.TelephonyManager
 import androidx.core.app.NotificationManagerCompat
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
-import uz.muhammadyusuf.kurbonov.myclinic.EventBus
+import uz.muhammadyusuf.kurbonov.myclinic.eventbus.AppEvent
+import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
 
 class CallReceiver : BroadcastReceiver() {
 
@@ -30,7 +31,7 @@ class CallReceiver : BroadcastReceiver() {
             if (phoneNumber.isNullOrEmpty())
                 return
             if (TelephonyManager.EXTRA_STATE_RINGING == phoneState) {
-                EventBus.event.value = 0
+                EventBus.event.value = AppEvent.RestoreServiceEvent
                 val serviceIntent = Intent(context, NotifierService::class.java)
                 serviceIntent.putExtra(EXTRA_PHONE, phoneNumber)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -39,7 +40,7 @@ class CallReceiver : BroadcastReceiver() {
                     context.startService(serviceIntent)
                 }
             } else if (TelephonyManager.EXTRA_STATE_IDLE == phoneState) {
-                EventBus.event.value = 1
+                EventBus.event.value = AppEvent.StopServiceEvent
                 NotificationManagerCompat.from(context)
                     .cancel(NOTIFICATION_ID)
             }

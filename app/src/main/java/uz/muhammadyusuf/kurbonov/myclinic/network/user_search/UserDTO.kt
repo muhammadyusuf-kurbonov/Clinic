@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.network
+package uz.muhammadyusuf.kurbonov.myclinic.network.user_search
 
 import androidx.annotation.Keep
 

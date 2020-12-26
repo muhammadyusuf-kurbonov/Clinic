@@ -1,8 +1,8 @@
 package uz.muhammadyusuf.kurbonov.myclinic.model
 
 import androidx.annotation.Keep
-import uz.muhammadyusuf.kurbonov.myclinic.network.Address
-import uz.muhammadyusuf.kurbonov.myclinic.network.Company
+import uz.muhammadyusuf.kurbonov.myclinic.network.user_search.Address
+import uz.muhammadyusuf.kurbonov.myclinic.network.user_search.Company
 
 @Keep
 data class Contact(

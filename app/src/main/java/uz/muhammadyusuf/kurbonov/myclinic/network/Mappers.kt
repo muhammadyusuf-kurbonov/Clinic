@@ -1,6 +1,7 @@
 package uz.muhammadyusuf.kurbonov.myclinic.network
 
 import uz.muhammadyusuf.kurbonov.myclinic.model.Contact
+import uz.muhammadyusuf.kurbonov.myclinic.network.user_search.UserDTO
 
 fun UserDTO.toContact(): Contact? {
     if (this.item == null)

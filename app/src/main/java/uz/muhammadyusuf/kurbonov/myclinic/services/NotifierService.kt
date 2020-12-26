@@ -1,5 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic.services
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.widget.RemoteViews
@@ -10,11 +11,12 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import org.koin.android.ext.android.inject
 import timber.log.Timber
-import uz.muhammadyusuf.kurbonov.myclinic.EventBus
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.MainActivity
-import uz.muhammadyusuf.kurbonov.myclinic.network.UserSearchService
+import uz.muhammadyusuf.kurbonov.myclinic.eventbus.AppEvent
+import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
+import uz.muhammadyusuf.kurbonov.myclinic.network.user_search.UserSearchService
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_PHONE
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.NOTIFICATION_ID
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
@@ -40,6 +42,7 @@ class NotifierService : JobIntentService() {
         Timber.tag("lifecycle").d("Destroyed")
     }
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Timber.tag("lifecycle").d("Started")
 
@@ -82,7 +85,7 @@ class NotifierService : JobIntentService() {
 
         serviceScope.launch {
             EventBus.event.collect {
-                if (it == 1) {
+                if (it is AppEvent.StopServiceEvent) {
                     NotificationManagerCompat.from(this@NotifierService)
                         .cancel(NOTIFICATION_ID)
                     stopForeground(true)
