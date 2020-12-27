@@ -8,7 +8,7 @@ fun CustomerDTO.toContact(): Contact {
     val data = this.data[0]
     return Contact(
         id = data._id,
-        name = data.first_name,
+        name = "${data.last_name} ${data.first_name}",
         phoneNumber = data.phone,
         balance = data.balance,
         avatarLink = data.avatar.url,

@@ -1,6 +1,7 @@
 package uz.muhammadyusuf.kurbonov.myclinic.activities
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.PackageManager
@@ -9,15 +10,15 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import org.koin.android.ext.android.get
+import org.koin.core.qualifier.named
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityMainBinding
-import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
 import uz.muhammadyusuf.kurbonov.myclinic.utils.authenticate
 
+@SuppressLint("SetTextI18n")
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,15 +58,12 @@ class MainActivity : AppCompatActivity() {
                 .createNotificationChannel(channel)
         }
 
-        EventBus.scope.launch {
-            authenticate(this@MainActivity)
-            EventBus.event.collect {
-                Timber.tag("events").d("$it")
-
-                EventBus.job.complete()
+        if (get<String>(named("token")).isNotEmpty())
+            suspend {
+                authenticate(this)
             }
-        }
     }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
