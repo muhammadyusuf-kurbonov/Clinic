@@ -9,8 +9,14 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityMainBinding
+import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
+import uz.muhammadyusuf.kurbonov.myclinic.utils.authenticate
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,12 +26,14 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
+        if (BuildConfig.DEBUG)
+            Timber.plant(Timber.DebugTree())
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(
                 arrayOf(
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.REORDER_TASKS,
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                         Manifest.permission.FOREGROUND_SERVICE
                     else "",
@@ -47,6 +55,15 @@ class MainActivity : AppCompatActivity() {
                 }
             NotificationManagerCompat.from(this)
                 .createNotificationChannel(channel)
+        }
+
+        EventBus.scope.launch {
+            authenticate(this@MainActivity)
+            EventBus.event.collect {
+                Timber.tag("events").d("$it")
+
+                EventBus.job.complete()
+            }
         }
     }
     override fun onRequestPermissionsResult(

@@ -39,25 +39,30 @@ class LoginActivity : AppCompatActivity() {
                         )
                     )
 
-                    if (response.isSuccessful) {
-                        get<SharedPreferences>().edit()
-                            .putString("token", response.body()?.accessToken)
-                            .apply()
-                        EventBus.event.value = AppEvent.AuthSucceedEvent
-                        Timber.d("New token is ${response.body()?.accessToken}")
-                        finish()
-                    } else {
-                        Timber.d("Error is $response")
-                        AlertDialog.Builder(this@LoginActivity)
-                            .setIcon(R.drawable.ic_baseline_cancel_24)
-                            .setMessage("Error occurred!")
-                            .setNeutralButton(android.R.string.ok) { dialog, _ ->
-                                dialog.dismiss()
-                                finish()
+                    AlertDialog.Builder(this@LoginActivity)
+                        .setIcon(
+                            if (response.isSuccessful) R.drawable.ic_baseline_check_circle_24
+                            else R.drawable.ic_baseline_cancel_24
+                        )
+                        .setMessage(
+                            if (response.isSuccessful) "Login success"
+                            else "Error occurred"
+                        )
+                        .setNeutralButton(android.R.string.ok) { dialog, _ ->
+                            if (response.isSuccessful) {
+                                get<SharedPreferences>().edit()
+                                    .putString("token", response.body()?.accessToken)
+                                    .apply()
+                                EventBus.event.value = AppEvent.AuthSucceedEvent
+                                Timber.d("New token is ${response.body()?.accessToken}")
+                            } else {
+                                Timber.d("Error is $response")
+                                EventBus.event.value = AppEvent.AuthFailedEvent
                             }
-                            .show()
-
-                    }
+                            dialog.dismiss()
+                            finish()
+                        }
+                        .show()
                 }
             }
     }

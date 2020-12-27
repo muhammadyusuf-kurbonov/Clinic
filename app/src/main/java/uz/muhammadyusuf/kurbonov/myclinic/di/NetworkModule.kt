@@ -7,16 +7,16 @@ import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
-import uz.muhammadyusuf.kurbonov.myclinic.network.user_search.UserSearchService
+import uz.muhammadyusuf.kurbonov.myclinic.network.customer_search.SearchService
 
 val networkModule = module {
-    single<UserSearchService> {
+    single<SearchService> {
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl("http://app.32desk.com:3030")
             .client(get())
             .build()
-            .create(UserSearchService::class.java)
+            .create(SearchService::class.java)
     }
     single {
         OkHttpClient.Builder()

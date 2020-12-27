@@ -7,6 +7,7 @@ import android.widget.RemoteViews
 import androidx.core.app.JobIntentService
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import org.koin.android.ext.android.inject
@@ -15,17 +16,18 @@ import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.MainActivity
 import uz.muhammadyusuf.kurbonov.myclinic.eventbus.AppEvent
 import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
+import uz.muhammadyusuf.kurbonov.myclinic.network.customer_search.SearchService
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
-import uz.muhammadyusuf.kurbonov.myclinic.network.user_search.UserSearchService
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_PHONE
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.NOTIFICATION_ID
+import uz.muhammadyusuf.kurbonov.myclinic.utils.authenticate
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
 class NotifierService : JobIntentService() {
 
-    private val searchService: UserSearchService by inject()
+    private val searchService: SearchService by inject()
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(serviceJob + Dispatchers.Main)
 
@@ -101,17 +103,28 @@ class NotifierService : JobIntentService() {
         runBlocking(serviceScope.coroutineContext + Dispatchers.IO) {
             try {
                 withTimeout(10000) {
-                    val user = searchService.searchUser(phoneNumber)
-                    Timber.d("user is $user")
+                    val customer = searchService.searchCustomer(phoneNumber)
+                    Timber.d("user is $customer")
 
-                    if (user.code == "404")
-                        states = SearchStates.NotFound
-                    else if (user.code == "200")
-                        states = SearchStates.Found(user.toContact()!!)
+                    when {
+                        customer.code() == 404 -> states = SearchStates.NotFound
+                        customer.code() == 401 -> states = SearchStates.AuthRequest
+                        customer.code() == 200 -> states =
+                            if (customer.body()!!.data.isNotEmpty()) {
+                                SearchStates.Found(customer.body()!!.toContact())
+                            } else {
+                                SearchStates.NotFound
+                            }
+                    }
                 }
             } catch (e: Exception) {
                 states = SearchStates.Error(e)
             }
+
+            if (states is SearchStates.AuthRequest)
+                launch(Dispatchers.Main) {
+                    authenticate(this@NotifierService)
+                }
 
             Timber.d("state is $states")
             view.setTextViewText(
@@ -128,32 +141,26 @@ class NotifierService : JobIntentService() {
                         }
                     }
                     SearchStates.NotFound -> "Nobody was found"
+                    SearchStates.AuthRequest -> "Authenticating ..."
                 }
             )
 
             if (states is SearchStates.Found) {
                 with(view) {
                     val found = states as SearchStates.Found
-                    setTextViewText(R.id.tvPhone, (found).contact.phoneNumber)
-                    setTextViewText(R.id.tvBalance, "$ 400")
-                    setTextViewText(
-                        R.id.tvAddress,
-                        "Home address: " + (found.contact.address?.toString() ?: "N/A")
+                    setTextViewText(R.id.tvPhone, found.contact.phoneNumber)
+                    setTextViewText(R.id.tvBalance, found.contact.balance.toString())
+                    setImageViewBitmap(
+                        R.id.imgAvatar,
+                        Picasso.get().load(found.contact.avatarLink).get()
                     )
-                    setTextViewText(
-                        R.id.tvJob,
-                        "Working company: " + (found.contact.company?.name ?: "N/A")
-                    )
+                    setTextViewText(R.id.tvLastVisit, "Last visited at ${found.contact.lastVisit}")
                 }
             } else {
                 with(view) {
                     setTextViewText(R.id.tvPhone, phoneNumber)
                     setTextViewText(
-                        R.id.tvAddress,
-                        "N/A"
-                    )
-                    setTextViewText(
-                        R.id.tvJob,
+                        R.id.tvLastVisit,
                         "N/A"
                     )
                 }

@@ -6,6 +6,6 @@ sealed class AppEvent {
     object StopServiceEvent : AppEvent()
     object RestoreServiceEvent : AppEvent()
 
-    object RequestAuthEvent : AppEvent()
+    object AuthFailedEvent : AppEvent()
     object AuthSucceedEvent : AppEvent()
 }
