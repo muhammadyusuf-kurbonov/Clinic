@@ -4,7 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
                 arrayOf(
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.READ_CALL_LOG,
+                    "android.permission.READ_PRIVILEGED_PHONE_STATE",
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                         Manifest.permission.FOREGROUND_SERVICE
                     else "",
@@ -70,9 +71,20 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults.all {
-                it == PackageManager.PERMISSION_GRANTED
-            }) {
+        var allGiven = true
+
+        grantResults.forEachIndexed { index, i ->
+            Timber.d(
+                "${permissions[index]} => ${
+                    if (i == PERMISSION_GRANTED) "Granted"
+                    else "Not granted"
+                }"
+            )
+            if (permissions[index] != "android.permission.READ_PRIVILEGED_PHONE_STATE")
+                allGiven = allGiven && i == PERMISSION_GRANTED
+        }
+
+        if (allGiven) {
             findViewById<TextView>(R.id.tvMain).text = "Ready!"
         }
     }
