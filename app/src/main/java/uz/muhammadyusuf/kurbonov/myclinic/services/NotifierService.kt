@@ -3,6 +3,7 @@ package uz.muhammadyusuf.kurbonov.myclinic.services
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.widget.RemoteViews
 import androidx.core.app.JobIntentService
 import androidx.core.app.NotificationCompat
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.collect
 import org.koin.android.ext.android.inject
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.MainActivity
 import uz.muhammadyusuf.kurbonov.myclinic.eventbus.AppEvent
 import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
@@ -20,7 +22,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.customer_search.SearchService
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_PHONE
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.NOTIFICATION_ID
-import uz.muhammadyusuf.kurbonov.myclinic.utils.authenticate
 import uz.muhammadyusuf.kurbonov.myclinic.utils.reformatDate
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
 import java.net.SocketTimeoutException
@@ -82,6 +83,8 @@ class NotifierService : JobIntentService() {
                 priority = NotificationCompat.PRIORITY_MAX
             }
 
+        EventBus.event.value = AppEvent.NoEvent
+
         startForeground(NOTIFICATION_ID, notification.build())
         view.setTextViewText(R.id.tvName, getString(R.string.searching_text))
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification.build())
@@ -91,7 +94,7 @@ class NotifierService : JobIntentService() {
                 if (it is AppEvent.StopServiceEvent) {
                     NotificationManagerCompat.from(this@NotifierService)
                         .cancel(NOTIFICATION_ID)
-                    stopForeground(true)
+                    stopForeground(false)
                     stopSelf()
                     serviceJob.cancel()
                     Timber.d("Service job complete")
@@ -123,9 +126,9 @@ class NotifierService : JobIntentService() {
             }
 
             if (states is SearchStates.AuthRequest)
-                launch(Dispatchers.Main) {
-                    authenticate(this@NotifierService)
-                }
+                startActivity(Intent(this@NotifierService, LoginActivity::class.java).apply {
+                    addFlags(FLAG_ACTIVITY_NEW_TASK)
+                })
 
             Timber.d("state is $states")
             view.setTextViewText(
@@ -165,11 +168,11 @@ class NotifierService : JobIntentService() {
 
                     setTextViewText(R.id.tvLastVisit, lastAppointmentText)
                     val nextAppointmentText = if (contact.nextAppointment != null) {
-                        val nextAppointment = contact.lastAppointment!!
+                        val nextAppointment = contact.nextAppointment!!
                         "${
                             nextAppointment.date.reformatDate(
                                 "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-                                "dd MMM yyyy"
+                                "dd MMM yyyy HH:mm"
                             )
                         } - ${nextAppointment.doctor} - ${nextAppointment.diagnosys}"
                     } else getString(R.string.not_avaible)

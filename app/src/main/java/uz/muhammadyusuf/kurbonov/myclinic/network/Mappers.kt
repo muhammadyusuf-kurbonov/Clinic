@@ -5,6 +5,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.model.Contact
 import uz.muhammadyusuf.kurbonov.myclinic.model.Doctor
 import uz.muhammadyusuf.kurbonov.myclinic.network.customer_search.CustomerDTO
 import uz.muhammadyusuf.kurbonov.myclinic.utils.reformatDate
+import java.util.*
 
 fun CustomerDTO.toContact(): Contact {
     val data = this.data[0]
@@ -13,7 +14,8 @@ fun CustomerDTO.toContact(): Contact {
         Appointment(
             last.startAt.reformatDate(
                 "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-                "dd MMM yyyy"
+                "dd MMM yyyy HH:mm",
+                oldTimeZone = TimeZone.getTimeZone("UTC")
             ),
             Doctor(
                 last.services[0].user.firstName + " " + last.services[0].user.lastName,
@@ -26,7 +28,8 @@ fun CustomerDTO.toContact(): Contact {
         Appointment(
             next.startAt.reformatDate(
                 "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-                "dd MMM yyyy"
+                "dd MMM yyyy HH:mm",
+                oldTimeZone = TimeZone.getTimeZone("UTC")
             ),
             Doctor(
                 next.services[0].user.firstName + " " + next.services[0].user.lastName,
@@ -40,10 +43,6 @@ fun CustomerDTO.toContact(): Contact {
         phoneNumber = data.phone,
         balance = data.balance,
         avatarLink = data.avatar.url,
-        lastVisit = data.lastVisit.reformatDate(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            "dd MMM yyyy"
-        ),
         lastAppointment = lastAppointment,
         nextAppointment = nextAppointment
     )

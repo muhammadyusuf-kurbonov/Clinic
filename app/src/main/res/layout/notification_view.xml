@@ -52,22 +52,23 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
+
             <TextView
                 style="@style/NotificationText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginTop="8dp"
-                android:text="@string/previous_appointment"
+                android:layout_marginTop="16dp"
+                android:text="@string/next_appointment"
+                android:textColor="@color/semi_black"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2" />
 
             <TextView
-                android:id="@+id/tvLastVisit"
+                android:id="@+id/tvNextVisit"
                 style="@style/NotificationText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginTop="8dp"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                 tools:text="@tools:sample/full_names" />
 
@@ -77,18 +78,19 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginTop="16dp"
-                android:text="@string/next_appointment"
+                android:text="@string/previous_appointment"
+                android:textColor="@color/semi_black"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2" />
 
             <TextView
-                android:id="@+id/tvNextVisit"
+                android:id="@+id/tvLastVisit"
                 style="@style/NotificationText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginTop="8dp"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                 tools:text="@tools:sample/full_names" />
+
         </LinearLayout>
         <ImageView
             android:id="@+id/imgAvatar"

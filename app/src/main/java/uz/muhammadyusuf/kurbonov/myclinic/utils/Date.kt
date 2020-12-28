@@ -8,15 +8,29 @@ import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-fun Long.formatAsDate(pattern: String): String =
-    SimpleDateFormat(pattern, Locale.getDefault()).format(Date(this))
+fun Long.formatAsDate(
+    pattern: String,
+    newTimeZone: TimeZone = TimeZone.getDefault()
+): String =
+    SimpleDateFormat(pattern, Locale.getDefault()).apply {
+        timeZone = newTimeZone
+    }.format(Date(this))
 
 fun Long.formatAsDate(): String = formatAsDate("dd MMM yyyy")
 
-fun String.reformatDate(oldFormat: String, newFormat: String): String {
-    val date = SimpleDateFormat(oldFormat, Locale.getDefault()).parse(this)
+fun String.reformatDate(
+    oldFormat: String,
+    newFormat: String,
+    oldTimeZone: TimeZone = TimeZone.getDefault(),
+    newTimeZone: TimeZone = TimeZone.getDefault()
+): String {
+    val date = SimpleDateFormat(oldFormat, Locale.getDefault())
+        .apply {
+            timeZone = oldTimeZone
+        }
+        .parse(this)
 
-    val result = date?.time?.formatAsDate(newFormat)
+    val result = date?.time?.formatAsDate(newFormat, newTimeZone)
         ?: throw IllegalArgumentException("Wrong pattern. Check it")
     Timber.d("$this => $result")
     return result

@@ -3,6 +3,7 @@ package uz.muhammadyusuf.kurbonov.myclinic.activities
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.os.Bundle
@@ -15,7 +16,7 @@ import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityMainBinding
-import uz.muhammadyusuf.kurbonov.myclinic.utils.authenticate
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -57,10 +58,13 @@ class MainActivity : AppCompatActivity() {
                 .createNotificationChannel(channel)
         }
 
-        if (get<String>(named("token")).isNotEmpty())
-            suspend {
-                authenticate(this)
-            }
+        Timber.d("TimeZone is ${TimeZone.getDefault()}")
+
+        val token = get<String>(named("token"))
+
+        if (token.trim().isEmpty() or token.isBlank()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -72,12 +76,6 @@ class MainActivity : AppCompatActivity() {
         var allGiven = true
 
         grantResults.forEachIndexed { index, i ->
-            Timber.d(
-                "${permissions[index]} => ${
-                    if (i == PERMISSION_GRANTED) "Granted"
-                    else "Not granted"
-                }"
-            )
             if (permissions[index] != "android.permission.READ_PRIVILEGED_PHONE_STATE")
                 allGiven = allGiven && i == PERMISSION_GRANTED
         }
