@@ -16,4 +16,5 @@
     <string name="balance">"Balance: "</string>
     <string name="not_avaible">N/A</string>
     <string name="ready">Ready!</string>
+    <string name="logout">Logout</string>
 </resources>

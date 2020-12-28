@@ -4,11 +4,13 @@ import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.NotificationManagerCompat
 import org.koin.android.ext.android.get
 import org.koin.core.qualifier.named
@@ -65,6 +67,14 @@ class MainActivity : AppCompatActivity() {
         if (token.trim().isEmpty() or token.isBlank()) {
             startActivity(Intent(this, LoginActivity::class.java))
         }
+
+        findViewById<AppCompatButton>(R.id.btn_logout)
+            .setOnClickListener {
+                get<SharedPreferences>().edit()
+                    .putString("token", "")
+                    .apply()
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
     }
 
     override fun onRequestPermissionsResult(

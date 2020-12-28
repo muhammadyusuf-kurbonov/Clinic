@@ -16,4 +16,5 @@
     <string name="balance">"Баланс: "</string>
     <string name="not_avaible">Нет данных</string>
     <string name="ready">Готово</string>
+    <string name="logout">Выйти</string>
 </resources>

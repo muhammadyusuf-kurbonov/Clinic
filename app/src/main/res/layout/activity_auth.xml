@@ -20,7 +20,8 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="24dp"
             android:contentDescription="@string/app_name"
-            android:src="@drawable/ic_launcher_foreground" />
+            android:scaleType="matrix"
+            android:src="@mipmap/ic_launcher_foreground" />
 
         <!-- Email Label -->
         <com.google.android.material.textfield.TextInputLayout
