@@ -21,6 +21,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_PHONE
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.NOTIFICATION_ID
 import uz.muhammadyusuf.kurbonov.myclinic.utils.authenticate
+import uz.muhammadyusuf.kurbonov.myclinic.utils.reformatDate
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -147,14 +148,31 @@ class NotifierService : JobIntentService() {
 
             if (states is SearchStates.Found) {
                 with(view) {
-                    val found = states as SearchStates.Found
-                    setTextViewText(R.id.tvPhone, found.contact.phoneNumber)
-                    setTextViewText(R.id.tvBalance, found.contact.balance.toString())
+                    val contact = (states as SearchStates.Found).contact
+                    setTextViewText(R.id.tvPhone, contact.phoneNumber)
+                    setTextViewText(R.id.tvBalance, "Balance: ${contact.balance}")
                     setImageViewBitmap(
                         R.id.imgAvatar,
-                        Picasso.get().load(found.contact.avatarLink).get()
+                        Picasso.get().load(contact.avatarLink).get()
                     )
-                    setTextViewText(R.id.tvLastVisit, "Last visited at ${found.contact.lastVisit}")
+
+                    val lastAppointmentText = if (contact.lastAppointment != null) {
+                        val lastAppointment = contact.lastAppointment!!
+                        "${lastAppointment.date} - ${lastAppointment.doctor.name} - ${lastAppointment.diagnosys}"
+                    } else "N/A"
+
+                    setTextViewText(R.id.tvLastVisit, lastAppointmentText)
+                    val nextAppointmentText = if (contact.nextAppointment != null) {
+                        val nextAppointment = contact.lastAppointment!!
+                        "${
+                            nextAppointment.date.reformatDate(
+                                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                                "dd MMM yyyy"
+                            )
+                        } - ${nextAppointment.doctor} - ${nextAppointment.diagnosys}"
+                    } else "N/A"
+
+                    setTextViewText(R.id.tvNextVisit, nextAppointmentText)
                 }
             } else {
                 with(view) {

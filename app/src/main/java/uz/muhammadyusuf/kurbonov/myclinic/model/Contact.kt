@@ -9,5 +9,7 @@ data class Contact(
     var phoneNumber: String = "",
     var balance: Long = 0,
     var avatarLink: String = "",
-    var lastVisit: String = ""
+    var lastVisit: String = "",
+    var lastAppointment: Appointment? = null,
+    var nextAppointment: Appointment? = null
 )

@@ -1,6 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic.network.customer_search
 
-data class Avatar(
+data class CustomerAvatar(
     val __v: Int,
     val _id: String,
     val category: String,

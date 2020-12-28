@@ -8,7 +8,9 @@ interface SearchService {
     @GET("customers")
     suspend fun searchCustomer(
         @Query("phone") phone: String,
-        @Query("registerCall") registerCall: Boolean = true
+        @Query("registerCall") registerCall: Boolean = true,
+        @Query("withAppointments") withAppointments: Int = 1,
+        @Query("noMeta") noMeta: Int = 1
     ): Response<CustomerDTO>
 
 }
