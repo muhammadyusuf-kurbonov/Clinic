@@ -1,7 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic.activities
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -18,7 +17,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityMainBinding
 import uz.muhammadyusuf.kurbonov.myclinic.utils.authenticate
 
-@SuppressLint("SetTextI18n")
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +41,7 @@ class MainActivity : AppCompatActivity() {
                 ), 241
             )
         } else {
-            findViewById<TextView>(R.id.tvMain).text = "Ready!"
+            findViewById<TextView>(R.id.tvMain).text = getString(R.string.ready)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -85,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (allGiven) {
-            findViewById<TextView>(R.id.tvMain).text = "Ready!"
+            findViewById<TextView>(R.id.tvMain).text = getString(R.string.ready)
         }
     }
 

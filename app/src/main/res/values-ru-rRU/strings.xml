@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">My Clinic</string>
+    <string name="main_label">Предоставьте разрешения для нормальной работы</string>
+    <string name="open_medical_card">Открыть карту</string>
+    <string name="email_hint">Электронная почта</string>
+    <string name="password">Пароль</string>
+    <string name="login">Логин</string>
+    <string name="next_appointment">След. приём</string>
+    <string name="previous_appointment">Пред. приём</string>
+    <string name="searching_text">Поиск …</string>
+    <string name="too_slow">Слишком медленный интренет</string>
+    <string name="no_connection">Нет соединения</string>
+    <string name="unknown_error">Возникла ошибка</string>
+    <string name="not_found">Не найдено</string>
+    <string name="auth_text">Вход …</string>
+    <string name="balance">"Баланс: "</string>
+    <string name="not_avaible">Нет данных</string>
+    <string name="ready">Готово</string>
+</resources>

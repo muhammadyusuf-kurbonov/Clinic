@@ -83,7 +83,7 @@ class NotifierService : JobIntentService() {
             }
 
         startForeground(NOTIFICATION_ID, notification.build())
-        view.setTextViewText(R.id.tvName, "Searching ...")
+        view.setTextViewText(R.id.tvName, getString(R.string.searching_text))
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification.build())
 
         serviceScope.launch {
@@ -130,19 +130,21 @@ class NotifierService : JobIntentService() {
             Timber.d("state is $states")
             view.setTextViewText(
                 R.id.tvName, when (states) {
-                    is SearchStates.Loading -> "Searching ..."
+                    is SearchStates.Loading -> getString(R.string.searching_text)
                     is SearchStates.Found -> (states as SearchStates.Found).contact.name
                     is SearchStates.Error -> {
                         val exception = (states as SearchStates.Error).exception
                         Timber.e(exception)
                         when (exception) {
-                            is TimeoutCancellationException, is SocketTimeoutException -> "Too slow internet"
-                            is UnknownHostException -> "No internet connection"
-                            else -> "Sorry, error occurred!"
+                            is TimeoutCancellationException, is SocketTimeoutException -> getString(
+                                R.string.too_slow
+                            )
+                            is UnknownHostException -> getString(R.string.no_connection)
+                            else -> getString(R.string.unknown_error)
                         }
                     }
-                    SearchStates.NotFound -> "Nobody was found"
-                    SearchStates.AuthRequest -> "Authenticating ..."
+                    SearchStates.NotFound -> getString(R.string.not_found)
+                    SearchStates.AuthRequest -> getString(R.string.auth_text)
                 }
             )
 
@@ -150,7 +152,7 @@ class NotifierService : JobIntentService() {
                 with(view) {
                     val contact = (states as SearchStates.Found).contact
                     setTextViewText(R.id.tvPhone, contact.phoneNumber)
-                    setTextViewText(R.id.tvBalance, "Balance: ${contact.balance}")
+                    setTextViewText(R.id.tvBalance, getString(R.string.balance) + contact.balance)
                     setImageViewBitmap(
                         R.id.imgAvatar,
                         Picasso.get().load(contact.avatarLink).get()
@@ -159,7 +161,7 @@ class NotifierService : JobIntentService() {
                     val lastAppointmentText = if (contact.lastAppointment != null) {
                         val lastAppointment = contact.lastAppointment!!
                         "${lastAppointment.date} - ${lastAppointment.doctor.name} - ${lastAppointment.diagnosys}"
-                    } else "N/A"
+                    } else getString(R.string.not_avaible)
 
                     setTextViewText(R.id.tvLastVisit, lastAppointmentText)
                     val nextAppointmentText = if (contact.nextAppointment != null) {
@@ -170,7 +172,7 @@ class NotifierService : JobIntentService() {
                                 "dd MMM yyyy"
                             )
                         } - ${nextAppointment.doctor} - ${nextAppointment.diagnosys}"
-                    } else "N/A"
+                    } else getString(R.string.not_avaible)
 
                     setTextViewText(R.id.tvNextVisit, nextAppointmentText)
                 }
@@ -179,7 +181,7 @@ class NotifierService : JobIntentService() {
                     setTextViewText(R.id.tvPhone, phoneNumber)
                     setTextViewText(
                         R.id.tvLastVisit,
-                        "N/A"
+                        getString(R.string.not_avaible)
                     )
                 }
             }
@@ -192,7 +194,6 @@ class NotifierService : JobIntentService() {
             Timber.tag("lifecycle").d("Work stop")
         }
 
-        @Suppress("UNREACHABLE_CODE")
         return super.onStartCommand(intent, flags, startId)
     }
 

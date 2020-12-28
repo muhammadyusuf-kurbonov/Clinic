@@ -7,4 +7,13 @@
     <string name="login">Login</string>
     <string name="next_appointment">Next Appointment</string>
     <string name="previous_appointment">Previous Appointment</string>
+    <string name="searching_text">Searching …</string>
+    <string name="too_slow">Too slow internet</string>
+    <string name="no_connection">No internet connection</string>
+    <string name="unknown_error">Sorry, error occurred!</string>
+    <string name="not_found">Nobody was found</string>
+    <string name="auth_text">Authenticating …</string>
+    <string name="balance">"Balance: "</string>
+    <string name="not_avaible">N/A</string>
+    <string name="ready">Ready!</string>
 </resources>
