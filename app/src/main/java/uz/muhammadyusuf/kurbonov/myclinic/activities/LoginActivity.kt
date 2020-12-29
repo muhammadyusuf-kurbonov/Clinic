@@ -15,29 +15,26 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
-import org.koin.core.context.loadKoinModules
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.di.authModule
 import uz.muhammadyusuf.kurbonov.myclinic.eventbus.AppEvent
 import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
+import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
-import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthService
 
 class LoginActivity : AppCompatActivity() {
     @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
-        loadKoinModules(authModule)
 
         if (BuildConfig.DEBUG)
             Timber.plant(Timber.DebugTree())
 
         findViewById<AppCompatButton>(R.id.btn_login)
             .setOnClickListener {
-                val authService = get<AuthService>()
+                val authService = get<APIService>()
                 lifecycleScope.launch {
                     val response = authService.authenticate(
                         AuthRequest(

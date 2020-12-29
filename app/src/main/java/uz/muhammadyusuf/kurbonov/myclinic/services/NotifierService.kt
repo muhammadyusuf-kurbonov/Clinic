@@ -18,7 +18,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.MainActivity
 import uz.muhammadyusuf.kurbonov.myclinic.eventbus.AppEvent
 import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
-import uz.muhammadyusuf.kurbonov.myclinic.network.customer_search.SearchService
+import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_PHONE
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.NOTIFICATION_ID
@@ -29,7 +29,7 @@ import java.net.UnknownHostException
 
 class NotifierService : JobIntentService() {
 
-    private val searchService: SearchService by inject()
+    private val searchService: APIService by inject()
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(serviceJob + Dispatchers.Main)
 
