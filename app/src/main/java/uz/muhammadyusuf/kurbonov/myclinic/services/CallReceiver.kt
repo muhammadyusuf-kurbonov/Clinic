@@ -3,12 +3,9 @@ package uz.muhammadyusuf.kurbonov.myclinic.services
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.core.app.NotificationManagerCompat
 import androidx.work.*
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
-import uz.muhammadyusuf.kurbonov.myclinic.eventbus.AppEvent
-import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
 import uz.muhammadyusuf.kurbonov.myclinic.works.SendStatusRequest
 import uz.muhammadyusuf.kurbonov.myclinic.works.SendStatusRequest.Companion.INPUT_TYPE
@@ -32,7 +29,6 @@ class CallReceiver : PhoneCallReceiver() {
         if (number.isNullOrEmpty()) {
             return
         }
-        EventBus.event.value = AppEvent.RestoreServiceEvent
         val serviceIntent = Intent(ctx, NotifierService::class.java)
         serviceIntent.putExtra(EXTRA_PHONE, number)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -47,16 +43,13 @@ class CallReceiver : PhoneCallReceiver() {
     }
 
     override fun onIncomingCallEnded(ctx: Context, number: String?, start: Date, end: Date) {
-        EventBus.event.value = AppEvent.StopServiceEvent
-        NotificationManagerCompat.from(ctx)
-            .cancel(NOTIFICATION_ID)
+        ctx.stopService(Intent(ctx, NotifierService::class.java))
         sendRequest(ctx, number!!, status = "accepted", type = "incoming", end.time - start.time)
     }
 
     override fun onOutgoingCallStarted(ctx: Context, number: String?, start: Date) {
         if (number.isNullOrEmpty())
             return
-        EventBus.event.value = AppEvent.RestoreServiceEvent
         val serviceIntent = Intent(ctx, NotifierService::class.java)
         serviceIntent.putExtra(EXTRA_PHONE, number)
         serviceIntent.putExtra(STATUS, "outgoing")
@@ -68,16 +61,12 @@ class CallReceiver : PhoneCallReceiver() {
     }
 
     override fun onOutgoingCallEnded(ctx: Context, number: String?, start: Date, end: Date) {
-        EventBus.event.value = AppEvent.StopServiceEvent
-        NotificationManagerCompat.from(ctx)
-            .cancel(NOTIFICATION_ID)
+        ctx.stopService(Intent(ctx, NotifierService::class.java))
         sendRequest(ctx, number!!, status = "accepted", type = "outgoing", end.time - start.time)
     }
 
     override fun onMissedCall(ctx: Context, number: String?, start: Date) {
-        EventBus.event.value = AppEvent.StopServiceEvent
-        NotificationManagerCompat.from(ctx)
-            .cancel(NOTIFICATION_ID)
+        ctx.stopService(Intent(ctx, NotifierService::class.java))
         sendRequest(ctx, number!!, "declined", "incoming", 0)
     }
 

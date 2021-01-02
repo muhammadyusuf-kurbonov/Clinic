@@ -17,4 +17,8 @@
     <string name="not_avaible">N/A</string>
     <string name="ready">Ready!</string>
     <string name="logout">Logout</string>
+    <string name="logging_in_caption">Wait please …</string>
+    <string name="login_success">Login success</string>
+    <string name="login_failed">Login failed. Wrong login or password</string>
+    <string name="no_connection_caption">No internet connection</string>
 </resources>

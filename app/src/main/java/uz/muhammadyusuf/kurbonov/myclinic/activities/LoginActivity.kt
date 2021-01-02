@@ -3,43 +3,52 @@ package uz.muhammadyusuf.kurbonov.myclinic.activities
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatButton
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.get
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.eventbus.AppEvent
-import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
+import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityAuthBinding
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
+import java.net.InetAddress
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class LoginActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityAuthBinding
+
     @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_auth)
+        binding = ActivityAuthBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if (BuildConfig.DEBUG)
             Timber.plant(Timber.DebugTree())
 
-        findViewById<AppCompatButton>(R.id.btn_login)
+        binding.btnLogin
             .setOnClickListener {
+                setStatus(AuthResult.STARTED)
+
                 val authService = get<APIService>()
                 lifecycleScope.launch {
+
+                    if (!checkInternetConnection()) {
+                        setStatus(AuthResult.NO_CONNECTION)
+                        return@launch
+                    }
+
                     val response = authService.authenticate(
                         AuthRequest(
-                            email = findViewById<EditText>(R.id.input_email).text.toString(),
-                            password = findViewById<EditText>(R.id.input_password).text.toString()
+                            email = binding.inputEmail.text.toString(),
+                            password = binding.inputPassword.text.toString()
                         )
                     )
 
@@ -47,33 +56,10 @@ class LoginActivity : AppCompatActivity() {
                         get<SharedPreferences>().edit()
                             .putString("token", response.body()?.accessToken)
                             .apply()
-                        EventBus.event.value = AppEvent.AuthSucceedEvent
-                        Timber.d("New token is ${response.body()?.accessToken}")
+                        setStatus(AuthResult.SUCCESS)
                     } else {
-                        Timber.d("Error is $response")
-                        EventBus.event.value = AppEvent.AuthFailedEvent
+                        setStatus(AuthResult.FAILED)
                     }
-
-                    val view = LayoutInflater.from(this@LoginActivity)
-                        .inflate(R.layout.auth_result, null, false)
-                    view.findViewById<ImageView>(R.id.imgStatus).setImageResource(
-                        if (response.isSuccessful) R.drawable.ic_baseline_check_circle_24
-                        else R.drawable.ic_baseline_cancel_24
-                    )
-                    view.findViewById<TextView>(R.id.tvStatus).text =
-                        if (response.isSuccessful) "Login success"
-                        else "Error occurred"
-
-                    Snackbar.make(
-                        findViewById(R.id.container),
-                        "Template",
-                        Snackbar.LENGTH_LONG
-                    ).apply {
-                        val snackbarLayout = this.view as Snackbar.SnackbarLayout
-                        snackbarLayout.removeAllViews()
-                        snackbarLayout.addView(view, MATCH_PARENT, MATCH_PARENT)
-                    }
-                        .show()
 
                     if (response.isSuccessful) {
                         delay(1500)
@@ -82,4 +68,51 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
     }
+
+    private fun setStatus(authResult: AuthResult) {
+        with(binding) {
+            llStatus.visibility = VISIBLE
+            when (authResult) {
+                AuthResult.STARTED -> {
+                    imgStatus.setImageResource(R.drawable.ic_baseline_access_time_24)
+                    tvStatus.text = getString(R.string.logging_in_caption)
+                    btnLogin.isEnabled = false
+                }
+                AuthResult.SUCCESS -> {
+                    imgStatus.setImageResource(R.drawable.ic_baseline_check_circle_24)
+                    tvStatus.text = getString(R.string.login_success)
+                }
+                AuthResult.FAILED -> {
+                    imgStatus.setImageResource(R.drawable.ic_baseline_cancel_24)
+                    tvStatus.text = getString(R.string.login_failed)
+                    btnLogin.isEnabled = true
+                }
+                AuthResult.NO_CONNECTION -> {
+                    imgStatus.setImageResource(R.drawable.ic_baseline_cancel_24)
+                    tvStatus.text = getString(R.string.no_connection_caption)
+                    btnLogin.isEnabled = true
+                }
+            }
+        }
+    }
+
+    private enum class AuthResult {
+        STARTED, SUCCESS, FAILED, NO_CONNECTION
+    }
+
+
+    private suspend fun checkInternetConnection() =
+        withContext(Dispatchers.IO) {
+            suspendCoroutine<Boolean> {
+                try {
+                    @Suppress("BlockingMethodInNonBlockingContext")
+                    val ipAddress = InetAddress.getByName("google.com")
+                    //You can replace it with your name
+                    it.resume(!ipAddress.equals(""))
+                } catch (e: Exception) {
+                    it.resume(false)
+                    Timber.e(e)
+                }
+            }
+        }
 }

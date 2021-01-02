@@ -10,14 +10,11 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import org.koin.android.ext.android.inject
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.MainActivity
-import uz.muhammadyusuf.kurbonov.myclinic.eventbus.AppEvent
-import uz.muhammadyusuf.kurbonov.myclinic.eventbus.EventBus
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_PHONE
@@ -36,14 +33,17 @@ class NotifierService : JobIntentService() {
 
     override fun onHandleWork(intent: Intent) {
         Timber.tag("lifecycle").d("onHandle work start")
-
     }
 
     private lateinit var phoneNumber: String
 
     override fun onDestroy() {
-        super.onDestroy()
+        NotificationManagerCompat.from(this@NotifierService)
+            .cancel(NOTIFICATION_ID)
+        stopForeground(false)
+        serviceJob.cancel()
         Timber.tag("lifecycle").d("Destroyed")
+        super.onDestroy()
     }
 
     @SuppressLint("UnspecifiedImmutableFlag")
@@ -60,7 +60,6 @@ class NotifierService : JobIntentService() {
 
         val notification = NotificationCompat.Builder(this, "clinic_info")
             .apply {
-
 
                 setContent(view)
 
@@ -82,25 +81,9 @@ class NotifierService : JobIntentService() {
                 view.setOnClickPendingIntent(R.id.btnCard, pendingIntent)
                 priority = NotificationCompat.PRIORITY_MAX
             }
-
-        EventBus.event.value = AppEvent.NoEvent
-
         startForeground(NOTIFICATION_ID, notification.build())
         view.setTextViewText(R.id.tvName, getString(R.string.searching_text))
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification.build())
-
-        serviceScope.launch {
-            EventBus.event.collect {
-                if (it is AppEvent.StopServiceEvent) {
-                    NotificationManagerCompat.from(this@NotifierService)
-                        .cancel(NOTIFICATION_ID)
-                    stopForeground(false)
-                    stopSelf()
-                    serviceJob.cancel()
-                    Timber.d("Service job complete")
-                }
-            }
-        }
 
         var states: SearchStates = SearchStates.Loading
 
@@ -197,7 +180,7 @@ class NotifierService : JobIntentService() {
             Timber.tag("lifecycle").d("Work stop")
         }
 
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     override fun onCreate() {

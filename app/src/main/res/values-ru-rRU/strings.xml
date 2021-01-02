@@ -17,4 +17,8 @@
     <string name="not_avaible">Нет данных</string>
     <string name="ready">Готово</string>
     <string name="logout">Выйти</string>
+    <string name="logging_in_caption">Подождите …</string>
+    <string name="login_success">Вход успешен</string>
+    <string name="login_failed">Вход не удался. Неверный логин или пароль</string>
+    <string name="no_connection_caption">Нет соединения</string>
 </resources>

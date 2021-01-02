@@ -29,8 +29,12 @@ class SendStatusRequest(appContext: Context, workerParams: WorkerParameters) :
             runBlocking {
                 val customerId = apiService.searchCustomer(customerPhone, withAppointments = 0)
                     .body()?.data?.get(0)?._id ?: throw IllegalArgumentException()
-                apiService.communications(customerId, status, duration, type)
-                Result.success()
+                val communications = apiService.communications(customerId, status, duration, type)
+                Timber.d("$communications")
+                if (communications.isSuccessful)
+                    Result.success()
+                else
+                    Result.failure()
             }
         } catch (timeout: SocketTimeoutException) {
             Result.retry()
