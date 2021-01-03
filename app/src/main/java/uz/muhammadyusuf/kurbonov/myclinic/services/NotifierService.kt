@@ -139,10 +139,14 @@ class NotifierService : JobIntentService() {
                     val contact = (states as SearchStates.Found).contact
                     setTextViewText(R.id.tvPhone, contact.phoneNumber)
                     setTextViewText(R.id.tvBalance, getString(R.string.balance) + contact.balance)
-                    setImageViewBitmap(
-                        R.id.imgAvatar,
-                        Picasso.get().load(contact.avatarLink).get()
-                    )
+                    try {
+                        setImageViewBitmap(
+                            R.id.imgAvatar,
+                            Picasso.get().load(contact.avatarLink).get()
+                        )
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
 
                     val lastAppointmentText = if (contact.lastAppointment != null) {
                         val lastAppointment = contact.lastAppointment!!

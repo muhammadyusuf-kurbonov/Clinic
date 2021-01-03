@@ -52,6 +52,8 @@ class LoginActivity : AppCompatActivity() {
                         )
                     )
 
+                    Timber.d("$response")
+
                     if (response.isSuccessful) {
                         get<SharedPreferences>().edit()
                             .putString("token", response.body()?.accessToken)

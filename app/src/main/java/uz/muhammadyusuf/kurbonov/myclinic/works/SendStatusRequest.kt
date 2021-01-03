@@ -7,6 +7,8 @@ import kotlinx.coroutines.runBlocking
 import org.koin.java.KoinJavaComponent.get
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
+import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationInfo
+import java.net.SocketException
 import java.net.SocketTimeoutException
 
 class SendStatusRequest(appContext: Context, workerParams: WorkerParameters) :
@@ -29,7 +31,8 @@ class SendStatusRequest(appContext: Context, workerParams: WorkerParameters) :
             runBlocking {
                 val customerId = apiService.searchCustomer(customerPhone, withAppointments = 0)
                     .body()?.data?.get(0)?._id ?: throw IllegalArgumentException()
-                val communications = apiService.communications(customerId, status, duration, type)
+                val communications =
+                    apiService.communications(CommunicationInfo(customerId, status, duration, type))
                 Timber.d("$communications")
                 if (communications.isSuccessful)
                     Result.success()
@@ -37,6 +40,8 @@ class SendStatusRequest(appContext: Context, workerParams: WorkerParameters) :
                     Result.failure()
             }
         } catch (timeout: SocketTimeoutException) {
+            Result.retry()
+        } catch (timeout: SocketException) {
             Result.retry()
         } catch (e: Exception) {
             Timber.e(e)

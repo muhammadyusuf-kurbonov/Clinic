@@ -40,7 +40,9 @@ class MainActivity : AppCompatActivity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                         Manifest.permission.FOREGROUND_SERVICE
                     else "",
-                    "android.permission.READ_PRIVILEGED_PHONE_STATE"
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.RECORD_AUDIO
                 ), 241
             )
         } else {

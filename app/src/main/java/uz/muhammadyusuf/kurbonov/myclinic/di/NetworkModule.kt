@@ -9,11 +9,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 
+
 val networkModule = module {
     single<APIService> {
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("http://app.32desk.com:3030")
+            .baseUrl("http://stg.32desk.com:3030/")
             .client(get())
             .build()
             .create(APIService::class.java)
@@ -21,11 +22,13 @@ val networkModule = module {
     single {
         OkHttpClient.Builder()
             .addInterceptor {
-                Timber.tag("request").d(it.request().toString())
+                val url = it.request().toString()
+                Timber.tag("request").d(url)
                 val newRequest: Request = it.request().newBuilder()
                     .addHeader("Authorization", "Bearer ${get<String>(named("token"))}")
                     .build()
                 it.proceed(newRequest)
+
             }
             .build()
     }

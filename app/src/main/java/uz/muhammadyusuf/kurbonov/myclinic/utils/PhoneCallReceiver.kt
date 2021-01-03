@@ -5,13 +5,22 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.EXTRA_PHONE_NUMBER
 import android.telephony.TelephonyManager
-import timber.log.Timber
 import java.util.*
+import java.util.concurrent.Executors
 
 
 abstract class PhoneCallReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
 
+    override fun onReceive(context: Context, intent: Intent) {
+//        Timber.d(
+//            "onReceive() called with: context = $context,\n" +
+//                    " intent = $intent,\n" +
+//                    " extras = ${intent.extras!!.run {
+//                        keySet().joinToString{
+//                            it + ": " + get(it)
+//                        }
+//                    }}"
+//        )
         //We listen to two intents.  The new outgoing call only tells us of an outgoing call.  We use it to get the number.
         if (intent.action == "android.intent.action.NEW_OUTGOING_CALL") {
             savedNumber = intent.extras!!.getString(EXTRA_PHONE_NUMBER)
@@ -20,10 +29,8 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
             val number = intent.extras!!.getString(TelephonyManager.EXTRA_INCOMING_NUMBER)
             if (number != null)
                 savedNumber = number
-            else {
-                Timber.d("number is null")
+            else
                 return
-            }
             var state = 0
             when (stateStr) {
                 TelephonyManager.EXTRA_STATE_IDLE -> {
@@ -36,7 +43,9 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
                     state = TelephonyManager.CALL_STATE_RINGING
                 }
             }
-            onCallStateChanged(context, state, savedNumber)
+            executors.submit {
+                onCallStateChanged(context, state, savedNumber)
+            }
         }
     }
 
@@ -64,10 +73,8 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
     //Incoming call-  goes from IDLE to RINGING when it rings, to OFFHOOK when it's answered, to IDLE when its hung up
     //Outgoing call-  goes from IDLE to OFFHOOK when it dials out, to IDLE when hung up
     private fun onCallStateChanged(context: Context, state: Int, number: String?) {
-        if (lastState == state) {
-            //No change, debounce extras
+        if (state == lastState)
             return
-        }
         when (state) {
             TelephonyManager.CALL_STATE_RINGING -> {
                 isIncoming = true
@@ -107,10 +114,14 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
 
     companion object {
         //The receiver will be recreated whenever android feels like it.  We need a static variable to remember data between instantiations
+        @JvmStatic
         private var lastState = TelephonyManager.CALL_STATE_IDLE
         private var callStartTime: Date? = null
         private var isIncoming = false
         private var savedNumber //because the passed incoming is only valid in ringing
                 : String? = null
+
+        private val executors = Executors.newSingleThreadExecutor()
+
     }
 }
