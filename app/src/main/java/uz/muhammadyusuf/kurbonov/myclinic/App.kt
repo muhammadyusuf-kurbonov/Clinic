@@ -7,6 +7,10 @@ import uz.muhammadyusuf.kurbonov.myclinic.di.coreModule
 import uz.muhammadyusuf.kurbonov.myclinic.di.networkModule
 
 class App : Application() {
+    companion object {
+        val objLock = Any()
+    }
+
     override fun onCreate() {
         super.onCreate()
         startKoin {

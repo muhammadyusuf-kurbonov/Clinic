@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        if (BuildConfig.DEBUG)
+        if (BuildConfig.DEBUG && Timber.treeCount() == 0)
             Timber.plant(Timber.DebugTree())
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

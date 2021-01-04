@@ -30,7 +30,11 @@ class SendStatusRequest(appContext: Context, workerParams: WorkerParameters) :
             val apiService = get(APIService::class.java)
             runBlocking {
                 val customerId = apiService.searchCustomer(customerPhone, withAppointments = 0)
-                    .body()?.data?.get(0)?._id ?: throw IllegalArgumentException()
+                    .body()?.data?.get(0)?._id
+                if (customerId == null) {
+                    Timber.d("Unknown user")
+                    return@runBlocking Result.success()
+                }
                 val communications =
                     apiService.communications(CommunicationInfo(customerId, status, duration, type))
                 Timber.d("$communications")

@@ -30,7 +30,7 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (BuildConfig.DEBUG)
+        if (BuildConfig.DEBUG && Timber.treeCount() == 0)
             Timber.plant(Timber.DebugTree())
 
         binding.btnLogin

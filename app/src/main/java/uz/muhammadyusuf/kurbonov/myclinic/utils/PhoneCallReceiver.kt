@@ -5,46 +5,41 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.EXTRA_PHONE_NUMBER
 import android.telephony.TelephonyManager
+import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 import java.util.*
-import java.util.concurrent.Executors
 
 
 abstract class PhoneCallReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-//        Timber.d(
-//            "onReceive() called with: context = $context,\n" +
-//                    " intent = $intent,\n" +
-//                    " extras = ${intent.extras!!.run {
-//                        keySet().joinToString{
-//                            it + ": " + get(it)
-//                        }
-//                    }}"
-//        )
         //We listen to two intents.  The new outgoing call only tells us of an outgoing call.  We use it to get the number.
-        if (intent.action == "android.intent.action.NEW_OUTGOING_CALL") {
-            savedNumber = intent.extras!!.getString(EXTRA_PHONE_NUMBER)
-        } else {
-            val stateStr = intent.extras!!.getString(TelephonyManager.EXTRA_STATE)
-            val number = intent.extras!!.getString(TelephonyManager.EXTRA_INCOMING_NUMBER)
-            if (number != null)
-                savedNumber = number
-            else
-                return
-            var state = 0
-            when (stateStr) {
-                TelephonyManager.EXTRA_STATE_IDLE -> {
-                    state = TelephonyManager.CALL_STATE_IDLE
+
+        runBlocking {
+            Timber.d("onReceive() called on $this")
+            if (intent.action == "android.intent.action.NEW_OUTGOING_CALL") {
+                savedNumber = intent.extras!!.getString(EXTRA_PHONE_NUMBER)
+            } else {
+                val stateStr = intent.extras!!.getString(TelephonyManager.EXTRA_STATE)
+                val number = intent.extras!!.getString(TelephonyManager.EXTRA_INCOMING_NUMBER)
+                if (number != null)
+                    savedNumber = number
+                else
+                    return@runBlocking
+                var state = 0
+                when (stateStr) {
+                    TelephonyManager.EXTRA_STATE_IDLE -> {
+                        state = TelephonyManager.CALL_STATE_IDLE
+                    }
+                    TelephonyManager.EXTRA_STATE_OFFHOOK -> {
+                        state = TelephonyManager.CALL_STATE_OFFHOOK
+                    }
+                    TelephonyManager.EXTRA_STATE_RINGING -> {
+                        state = TelephonyManager.CALL_STATE_RINGING
+                    }
                 }
-                TelephonyManager.EXTRA_STATE_OFFHOOK -> {
-                    state = TelephonyManager.CALL_STATE_OFFHOOK
-                }
-                TelephonyManager.EXTRA_STATE_RINGING -> {
-                    state = TelephonyManager.CALL_STATE_RINGING
-                }
-            }
-            executors.submit {
                 onCallStateChanged(context, state, savedNumber)
+
             }
         }
     }
@@ -72,9 +67,11 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
     //Deals with actual events
     //Incoming call-  goes from IDLE to RINGING when it rings, to OFFHOOK when it's answered, to IDLE when its hung up
     //Outgoing call-  goes from IDLE to OFFHOOK when it dials out, to IDLE when hung up
+    @Synchronized
     private fun onCallStateChanged(context: Context, state: Int, number: String?) {
         if (state == lastState)
             return
+        Timber.d("LastState is $lastState - new State is $state")
         when (state) {
             TelephonyManager.CALL_STATE_RINGING -> {
                 isIncoming = true
@@ -112,16 +109,14 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
         lastState = state
     }
 
+
     companion object {
-        //The receiver will be recreated whenever android feels like it.  We need a static variable to remember data between instantiations
-        @JvmStatic
-        private var lastState = TelephonyManager.CALL_STATE_IDLE
         private var callStartTime: Date? = null
         private var isIncoming = false
         private var savedNumber //because the passed incoming is only valid in ringing
                 : String? = null
 
-        private val executors = Executors.newSingleThreadExecutor()
-
+        @Volatile
+        private var lastState = TelephonyManager.CALL_STATE_IDLE
     }
 }
