@@ -17,7 +17,6 @@ interface APIService {
     @GET("/customers")
     suspend fun searchCustomer(
         @Query("phone") phone: String,
-        @Query("registerCall") registerCall: Boolean = false,
         @Query("withAppointments") withAppointments: Int = 1,
         @Query("noMeta") noMeta: Int = 1
     ): Response<CustomerDTO>

@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.media.MediaRecorder
 import android.widget.RemoteViews
 import androidx.core.app.JobIntentService
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.*
+import com.aykuttasil.callrecord.CallRecord
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
@@ -20,6 +22,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_PHONE
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.NOTIFICATION_ID
+import uz.muhammadyusuf.kurbonov.myclinic.utils.formatAsDate
 import uz.muhammadyusuf.kurbonov.myclinic.utils.reformatDate
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
 import java.net.SocketTimeoutException
@@ -31,13 +34,13 @@ class NotifierService : JobIntentService() {
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(serviceJob + Dispatchers.Main)
 
-
     override fun onHandleWork(intent: Intent) {
         Timber.tag("lifecycle").d("onHandle work start")
     }
 
     private lateinit var phoneNumber: String
 
+    private lateinit var callRecord: CallRecord
     override fun onDestroy() {
         NotificationManagerCompat.from(this@NotifierService)
             .cancel(NOTIFICATION_ID)
@@ -58,6 +61,20 @@ class NotifierService : JobIntentService() {
         else
             return super.onStartCommand(intent, flags, startId)
         val view = RemoteViews(packageName, R.layout.notification_view)
+
+
+        callRecord = CallRecord.Builder(this)
+            .setRecordFileName("$phoneNumber-${System.currentTimeMillis().formatAsDate()}-income")
+            .setRecordDirName("records")
+            .setRecordDirPath(getExternalFilesDir("Music")!!.path) // optional & default value
+            .setAudioEncoder(MediaRecorder.AudioEncoder.AAC) // optional & default value
+            .setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS) // optional & default value
+            .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION) // optional & default value
+            .setShowSeed(true) // optional & default value ->Ex: RecordFileName_incoming.amr || RecordFileName_outgoing.amr
+            .build()
+
+        callRecord.enableSaveFile()
+        callRecord.startCallRecordService()
 
         val notification = NotificationCompat.Builder(this, "clinic_info")
             .apply {
@@ -151,7 +168,7 @@ class NotifierService : JobIntentService() {
 
                     val lastAppointmentText = if (contact.lastAppointment != null) {
                         val lastAppointment = contact.lastAppointment!!
-                        "${lastAppointment.date} - ${lastAppointment.doctor.name} - ${lastAppointment.diagnosys}"
+                        "${lastAppointment.date} - ${lastAppointment.doctor?.name ?: "None"} - ${lastAppointment.diagnosys}"
                     } else getString(R.string.not_avaible)
 
                     setTextViewText(R.id.tvLastVisit, lastAppointmentText)
@@ -195,6 +212,7 @@ class NotifierService : JobIntentService() {
 
     override fun onStopCurrentWork(): Boolean {
         Timber.tag("lifecycle").d("Stop Work")
+        callRecord.stopCallReceiver()
         return super.onStopCurrentWork()
     }
 }

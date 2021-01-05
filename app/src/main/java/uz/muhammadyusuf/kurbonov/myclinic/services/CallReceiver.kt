@@ -11,13 +11,13 @@ import uz.muhammadyusuf.kurbonov.myclinic.works.SendStatusRequest
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+
 class CallReceiver : PhoneCallReceiver() {
 
     init {
         if (BuildConfig.DEBUG && Timber.treeCount() == 0)
             Timber.plant(Timber.DebugTree())
     }
-
     companion object {
         const val NOTIFICATION_ID = 155
         const val EXTRA_PHONE = "phone"
@@ -36,6 +36,8 @@ class CallReceiver : PhoneCallReceiver() {
 
     override fun onIncomingCallReceived(ctx: Context, number: String?, start: Date) {
         setFlag(false)
+
+
         Timber.d("onIncomingCallReceived $ctx,$number $start")
         if (number.isNullOrEmpty()) {
             return
@@ -47,6 +49,7 @@ class CallReceiver : PhoneCallReceiver() {
         } else {
             ctx.startService(serviceIntent)
         }
+
     }
 
     override fun onIncomingCallAnswered(ctx: Context, number: String?, start: Date) {
@@ -136,7 +139,7 @@ class CallReceiver : PhoneCallReceiver() {
         data.putString(SendStatusRequest.INPUT_STATUS, status)
         data.putLong(
             SendStatusRequest.INPUT_DURATION,
-            TimeUnit.MILLISECONDS.toSeconds(duration)
+            duration
         )
         data.putString(SendStatusRequest.INPUT_TYPE, type)
         val constraint = Constraints.Builder()

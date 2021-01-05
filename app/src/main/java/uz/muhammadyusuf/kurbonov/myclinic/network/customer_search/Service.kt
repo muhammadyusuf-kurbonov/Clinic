@@ -4,8 +4,8 @@ data class Service(
     val duration: Int,
     val quantity: Int,
     val startAt: String,
-    val treatment: Treatment,
+    val treatment: Treatment?,
     val treatmentId: String,
-    val user: User,
+    val user: User?,
     val userId: String
 )
