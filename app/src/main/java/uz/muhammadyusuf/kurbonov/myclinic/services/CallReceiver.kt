@@ -34,6 +34,7 @@ class CallReceiver : PhoneCallReceiver() {
         }
     }
 
+
     override fun onIncomingCallReceived(ctx: Context, number: String?, start: Date) {
         setFlag(false)
 
@@ -42,13 +43,7 @@ class CallReceiver : PhoneCallReceiver() {
         if (number.isNullOrEmpty()) {
             return
         }
-        val serviceIntent = Intent(ctx, NotifierService::class.java)
-        serviceIntent.putExtra(EXTRA_PHONE, number)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ctx.startForegroundService(serviceIntent)
-        } else {
-            ctx.startService(serviceIntent)
-        }
+        startService(ctx, number)
 
     }
 
@@ -62,9 +57,7 @@ class CallReceiver : PhoneCallReceiver() {
         if (isSent)
             return
         else setFlag(true)
-        Timber.d(
-            "onIncomingCallEnded() called with: ctx = $ctx, number = $number, start = $start, end = $end"
-        )
+
         sendRequest(
             ctx,
             number!!,
@@ -77,28 +70,17 @@ class CallReceiver : PhoneCallReceiver() {
 
     override fun onOutgoingCallStarted(ctx: Context, number: String?, start: Date) {
         setFlag(false)
-        Timber.d(
-            "onOutgoingCallStarted() called with: ctx = $ctx, number = $number, start = $start"
-        )
+
         if (number.isNullOrEmpty())
             return
-        val serviceIntent = Intent(ctx, NotifierService::class.java)
-        serviceIntent.putExtra(EXTRA_PHONE, number)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ctx.startForegroundService(serviceIntent)
-        } else {
-            ctx.startService(serviceIntent)
-        }
+        startService(ctx, number)
     }
 
     override fun onOutgoingCallEnded(ctx: Context, number: String?, start: Date, end: Date) {
-
         if (isSent)
             return
         else setFlag(true)
-        Timber.d(
-            "onOutgoingCallEnded() called with: ctx = $ctx, number = $number, start = $start, end = $end"
-        )
+
         sendRequest(
             ctx,
             number!!,
@@ -106,6 +88,8 @@ class CallReceiver : PhoneCallReceiver() {
             "outgoing",
             TimeUnit.MILLISECONDS.toSeconds(end.time - start.time)
         )
+
+
         ctx.stopService(Intent(ctx, NotifierService::class.java))
     }
 
@@ -125,15 +109,6 @@ class CallReceiver : PhoneCallReceiver() {
         type: String,
         duration: Long
     ) {
-        Timber.d(
-            "sendRequest() called with:\n" +
-                    " phone = $phone\n," +
-                    " status = $status\n," +
-                    " type = $type\n," +
-                    " duration = $duration\n" +
-                    " on thread ${Thread.currentThread()}"
-        )
-
         val data = Data.Builder()
         data.putString(SendStatusRequest.INPUT_PHONE, phone)
         data.putString(SendStatusRequest.INPUT_STATUS, status)
@@ -157,5 +132,15 @@ class CallReceiver : PhoneCallReceiver() {
                 request
             )
 
+    }
+
+    private fun startService(ctx: Context, number: String?) {
+        val serviceIntent = Intent(ctx, NotifierService::class.java)
+        serviceIntent.putExtra(EXTRA_PHONE, number)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ctx.startForegroundService(serviceIntent)
+        } else {
+            ctx.startService(serviceIntent)
+        }
     }
 }

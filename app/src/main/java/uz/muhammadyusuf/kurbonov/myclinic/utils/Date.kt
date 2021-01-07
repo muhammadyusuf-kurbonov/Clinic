@@ -24,19 +24,14 @@ fun String.reformatDate(
     oldTimeZone: TimeZone = TimeZone.getDefault(),
     newTimeZone: TimeZone = TimeZone.getDefault()
 ): String {
-    val result: String =
-        try {
-            val date = SimpleDateFormat(oldFormat, Locale.getDefault())
-                .apply {
-                    timeZone = oldTimeZone
-                }
-                .parse(this)
-
-            date?.time?.formatAsDate(newFormat, newTimeZone)
-                ?: throw IllegalArgumentException("Wrong pattern. Check it")
-        } catch (e: Exception) {
-            this
+    val date = SimpleDateFormat(oldFormat, Locale.getDefault())
+        .apply {
+            timeZone = oldTimeZone
         }
+        .parse(this)
+
+    val result = date?.time?.formatAsDate(newFormat, newTimeZone)
+        ?: throw IllegalArgumentException("Wrong pattern. Check it")
     Timber.d("$this => $result")
     return result
 }

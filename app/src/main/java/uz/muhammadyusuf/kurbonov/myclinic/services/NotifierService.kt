@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.media.MediaRecorder
 import android.widget.RemoteViews
 import androidx.core.app.JobIntentService
 import androidx.core.app.NotificationCompat
@@ -22,8 +21,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_PHONE
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.NOTIFICATION_ID
-import uz.muhammadyusuf.kurbonov.myclinic.utils.formatAsDate
-import uz.muhammadyusuf.kurbonov.myclinic.utils.reformatDate
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -41,6 +38,7 @@ class NotifierService : JobIntentService() {
     private lateinit var phoneNumber: String
 
     private lateinit var callRecord: CallRecord
+
     override fun onDestroy() {
         NotificationManagerCompat.from(this@NotifierService)
             .cancel(NOTIFICATION_ID)
@@ -61,20 +59,6 @@ class NotifierService : JobIntentService() {
         else
             return super.onStartCommand(intent, flags, startId)
         val view = RemoteViews(packageName, R.layout.notification_view)
-
-
-        callRecord = CallRecord.Builder(this)
-            .setRecordFileName("$phoneNumber-${System.currentTimeMillis().formatAsDate()}-income")
-            .setRecordDirName("records")
-            .setRecordDirPath(getExternalFilesDir("Music")!!.path) // optional & default value
-            .setAudioEncoder(MediaRecorder.AudioEncoder.AAC) // optional & default value
-            .setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS) // optional & default value
-            .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION) // optional & default value
-            .setShowSeed(true) // optional & default value ->Ex: RecordFileName_incoming.amr || RecordFileName_outgoing.amr
-            .build()
-
-        callRecord.enableSaveFile()
-        callRecord.startCallRecordService()
 
         val notification = NotificationCompat.Builder(this, "clinic_info")
             .apply {
@@ -175,10 +159,7 @@ class NotifierService : JobIntentService() {
                     val nextAppointmentText = if (contact.nextAppointment != null) {
                         val nextAppointment = contact.nextAppointment!!
                         "${
-                            nextAppointment.date.reformatDate(
-                                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-                                "dd MMM yyyy HH:mm"
-                            )
+                            nextAppointment.date
                         } - ${nextAppointment.doctor} - ${nextAppointment.diagnosys}"
                     } else getString(R.string.not_avaible)
 
