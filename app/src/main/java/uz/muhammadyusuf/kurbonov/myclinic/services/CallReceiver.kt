@@ -21,6 +21,7 @@ class CallReceiver : PhoneCallReceiver() {
     companion object {
         const val NOTIFICATION_ID = 155
         const val EXTRA_PHONE = "phone"
+        const val EXTRA_TYPE = "type"
 
         @JvmField
         @Volatile
@@ -43,7 +44,7 @@ class CallReceiver : PhoneCallReceiver() {
         if (number.isNullOrEmpty()) {
             return
         }
-        startService(ctx, number)
+        startService(ctx, number, "incoming")
 
     }
 
@@ -73,7 +74,7 @@ class CallReceiver : PhoneCallReceiver() {
 
         if (number.isNullOrEmpty())
             return
-        startService(ctx, number)
+        startService(ctx, number, "outgoing")
     }
 
     override fun onOutgoingCallEnded(ctx: Context, number: String?, start: Date, end: Date) {
@@ -134,9 +135,10 @@ class CallReceiver : PhoneCallReceiver() {
 
     }
 
-    private fun startService(ctx: Context, number: String?) {
+    private fun startService(ctx: Context, number: String?, type: String) {
         val serviceIntent = Intent(ctx, NotifierService::class.java)
         serviceIntent.putExtra(EXTRA_PHONE, number)
+        serviceIntent.putExtra(EXTRA_TYPE, type)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ctx.startForegroundService(serviceIntent)
         } else {

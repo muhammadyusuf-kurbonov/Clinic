@@ -20,6 +20,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.activities.MainActivity
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_PHONE
+import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.EXTRA_TYPE
 import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.NOTIFICATION_ID
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
 import java.net.SocketTimeoutException
@@ -60,6 +61,8 @@ class NotifierService : JobIntentService() {
             return super.onStartCommand(intent, flags, startId)
         val view = RemoteViews(packageName, R.layout.notification_view)
 
+        val type = intent.extras?.getString(EXTRA_TYPE, "none")
+
         val notification = NotificationCompat.Builder(this, "clinic_info")
             .apply {
 
@@ -84,6 +87,13 @@ class NotifierService : JobIntentService() {
                 priority = NotificationCompat.PRIORITY_MAX
             }
         startForeground(NOTIFICATION_ID, notification.build())
+        when (type) {
+            "incoming" -> view.setImageViewResource(
+                R.id.imgType,
+                R.drawable.ic_baseline_phone_in_24
+            )
+            "outgoing" -> view.setImageViewResource(R.id.imgType, R.drawable.ic_phone_outgoing)
+        }
         view.setTextViewText(R.id.tvName, getString(R.string.searching_text))
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification.build())
 
