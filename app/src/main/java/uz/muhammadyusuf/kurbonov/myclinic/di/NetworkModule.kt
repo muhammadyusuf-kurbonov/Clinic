@@ -14,7 +14,7 @@ val networkModule = module {
     single<APIService> {
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("http://stg.32desk.com:3030/")
+            .baseUrl("http://app.32desk.com:3030/")
             .client(get())
             .build()
             .create(APIService::class.java)

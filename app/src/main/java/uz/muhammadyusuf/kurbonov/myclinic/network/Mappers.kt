@@ -23,7 +23,7 @@ fun CustomerDTO.toContact(): Contact {
                     user.firstName + " " + user.lastName,
                     user.avatar.url
                 ) else null,
-            last.services[0].treatment?.service?.label ?: "N/A"
+            last.services[0].treatment?.service?.label ?: ""
         )
     } else null
     val next = this.appointments[0].next
@@ -40,7 +40,7 @@ fun CustomerDTO.toContact(): Contact {
                     user.firstName + " " + user.lastName,
                     user.avatar.url
                 ) else null,
-            next.services[0].treatment?.service?.label ?: "N/A"
+            next.services[0].treatment?.service?.label ?: ""
         )
     } else null
     return Contact(

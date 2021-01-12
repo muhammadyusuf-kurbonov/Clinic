@@ -152,7 +152,7 @@ class NotifierService : JobIntentService() {
 
                     val lastAppointmentText = if (contact.lastAppointment != null) {
                         val lastAppointment = contact.lastAppointment!!
-                        "${lastAppointment.date} - ${lastAppointment.doctor?.name ?: "None"} - ${lastAppointment.diagnosys}"
+                        "${lastAppointment.date} - ${lastAppointment.doctor?.name ?: ""} - ${lastAppointment.diagnosys}"
                     } else getString(R.string.not_avaible)
 
                     setTextViewText(R.id.tvLastVisit, lastAppointmentText)

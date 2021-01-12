@@ -14,7 +14,7 @@
     <string name="not_found">Nobody was found</string>
     <string name="auth_text">Authenticating …</string>
     <string name="balance">"Balance: "</string>
-    <string name="not_avaible">N/A</string>
+    <string name="not_avaible" />
     <string name="ready">Ready!</string>
     <string name="logout">Logout</string>
     <string name="logging_in_caption">Wait please …</string>

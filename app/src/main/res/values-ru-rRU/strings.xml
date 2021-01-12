@@ -14,7 +14,7 @@
     <string name="not_found">Не найдено</string>
     <string name="auth_text">Вход …</string>
     <string name="balance">"Баланс: "</string>
-    <string name="not_avaible">Нет данных</string>
+    <string name="not_avaible" />
     <string name="ready">Готово</string>
     <string name="logout">Выйти</string>
     <string name="logging_in_caption">Подождите …</string>

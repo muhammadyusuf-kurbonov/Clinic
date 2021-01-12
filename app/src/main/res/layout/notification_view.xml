@@ -108,6 +108,7 @@
         android:layout_height="wrap_content"
         android:background="@android:color/white"
         android:elevation="0dp"
+        android:visibility="gone"
         android:text="@string/open_medical_card"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
         android:textColor="@color/primary" />
