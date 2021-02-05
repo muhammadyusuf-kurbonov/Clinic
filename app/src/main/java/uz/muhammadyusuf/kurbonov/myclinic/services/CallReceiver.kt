@@ -3,11 +3,10 @@ package uz.muhammadyusuf.kurbonov.myclinic.services
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.work.*
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
+import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
-import uz.muhammadyusuf.kurbonov.myclinic.works.SendStatusRequest
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -90,7 +89,6 @@ class CallReceiver : PhoneCallReceiver() {
             TimeUnit.MILLISECONDS.toSeconds(end.time - start.time)
         )
 
-
         ctx.stopService(Intent(ctx, NotifierService::class.java))
     }
 
@@ -110,29 +108,19 @@ class CallReceiver : PhoneCallReceiver() {
         type: String,
         duration: Long
     ) {
-        val data = Data.Builder()
-        data.putString(SendStatusRequest.INPUT_PHONE, phone)
-        data.putString(SendStatusRequest.INPUT_STATUS, status)
-        data.putLong(
-            SendStatusRequest.INPUT_DURATION,
-            duration
-        )
-        data.putString(SendStatusRequest.INPUT_TYPE, type)
-        val constraint = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        val request = OneTimeWorkRequestBuilder<SendStatusRequest>()
-            .setInputData(data.build())
-            .setConstraints(constraint)
-            .addTag("sender")
-            .build()
-        WorkManager.getInstance(context)
-            .enqueueUniqueWork(
-                "sender",
-                ExistingWorkPolicy.REPLACE,
-                request
+        val serviceIntent = Intent(context, SenderService::class.java).apply {
+            putExtra(
+                "data", CommunicationDataHolder(
+                    phone, status, type, duration
+                )
             )
-
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent)
+        } else {
+            context.startService(serviceIntent)
+        }
+        Timber.d("Sending ...")
     }
 
     private fun startService(ctx: Context, number: String?, type: String) {

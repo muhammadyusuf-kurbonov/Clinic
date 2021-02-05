@@ -14,11 +14,19 @@
     <string name="not_found">Nobody was found</string>
     <string name="auth_text">Authenticating …</string>
     <string name="balance">"Balance: "</string>
-    <string name="not_avaible" />
+    <string name="not_avaible" translatable="false">" "</string>
     <string name="ready">Ready!</string>
     <string name="logout">Logout</string>
     <string name="logging_in_caption">Wait please …</string>
     <string name="login_success">Login success</string>
     <string name="login_failed">Login failed. Wrong login or password</string>
     <string name="no_connection_caption">No internet connection</string>
+    <string name="send_caption">Send</string>
+    <string name="description_hint">Description</string>
+    <string name="explain_title">Specify the purpose of the call</string>
+    <string name="additional_info">Additional information</string>
+    <string name="others">Other</string>
+    <string name="address_label">Ask address</string>
+    <string name="book_appointment">Make an appointment</string>
+    <string name="connection_error">Connection error</string>
 </resources>

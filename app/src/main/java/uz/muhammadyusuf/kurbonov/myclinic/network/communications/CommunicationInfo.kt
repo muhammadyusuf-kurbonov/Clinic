@@ -8,5 +8,6 @@ data class CommunicationInfo(
     val status: String,
     val duration: Long,
     val type: String,
-    val transport: String = "phone"
+    val transport: String = "phone",
+    val note: String
 )

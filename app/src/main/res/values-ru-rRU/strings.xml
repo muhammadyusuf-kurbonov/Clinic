@@ -21,4 +21,12 @@
     <string name="login_success">Вход успешен</string>
     <string name="login_failed">Вход не удался. Неверный логин или пароль</string>
     <string name="no_connection_caption">Нет соединения</string>
+    <string name="explain_title">Укажите цель вызова</string>
+    <string name="book_appointment">Запись на приём</string>
+    <string name="additional_info">Дополнительная информация</string>
+    <string name="others">Другое</string>
+    <string name="address_label">Узнать адрес</string>
+    <string name="send_caption">Отправить</string>
+    <string name="description_hint">Описание</string>
+    <string name="connection_error">Ошибка соединения</string>
 </resources>

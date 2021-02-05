@@ -17,6 +17,7 @@ class SendStatusRequest(private val appContext: Context, workerParams: WorkerPar
     Worker(appContext, workerParams) {
 
     companion object {
+        const val INPUT_NOTE = "work.note"
         const val INPUT_PHONE = "work.customer_phone"
         const val INPUT_STATUS = "work.status"
         const val INPUT_DURATION = "work.duration"
@@ -29,9 +30,12 @@ class SendStatusRequest(private val appContext: Context, workerParams: WorkerPar
             val status = inputData.getString(INPUT_STATUS) ?: throw IllegalArgumentException()
             var duration = inputData.getLong(INPUT_DURATION, 0)
             val type = inputData.getString(INPUT_TYPE) ?: throw IllegalArgumentException()
+            val note = inputData.getString(INPUT_NOTE) ?: ""
+
             val apiService = get(APIService::class.java)
             runBlocking {
-                val searchCustomer = apiService.searchCustomer(customerPhone, withAppointments = 0)
+                val searchCustomer =
+                    apiService.searchCustomer(customerPhone, withAppointments = 0)
 
                 if (searchCustomer.code() == 404)
                     return@runBlocking Result.success()
@@ -58,7 +62,15 @@ class SendStatusRequest(private val appContext: Context, workerParams: WorkerPar
                     duration = getLastCallDuration(customerPhone).toLong()
                 }
                 val communications =
-                    apiService.communications(CommunicationInfo(customerId, status, duration, type))
+                    apiService.communications(
+                        CommunicationInfo(
+                            customerId,
+                            status,
+                            duration,
+                            type,
+                            note = note
+                        )
+                    )
                 Timber.d("$communications")
                 if (communications.isSuccessful)
                     Result.success()

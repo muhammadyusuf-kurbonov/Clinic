@@ -9,7 +9,6 @@ import androidx.core.app.JobIntentService
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.*
-import com.aykuttasil.callrecord.CallRecord
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
@@ -38,8 +37,6 @@ class NotifierService : JobIntentService() {
 
     private lateinit var phoneNumber: String
 
-    private lateinit var callRecord: CallRecord
-
     override fun onDestroy() {
         NotificationManagerCompat.from(this@NotifierService)
             .cancel(NOTIFICATION_ID)
@@ -63,7 +60,7 @@ class NotifierService : JobIntentService() {
 
         val type = intent.extras?.getString(EXTRA_TYPE, "none")
 
-        val notification = NotificationCompat.Builder(this, "clinic_info")
+        val notification = NotificationCompat.Builder(applicationContext, "clinic_info")
             .apply {
 
                 setContent(view)
@@ -102,12 +99,14 @@ class NotifierService : JobIntentService() {
         runBlocking(serviceScope.coroutineContext + Dispatchers.IO) {
             try {
                 withTimeout(10000) {
-                    val customer = searchService.searchCustomer(phoneNumber)
+                    val customer =
+                        searchService.searchCustomer(phoneNumber, withAppointments = 0)
                     Timber.d("user is $customer")
 
                     when {
                         customer.code() == 404 -> states = SearchStates.NotFound
                         customer.code() == 401 -> states = SearchStates.AuthRequest
+                        customer.code() == 407 -> states = SearchStates.ConnectionError
                         customer.code() == 200 -> states =
                             if (customer.body()!!.data.isNotEmpty()) {
                                 SearchStates.Found(customer.body()!!.toContact())
@@ -141,6 +140,7 @@ class NotifierService : JobIntentService() {
                             else -> getString(R.string.unknown_error)
                         }
                     }
+                    SearchStates.ConnectionError -> getString(R.string.connection_error)
                     SearchStates.NotFound -> getString(R.string.not_found)
                     SearchStates.AuthRequest -> getString(R.string.auth_text)
                 }
@@ -203,7 +203,6 @@ class NotifierService : JobIntentService() {
 
     override fun onStopCurrentWork(): Boolean {
         Timber.tag("lifecycle").d("Stop Work")
-        callRecord.stopCallReceiver()
         return super.onStopCurrentWork()
     }
 }

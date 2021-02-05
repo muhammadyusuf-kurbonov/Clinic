@@ -63,6 +63,9 @@ class LoginActivity : AppCompatActivity() {
                         setStatus(AuthResult.FAILED)
                     }
 
+                    if (response.code() == 407)
+                        setStatus(AuthResult.NO_CONNECTION)
+
                     if (response.isSuccessful) {
                         delay(1500)
                         finish()
