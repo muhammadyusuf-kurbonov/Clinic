@@ -44,7 +44,6 @@ class CallReceiver : PhoneCallReceiver() {
             return
         }
         startService(ctx, number, "incoming")
-
     }
 
     override fun onIncomingCallAnswered(ctx: Context, number: String?, start: Date) {

@@ -11,7 +11,7 @@ import kotlinx.coroutines.runBlocking
 import org.koin.java.KoinJavaComponent
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.activities.ExplainActivity
+import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.works.SendStatusRequest
@@ -23,14 +23,13 @@ class SenderService : JobIntentService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Timber.d("start service of sengding $intent")
         if (intent != null) {
             val holder = intent.extras?.getParcelable<CommunicationDataHolder>("data")
                 ?: throw IllegalStateException()
 
             Timber.d("$holder")
 
-            val activityIntent = Intent(this@SenderService, ExplainActivity::class.java).apply {
+            val activityIntent = Intent(this@SenderService, NoteActivity::class.java).apply {
                 putExtra("data", holder)
                 addFlags(FLAG_ACTIVITY_NEW_TASK)
             }

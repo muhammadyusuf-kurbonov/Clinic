@@ -15,17 +15,13 @@ import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
 import uz.muhammadyusuf.kurbonov.myclinic.services.SenderService
 import uz.muhammadyusuf.kurbonov.myclinic.works.SendStatusRequest
 
-class ExplainActivity : AppCompatActivity() {
+class NoteActivity : AppCompatActivity() {
 
     private var isSent = false
 
-    private lateinit var phone: String
-    private lateinit var status: String
-    private var duration: Long = 0
-    private lateinit var type: String
+    private var note: String = ""
 
     private lateinit var binding: ActivityExplainBinding
-    private var note: String = ""
     private lateinit var holder: CommunicationDataHolder
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,11 +35,6 @@ class ExplainActivity : AppCompatActivity() {
         Timber.d("${intent.extras}")
 
         holder = intent.getParcelableExtra("data") ?: throw IllegalStateException()
-        phone = holder.phone
-        status = holder.status
-        duration = holder.duration
-        type = holder.type
-
 
         binding.rgCause.setOnCheckedChangeListener { _, checkedId ->
             binding.edOther.isVisible = checkedId == R.id.rbOther
@@ -67,23 +58,26 @@ class ExplainActivity : AppCompatActivity() {
             isSent = true
 
             val data = Data.Builder()
-            data.putString(SendStatusRequest.INPUT_PHONE, phone)
-            data.putString(SendStatusRequest.INPUT_STATUS, status)
+            data.putString(SendStatusRequest.INPUT_PHONE, holder.phone)
+            data.putString(SendStatusRequest.INPUT_STATUS, holder.status)
             data.putLong(
                 SendStatusRequest.INPUT_DURATION,
-                duration
+                holder.duration
             )
             data.putString(SendStatusRequest.INPUT_NOTE, note)
-            data.putString(SendStatusRequest.INPUT_TYPE, type)
+            data.putString(SendStatusRequest.INPUT_TYPE, holder.type)
+
             val constraint = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
+
             val request = OneTimeWorkRequestBuilder<SendStatusRequest>()
                 .setInputData(data.build())
                 .setConstraints(constraint)
                 .addTag("sender")
                 .build()
-            WorkManager.getInstance(this@ExplainActivity)
+
+            WorkManager.getInstance(this@NoteActivity)
                 .enqueueUniqueWork(
                     "sender",
                     ExistingWorkPolicy.REPLACE,
@@ -101,7 +95,7 @@ class ExplainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         if (!isSent)
-            startActivity(Intent(this, ExplainActivity::class.java).apply {
+            startActivity(Intent(this, NoteActivity::class.java).apply {
                 putExtra("data", holder)
             })
     }

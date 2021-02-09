@@ -40,15 +40,13 @@ class NotifierService : JobIntentService() {
     override fun onDestroy() {
         NotificationManagerCompat.from(this@NotifierService)
             .cancel(NOTIFICATION_ID)
-        stopForeground(false)
+        stopForeground(true)
         serviceJob.cancel()
-        Timber.tag("lifecycle").d("Destroyed")
         super.onDestroy()
     }
 
     @SuppressLint("UnspecifiedImmutableFlag")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Timber.tag("lifecycle").d("Started")
 
         setTheme(R.style.Theme_MyClinic)
 
@@ -124,7 +122,6 @@ class NotifierService : JobIntentService() {
                     addFlags(FLAG_ACTIVITY_NEW_TASK)
                 })
 
-            Timber.d("state is $states")
             view.setTextViewText(
                 R.id.tvName, when (states) {
                     is SearchStates.Loading -> getString(R.string.searching_text)
@@ -189,20 +186,8 @@ class NotifierService : JobIntentService() {
             notification.setCustomBigContentView(view)
             NotificationManagerCompat.from(this@NotifierService)
                 .notify(NOTIFICATION_ID, notification.build())
-
-            Timber.tag("lifecycle").d("Work stop")
         }
 
         return START_STICKY
-    }
-
-    override fun onCreate() {
-        super.onCreate()
-        Timber.tag("lifecycle").d("Created")
-    }
-
-    override fun onStopCurrentWork(): Boolean {
-        Timber.tag("lifecycle").d("Stop Work")
-        return super.onStopCurrentWork()
     }
 }
