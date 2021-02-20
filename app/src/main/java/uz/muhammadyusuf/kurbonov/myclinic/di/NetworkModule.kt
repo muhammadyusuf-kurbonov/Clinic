@@ -1,6 +1,5 @@
 package uz.muhammadyusuf.kurbonov.myclinic.di
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import okhttp3.*
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -35,7 +34,6 @@ val networkModule = module {
                     }
                 } catch (e: RetriesExpiredException) {
                     Timber.d(e)
-                    FirebaseCrashlytics.getInstance().recordException(e)
                     Response.Builder()
                         .request(newRequest)
                         .body(
