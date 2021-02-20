@@ -7,10 +7,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
 import uz.muhammadyusuf.kurbonov.myclinic.works.*
 import uz.muhammadyusuf.kurbonov.myclinic.works.EnterWork.Companion.INPUT_TYPE
-import uz.muhammadyusuf.kurbonov.myclinic.works.ReporterWork.Companion.INPUT_DURATION
-import uz.muhammadyusuf.kurbonov.myclinic.works.ReporterWork.Companion.INPUT_STATUS
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 
 class CallReceiver : PhoneCallReceiver() {
@@ -54,10 +51,7 @@ class CallReceiver : PhoneCallReceiver() {
         else setFlag(true)
 
         sendRequest(
-            ctx,
-            number!!,
-            "accepted",
-            TimeUnit.MILLISECONDS.toSeconds(end.time - start.time)
+            ctx
         )
     }
 
@@ -75,10 +69,7 @@ class CallReceiver : PhoneCallReceiver() {
         else setFlag(true)
 
         sendRequest(
-            ctx,
-            number!!,
-            "accepted",
-            TimeUnit.MILLISECONDS.toSeconds(end.time - start.time)
+            ctx
         )
     }
 
@@ -86,22 +77,15 @@ class CallReceiver : PhoneCallReceiver() {
         if (isSent)
             return
         else setFlag(true)
-        sendRequest(ctx, number!!, "declined", 0)
+        sendRequest(ctx)
     }
 
     private fun sendRequest(
-        context: Context,
-        phone: String,
-        status: String,
-        duration: Long
+        context: Context
     ) {
         val workerRequest = OneTimeWorkRequestBuilder<ReporterWork>()
 
-        workerRequest.setInputData(Data.Builder().apply {
-            putLong(INPUT_DURATION, duration)
-            DataHolder.phoneNumber = phone
-            putString(INPUT_STATUS, status)
-        }.build())
+        workerRequest.build()
 
         WorkManager.getInstance(context).enqueueUniqueWork(
             "reporter", ExistingWorkPolicy.REPLACE, workerRequest.build()

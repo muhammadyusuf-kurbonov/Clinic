@@ -3,6 +3,7 @@ package uz.muhammadyusuf.kurbonov.myclinic.works
 import android.content.Context
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.koin.java.KoinJavaComponent.inject
@@ -37,6 +38,7 @@ class SearchWork(context: Context, workerParams: WorkerParameters) : Worker(cont
                     }
                 }
             } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
                 states = SearchStates.Error(e)
             }
         }
