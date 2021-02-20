@@ -12,7 +12,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityExplainBinding
 import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
-import uz.muhammadyusuf.kurbonov.myclinic.works.SendStatusRequest
+import uz.muhammadyusuf.kurbonov.myclinic.works.SendReportWork
 
 class NoteActivity : AppCompatActivity() {
 
@@ -56,20 +56,20 @@ class NoteActivity : AppCompatActivity() {
             isSent = true
 
             val data = Data.Builder()
-            data.putString(SendStatusRequest.INPUT_PHONE, holder.phone)
-            data.putString(SendStatusRequest.INPUT_STATUS, holder.status)
+            data.putString(SendReportWork.INPUT_PHONE, holder.phone)
+            data.putString(SendReportWork.INPUT_STATUS, holder.status)
             data.putLong(
-                SendStatusRequest.INPUT_DURATION,
+                SendReportWork.INPUT_DURATION,
                 holder.duration
             )
-            data.putString(SendStatusRequest.INPUT_NOTE, note)
-            data.putString(SendStatusRequest.INPUT_TYPE, holder.type)
+            data.putString(SendReportWork.INPUT_NOTE, note)
+            data.putString(SendReportWork.INPUT_TYPE, holder.type)
 
             val constraint = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            val request = OneTimeWorkRequestBuilder<SendStatusRequest>()
+            val request = OneTimeWorkRequestBuilder<SendReportWork>()
                 .setInputData(data.build())
                 .setConstraints(constraint)
                 .addTag("sender")

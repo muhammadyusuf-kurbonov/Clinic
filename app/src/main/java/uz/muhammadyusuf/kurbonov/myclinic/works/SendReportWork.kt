@@ -13,7 +13,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationIn
 import java.net.SocketException
 import java.net.SocketTimeoutException
 
-class SendStatusRequest(private val appContext: Context, workerParams: WorkerParameters) :
+class SendReportWork(private val appContext: Context, workerParams: WorkerParameters) :
     Worker(appContext, workerParams) {
 
     companion object {

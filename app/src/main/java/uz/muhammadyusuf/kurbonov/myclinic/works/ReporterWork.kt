@@ -106,21 +106,21 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
                 NotificationManagerCompat.from(context)
                     .cancelAll()
                 val data = Data.Builder()
-                data.putString(SendStatusRequest.INPUT_PHONE, DataHolder.phoneNumber)
-                data.putString(SendStatusRequest.INPUT_STATUS, status)
+                data.putString(SendReportWork.INPUT_PHONE, DataHolder.phoneNumber)
+                data.putString(SendReportWork.INPUT_STATUS, status)
                 data.putLong(
-                    SendStatusRequest.INPUT_DURATION,
+                    SendReportWork.INPUT_DURATION,
                     duration
                 )
-                data.putString(SendStatusRequest.INPUT_NOTE, "")
+                data.putString(SendReportWork.INPUT_NOTE, "")
                 data.putString(
-                    SendStatusRequest.INPUT_TYPE,
+                    SendReportWork.INPUT_TYPE,
                     if (DataHolder.type == CallTypes.INCOME) "incoming" else "outgoing"
                 )
                 val constraint = Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
-                val request = OneTimeWorkRequestBuilder<SendStatusRequest>()
+                val request = OneTimeWorkRequestBuilder<SendReportWork>()
                     .setInputData(data.build())
                     .setConstraints(constraint)
                     .addTag("sender")

@@ -104,7 +104,7 @@ class CallReceiver : PhoneCallReceiver() {
         WorkManager.getInstance(ctx).beginWith(
             enterWorker.build()
         ).then(OneTimeWorkRequest.from(SearchWork::class.java))
-            .then(OneTimeWorkRequest.from(NotifierWorker::class.java))
+            .then(OneTimeWorkRequest.from(NotifyWork::class.java))
             .enqueue()
     }
 }

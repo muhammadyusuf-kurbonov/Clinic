@@ -19,7 +19,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.phoneNumber
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-class NotifierWorker(val context: Context, workerParams: WorkerParameters) :
+class NotifyWork(val context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
     override fun doWork(): Result {
         val view = RemoteViews(context.packageName, R.layout.notification_view)
