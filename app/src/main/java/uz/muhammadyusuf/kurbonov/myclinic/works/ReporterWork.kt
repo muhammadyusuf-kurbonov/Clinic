@@ -73,8 +73,7 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
         if (DataHolder.searchState !is SearchStates.Found)
             return Result.success()
 
-        if (DataHolder.type == CallTypes.OUTCOME && duration == 0L)
-            return Result.success()
+        if (DataHolder.type == null) return Result.failure()
 
         if (DataHolder.searchState !is SearchStates.Found || DataHolder.phoneNumber.isEmpty()) return Result.success()
 
@@ -99,10 +98,11 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
             .notify(NOTIFICATION_ID, notification)
 
 
-        if (DataHolder.type == null) return Result.failure()
-        runBlocking {
 
-            if (status == "declined") {
+
+        runBlocking {
+            val emptyOutgoingCall = DataHolder.type == CallTypes.OUTCOME && duration == 0L
+            if (status == "declined" || emptyOutgoingCall) {
                 NotificationManagerCompat.from(context)
                     .cancelAll()
                 val data = Data.Builder()
