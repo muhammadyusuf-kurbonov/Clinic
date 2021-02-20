@@ -1,12 +1,19 @@
 package uz.muhammadyusuf.kurbonov.myclinic
 
-import kotlinx.coroutines.delay
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.runBlocking
+import okhttp3.*
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import java.util.concurrent.Executors
-import kotlin.random.Random
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
+import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
+import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationInfo
+import uz.muhammadyusuf.kurbonov.myclinic.utils.RetriesExpiredException
+import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -15,44 +22,85 @@ import kotlin.random.Random
  */
 class ExampleUnitTest {
 
+    private var token: String = ""
+    private lateinit var customer_id: String
+    private lateinit var apiService: APIService
+
     @Before
-    fun test_queue() {
-        val executor = Executors.newSingleThreadExecutor()
-        val a = arrayListOf("abcd", "bagnanai", "cllassss", "dkkajjdu")
-        val s = StringBuilder()
-        a.forEach { str ->
-            executor.submit {
-                print(System.currentTimeMillis())
-                val time = Random.nextInt(5)
-                runBlocking {
-                    delay(time * 1000L)
-                    println("Ended for $str")
+    fun getAuthData() {
+
+        val okhttp = OkHttpClient.Builder()
+            .addInterceptor {
+                val url = it.request().toString()
+                Timber.tag("request").d(url)
+                val newRequest: Request = it.request().newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .build()
+                try {
+                    retries(3) {
+                        it.proceed(newRequest)
+                    }
+                } catch (e: RetriesExpiredException) {
+                    Timber.d(e)
+                    FirebaseCrashlytics.getInstance().recordException(e)
+                    Response.Builder()
+                        .request(newRequest)
+                        .body(
+                            ResponseBody.create(
+                                MediaType.get("application/json"),
+                                "{" +
+                                        "error: $e" +
+                                        "}"
+                            )
+                        )
+                        .protocol(Protocol.HTTP_1_1)
+                        .message(e.message ?: "")
+                        .code(407)
+                        .build()
                 }
             }
+            .build()
+
+        apiService = Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl("http://app.32desk.com:3030/")
+            .client(okhttp)
+            .build()
+            .create(APIService::class.java)
+        runBlocking {
+            val response = apiService.authenticate(
+                AuthRequest(
+                    email = "demo@32desk.com",
+                    password = "demo"
+                )
+            )
+            assert(response.isSuccessful)
+            if (response.isSuccessful)
+                token = response.body()?.accessToken ?: throw IllegalStateException("No token")
+
+            val customer = apiService.searchCustomer("+998994801416")
+
+            assertEquals(200, customer.code())
+            assert(customer.isSuccessful)
+            if (customer.isSuccessful)
+                customer_id = customer.body()!!.data[0]._id
         }
-        print(s.toString())
     }
 
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
-    }
-
-    @Test
-    fun queue_test() {
-        val executor = Executors.newSingleThreadExecutor()
-        val a = arrayListOf("abcd", "bagnanai", "cllassss", "dkkajjdu")
-        val s = StringBuilder()
-        a.forEach { str ->
-            executor.submit {
-                print(System.currentTimeMillis())
-                val time = Random.nextInt(5)
-                runBlocking {
-                    delay(time * 1000L)
-                    println("Ended for $str")
-                }
-            }
+    fun testCommunications() {
+        runBlocking {
+            val response = apiService.communications(
+                CommunicationInfo(
+                    customer_id,
+                    "accepted",
+                    11,
+                    "incoming",
+                    body = "Test"
+                )
+            )
+            print(response)
+            assert(response.isSuccessful)
         }
-        print(s.toString())
     }
 }

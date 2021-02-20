@@ -12,7 +12,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityExplainBinding
 import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
-import uz.muhammadyusuf.kurbonov.myclinic.services.SenderService
 import uz.muhammadyusuf.kurbonov.myclinic.works.SendStatusRequest
 
 class NoteActivity : AppCompatActivity() {
@@ -42,7 +41,6 @@ class NoteActivity : AppCompatActivity() {
 
         NotificationManagerCompat.from(applicationContext)
             .cancelAll()
-        stopService(Intent(this, SenderService::class.java))
 
         binding.btnSend.setOnClickListener {
 

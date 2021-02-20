@@ -29,4 +29,5 @@
     <string name="send_caption">Отправить</string>
     <string name="description_hint">Описание</string>
     <string name="connection_error">Ошибка соединения</string>
+    <string name="purpose_msg">Укажите цель последнего вызова</string>
 </resources>

@@ -29,4 +29,5 @@
     <string name="address_label">Ask address</string>
     <string name="book_appointment">Make an appointment</string>
     <string name="connection_error">Connection error</string>
+    <string name="purpose_msg">Please, specify purpose of call</string>
 </resources>

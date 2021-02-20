@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.Intent.EXTRA_PHONE_NUMBER
 import android.telephony.TelephonyManager
 import kotlinx.coroutines.runBlocking
-import timber.log.Timber
 import java.util.*
 
 
@@ -16,7 +15,6 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
         //We listen to two intents.  The new outgoing call only tells us of an outgoing call.  We use it to get the number.
 
         runBlocking {
-            Timber.d("onReceive() called on $this")
             if (intent.action == "android.intent.action.NEW_OUTGOING_CALL") {
                 savedNumber = intent.extras!!.getString(EXTRA_PHONE_NUMBER)
             } else {
@@ -71,7 +69,6 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
     private fun onCallStateChanged(context: Context, state: Int, number: String?) {
         if (state == lastState)
             return
-        Timber.d("LastState is $lastState - new State is $state")
         when (state) {
             TelephonyManager.CALL_STATE_RINGING -> {
                 isIncoming = true

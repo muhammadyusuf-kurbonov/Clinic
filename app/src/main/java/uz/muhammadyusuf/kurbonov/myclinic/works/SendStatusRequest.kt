@@ -68,7 +68,7 @@ class SendStatusRequest(private val appContext: Context, workerParams: WorkerPar
                             status,
                             duration,
                             type,
-                            note = note
+                            body = note
                         )
                     )
                 Timber.d("$communications")

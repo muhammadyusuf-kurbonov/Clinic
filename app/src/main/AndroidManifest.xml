@@ -42,13 +42,6 @@
             android:name=".activities.LoginActivity"
             android:exported="true" />
 
-        <service
-            android:name=".services.NotifierService"
-            android:foregroundServiceType="dataSync" />
-
-        <service
-            android:name=".services.SenderService"
-            android:exported="true" />
 
         <receiver
             android:name=".services.CallReceiver"
