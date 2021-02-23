@@ -106,9 +106,11 @@ class NotifyWork(val context: Context, workerParams: WorkerParameters) :
                 PendingIntent.getActivity(
                     context,
                     111,
-                    Intent(context, LoginActivity::class.java),
+                    Intent(context, LoginActivity::class.java).apply {
+                        putExtra("uz.muhammadyusuf.kurbonov.myclinic.phone", phoneNumber)
+                    },
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                        PendingIntent.FLAG_IMMUTABLE
+                        PendingIntent.FLAG_UPDATE_CURRENT
                     else 0
                 )
             )

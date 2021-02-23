@@ -6,6 +6,10 @@ import android.os.Bundle
 import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -17,6 +21,11 @@ import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityAuthBinding
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
+import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
+import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.type
+import uz.muhammadyusuf.kurbonov.myclinic.works.EnterWork
+import uz.muhammadyusuf.kurbonov.myclinic.works.NotifyWork
+import uz.muhammadyusuf.kurbonov.myclinic.works.SearchWork
 import java.net.InetAddress
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -67,6 +76,20 @@ class LoginActivity : AppCompatActivity() {
                         setStatus(AuthResult.NO_CONNECTION)
 
                     if (response.isSuccessful) {
+                        if (intent.extras?.containsKey("uz.muhammadyusuf.kurbonov.myclinic.phone") == true) {
+                            val enterWorker = OneTimeWorkRequestBuilder<EnterWork>()
+
+                            enterWorker.setInputData(Data.Builder().apply {
+                                putString(EnterWork.INPUT_PHONE, DataHolder.phoneNumber)
+                                putString(EnterWork.INPUT_TYPE, type?.getAsString())
+                            }.build())
+
+                            WorkManager.getInstance(this@LoginActivity).beginWith(
+                                enterWorker.build()
+                            ).then(OneTimeWorkRequest.from(SearchWork::class.java))
+                                .then(OneTimeWorkRequest.from(NotifyWork::class.java))
+                                .enqueue()
+                        }
                         delay(1500)
                         finish()
                     }

@@ -19,5 +19,12 @@ object DataHolder {
 }
 
 enum class CallTypes {
-    INCOME, OUTCOME
+    INCOME, OUTCOME;
+
+    fun getAsString(): String {
+        return when (this) {
+            INCOME -> "incoming"
+            OUTCOME -> "outgoing"
+        }
+    }
 }
