@@ -30,4 +30,10 @@
     <string name="description_hint">Описание</string>
     <string name="connection_error">Ошибка соединения</string>
     <string name="purpose_msg">Укажите цель последнего вызова</string>
+    <string name="add_user_request">Нажмите на уведомление для регистрации %1s в качестве нового пациента</string>
+    <string name="first_name_hint">Имя</string>
+    <string name="last_name">Фамилия</string>
+    <string name="phone_number_hint">Телефон</string>
+    <string name="register_new_patient">Добавить нового пациента</string>
+    <string name="required_error">Обязательно</string>
 </resources>

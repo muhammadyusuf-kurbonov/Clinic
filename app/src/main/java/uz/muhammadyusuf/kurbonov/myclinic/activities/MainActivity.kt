@@ -59,6 +59,16 @@ class MainActivity : AppCompatActivity() {
                 }
             NotificationManagerCompat.from(this)
                 .createNotificationChannel(channel)
+            val actionsChannel = NotificationChannel(
+                "action_request",
+                "Notifications for post call actions",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+                .apply {
+                    enableVibration(true)
+                }
+            NotificationManagerCompat.from(this)
+                .createNotificationChannel(actionsChannel)
         }
 
         Timber.d("TimeZone is ${TimeZone.getDefault()}")

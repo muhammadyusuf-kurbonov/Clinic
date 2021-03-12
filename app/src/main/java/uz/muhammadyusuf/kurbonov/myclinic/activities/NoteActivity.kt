@@ -12,7 +12,8 @@ import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityExplainBinding
 import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
-import uz.muhammadyusuf.kurbonov.myclinic.works.SendReportWork
+import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
+import uz.muhammadyusuf.kurbonov.myclinic.works.NoteInsertWork
 
 class NoteActivity : AppCompatActivity() {
 
@@ -55,32 +56,25 @@ class NoteActivity : AppCompatActivity() {
 
             isSent = true
 
-            val data = Data.Builder()
-            data.putString(SendReportWork.INPUT_PHONE, holder.phone)
-            data.putString(SendReportWork.INPUT_STATUS, holder.status)
-            data.putLong(
-                SendReportWork.INPUT_DURATION,
-                holder.duration
-            )
-            data.putString(SendReportWork.INPUT_NOTE, note)
-            data.putString(SendReportWork.INPUT_TYPE, holder.type)
 
             val constraint = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            val request = OneTimeWorkRequestBuilder<SendReportWork>()
-                .setInputData(data.build())
-                .setConstraints(constraint)
-                .addTag("sender")
-                .build()
-
-            WorkManager.getInstance(this@NoteActivity)
-                .enqueueUniqueWork(
-                    "sender",
-                    ExistingWorkPolicy.REPLACE,
-                    request
-                )
+            WorkManager.getInstance(this).enqueue(
+                OneTimeWorkRequestBuilder<NoteInsertWork>()
+                    .setInputData(
+                        Data.Builder()
+                            .putString("id",
+                                DataHolder.communicationId
+                                    ?: throw IllegalStateException("Id wasn't set before note update ${DataHolder.communicationId}")
+                            )
+                            .putString("body", note)
+                            .build()
+                    )
+                    .setConstraints(constraint)
+                    .build()
+            )
 
             finish()
         }

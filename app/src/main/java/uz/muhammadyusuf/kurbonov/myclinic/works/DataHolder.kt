@@ -12,6 +12,8 @@ object DataHolder {
             field = value
         }
 
+    var communicationId: String? = null
+
 
     var type: CallTypes? = null
 

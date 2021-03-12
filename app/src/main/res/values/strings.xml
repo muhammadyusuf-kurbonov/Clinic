@@ -30,4 +30,10 @@
     <string name="book_appointment">Make an appointment</string>
     <string name="connection_error">Connection error</string>
     <string name="purpose_msg">Please, specify purpose of call</string>
+    <string name="add_user_request">Tap to add %1s as new patient</string>
+    <string name="first_name_hint">First name</string>
+    <string name="last_name">Last name</string>
+    <string name="phone_number_hint">Phone number</string>
+    <string name="register_new_patient">Register new patient</string>
+    <string name="required_error">Required</string>
 </resources>

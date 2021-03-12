@@ -6,7 +6,7 @@ import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
 import uz.muhammadyusuf.kurbonov.myclinic.works.*
-import uz.muhammadyusuf.kurbonov.myclinic.works.EnterWork.Companion.INPUT_TYPE
+import uz.muhammadyusuf.kurbonov.myclinic.works.StartRecognizeWork.Companion.INPUT_TYPE
 import java.util.*
 
 
@@ -36,7 +36,7 @@ class CallReceiver : PhoneCallReceiver() {
         if (number.isNullOrEmpty()) {
             return
         }
-        startService(ctx, number, "incoming")
+        startRecognition(ctx, number, "incoming")
     }
 
     override fun onIncomingCallAnswered(ctx: Context, number: String?, start: Date) {
@@ -50,7 +50,7 @@ class CallReceiver : PhoneCallReceiver() {
             return
         else setFlag(true)
 
-        sendRequest(
+        endCall(
             ctx
         )
     }
@@ -60,7 +60,7 @@ class CallReceiver : PhoneCallReceiver() {
 
         if (number.isNullOrEmpty())
             return
-        startService(ctx, number, "outgoing")
+        startRecognition(ctx, number, "outgoing")
     }
 
     override fun onOutgoingCallEnded(ctx: Context, number: String?, start: Date, end: Date) {
@@ -68,7 +68,7 @@ class CallReceiver : PhoneCallReceiver() {
             return
         else setFlag(true)
 
-        sendRequest(
+        endCall(
             ctx
         )
     }
@@ -77,32 +77,30 @@ class CallReceiver : PhoneCallReceiver() {
         if (isSent)
             return
         else setFlag(true)
-        sendRequest(ctx)
+        endCall(ctx)
     }
 
-    private fun sendRequest(
+    private fun endCall(
         context: Context
     ) {
-        val workerRequest = OneTimeWorkRequestBuilder<ReporterWork>()
-
-        workerRequest.build()
-
         WorkManager.getInstance(context).enqueueUniqueWork(
-            "reporter", ExistingWorkPolicy.REPLACE, workerRequest.build()
+            "reporter",
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequestBuilder<ReporterWork>().build()
         )
     }
 
-    private fun startService(ctx: Context, number: String?, type: String) {
-        val enterWorker = OneTimeWorkRequestBuilder<EnterWork>()
+    private fun startRecognition(ctx: Context, number: String?, type: String) {
+        val starterWork = OneTimeWorkRequestBuilder<StartRecognizeWork>()
 
-        enterWorker.setInputData(Data.Builder().apply {
-            putString(EnterWork.INPUT_PHONE, number)
+        starterWork.setInputData(Data.Builder().apply {
+            putString(StartRecognizeWork.INPUT_PHONE, number)
             DataHolder.phoneNumber = number ?: ""
             putString(INPUT_TYPE, type)
         }.build())
 
         WorkManager.getInstance(ctx).beginWith(
-            enterWorker.build()
+            starterWork.build()
         ).then(OneTimeWorkRequest.from(SearchWork::class.java))
             .then(OneTimeWorkRequest.from(NotifyWork::class.java))
             .enqueue()

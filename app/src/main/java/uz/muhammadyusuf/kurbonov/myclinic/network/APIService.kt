@@ -1,14 +1,14 @@
 package uz.muhammadyusuf.kurbonov.myclinic.network
 
+import okhttp3.ResponseBody
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Query
+import retrofit2.http.*
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthResponse
 import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationInfo
+import uz.muhammadyusuf.kurbonov.myclinic.network.communications.response.CommunicationResponse
 import uz.muhammadyusuf.kurbonov.myclinic.network.customer_search.CustomerDTO
+import uz.muhammadyusuf.kurbonov.myclinic.network.customers.CustomerAddRequestBody
 
 interface APIService {
     @POST("/authentication")
@@ -24,5 +24,17 @@ interface APIService {
     @POST("/communications")
     suspend fun communications(
         @Body communicationInfo: CommunicationInfo
-    ): Response<Unit>
+    ): Response<CommunicationResponse>
+
+    @PATCH("/communications/{id}")
+    @FormUrlEncoded
+    suspend fun updateCommunicationBody(
+        @Path("id") id: String,
+        @Field("body") body: String
+    ): Response<ResponseBody>
+
+    @POST("/customers")
+    suspend fun addCustomer(
+        @Body customerAddRequestBody: CustomerAddRequestBody
+    ): Response<ResponseBody>
 }

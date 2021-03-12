@@ -23,9 +23,9 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.type
-import uz.muhammadyusuf.kurbonov.myclinic.works.EnterWork
 import uz.muhammadyusuf.kurbonov.myclinic.works.NotifyWork
 import uz.muhammadyusuf.kurbonov.myclinic.works.SearchWork
+import uz.muhammadyusuf.kurbonov.myclinic.works.StartRecognizeWork
 import java.net.InetAddress
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -77,11 +77,11 @@ class LoginActivity : AppCompatActivity() {
 
                     if (response.isSuccessful) {
                         if (intent.extras?.containsKey("uz.muhammadyusuf.kurbonov.myclinic.phone") == true) {
-                            val enterWorker = OneTimeWorkRequestBuilder<EnterWork>()
+                            val enterWorker = OneTimeWorkRequestBuilder<StartRecognizeWork>()
 
                             enterWorker.setInputData(Data.Builder().apply {
-                                putString(EnterWork.INPUT_PHONE, DataHolder.phoneNumber)
-                                putString(EnterWork.INPUT_TYPE, type?.getAsString())
+                                putString(StartRecognizeWork.INPUT_PHONE, DataHolder.phoneNumber)
+                                putString(StartRecognizeWork.INPUT_TYPE, type?.getAsString())
                             }.build())
 
                             WorkManager.getInstance(this@LoginActivity).beginWith(

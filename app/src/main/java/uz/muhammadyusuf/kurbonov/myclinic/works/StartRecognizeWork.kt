@@ -6,7 +6,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import uz.muhammadyusuf.kurbonov.myclinic.R
 
-class EnterWork(
+class StartRecognizeWork(
     val context: Context,
     private val workerParams: WorkerParameters
 ) : Worker(context, workerParams) {

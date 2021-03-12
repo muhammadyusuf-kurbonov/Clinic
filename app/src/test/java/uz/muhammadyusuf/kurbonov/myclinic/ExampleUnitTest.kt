@@ -103,4 +103,28 @@ class ExampleUnitTest {
             assert(response.isSuccessful)
         }
     }
+
+    @Test
+    fun testCommunicationsBodyUpdate() {
+        runBlocking {
+            val response = apiService.communications(
+                CommunicationInfo(
+                    customer_id,
+                    "accepted",
+                    11,
+                    "incoming",
+                    body = "Test"
+                )
+            )
+            print(response)
+            assert(response.isSuccessful)
+
+            val bodyUpdate = apiService.updateCommunicationBody(
+                response.body()!!._id,
+                "Test success"
+            )
+            print(bodyUpdate)
+            assert(bodyUpdate.isSuccessful)
+        }
+    }
 }
