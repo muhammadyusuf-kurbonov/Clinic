@@ -64,13 +64,10 @@ class NoteActivity : AppCompatActivity() {
             WorkManager.getInstance(this).enqueue(
                 OneTimeWorkRequestBuilder<NoteInsertWork>()
                     .setInputData(
-                        Data.Builder()
-                            .putString("id",
-                                DataHolder.communicationId
-                                    ?: throw IllegalStateException("Id wasn't set before note update ${DataHolder.communicationId}")
-                            )
-                            .putString("body", note)
-                            .build()
+                        workDataOf(
+                            "id" to DataHolder.communicationId,
+                            "body" to note
+                        )
                     )
                     .setConstraints(constraint)
                     .build()

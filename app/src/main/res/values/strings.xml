@@ -12,7 +12,7 @@
     <string name="no_connection">No internet connection</string>
     <string name="unknown_error">Sorry, error occurred!</string>
     <string name="not_found">Nobody was found</string>
-    <string name="auth_text">Authenticating …</string>
+    <string name="auth_text">Tap notification to login</string>
     <string name="balance">"Balance: "</string>
     <string name="not_avaible" translatable="false">" "</string>
     <string name="ready">Ready!</string>
