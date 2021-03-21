@@ -4,6 +4,7 @@ import android.content.Context
 import android.provider.CallLog
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
 
@@ -14,13 +15,17 @@ inline fun <reified T> retries(count: Int, block: () -> T): T {
         try {
             result = block()
         } catch (e: Exception) {
-
+            FirebaseCrashlytics.getInstance().recordException(
+                RetriesInternalException(e)
+            )
         } finally {
             currentIteration++
         }
     }
     return result ?: throw RetriesExpiredException(count)
 }
+
+class RetriesInternalException(e: Exception) : Exception("Error occurred $e", e)
 
 class RetriesExpiredException(retriesCount: Int) :
     Exception("All retries ($retriesCount) are failed")
