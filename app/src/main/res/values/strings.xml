@@ -20,7 +20,6 @@
     <string name="logging_in_caption">Wait please …</string>
     <string name="login_success">Login success</string>
     <string name="login_failed">Login failed. Wrong login or password</string>
-    <string name="no_connection_caption">No internet connection</string>
     <string name="send_caption">Send</string>
     <string name="description_hint">Description</string>
     <string name="explain_title">Specify the purpose of the call</string>

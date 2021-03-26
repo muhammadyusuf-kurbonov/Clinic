@@ -13,9 +13,11 @@ import kotlinx.coroutines.TimeoutCancellationException
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
-import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver
+import uz.muhammadyusuf.kurbonov.myclinic.recievers.CallReceiver
+import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
 import uz.muhammadyusuf.kurbonov.myclinic.utils.getBaseNotification
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
+import uz.muhammadyusuf.kurbonov.myclinic.utils.notifyNotConnectedNotification
+import uz.muhammadyusuf.kurbonov.myclinic.utils.validNetworks
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.phoneNumber
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -33,7 +35,7 @@ class NotifyWork(val context: Context, workerParams: WorkerParameters) :
                 R.id.imgType,
                 R.drawable.ic_baseline_phone_in_24
             )
-            CallTypes.OUTCOME -> view.setImageViewResource(
+            CallTypes.OUTGOING -> view.setImageViewResource(
                 R.id.imgType,
                 R.drawable.ic_phone_outgoing
             )
@@ -54,9 +56,10 @@ class NotifyWork(val context: Context, workerParams: WorkerParameters) :
                         else -> context.getString(R.string.unknown_error)
                     }
                 }
-                SearchStates.ConnectionError -> context.getString(R.string.connection_error)
+//                SearchStates.ConnectionError -> context.getString(R.string.connection_error)
                 SearchStates.NotFound -> context.getString(R.string.not_found)
                 SearchStates.AuthRequest -> context.getString(R.string.auth_text)
+                else -> ""
             }
         )
 
@@ -123,6 +126,9 @@ class NotifyWork(val context: Context, workerParams: WorkerParameters) :
         notification.setCustomBigContentView(view)
         NotificationManagerCompat.from(context)
             .notify(CallReceiver.NOTIFICATION_ID, notification.build())
+
+        if (validNetworks.size < 1)
+            notifyNotConnectedNotification(context)
 
         return Result.success()
     }

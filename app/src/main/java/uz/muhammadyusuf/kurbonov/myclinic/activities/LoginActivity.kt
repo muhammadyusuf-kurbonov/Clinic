@@ -117,7 +117,7 @@ class LoginActivity : AppCompatActivity() {
                 }
                 AuthResult.NO_CONNECTION -> {
                     imgStatus.setImageResource(R.drawable.ic_baseline_cancel_24)
-                    tvStatus.text = getString(R.string.no_connection_caption)
+                    tvStatus.text = getString(R.string.no_connection)
                     btnLogin.isEnabled = true
                 }
             }

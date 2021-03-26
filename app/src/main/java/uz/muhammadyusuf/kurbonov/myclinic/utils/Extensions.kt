@@ -4,9 +4,11 @@ import android.content.Context
 import android.provider.CallLog
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
+import uz.muhammadyusuf.kurbonov.myclinic.recievers.CallReceiver.Companion.NOTIFICATION_ID
 
 inline fun <reified T> retries(count: Int, block: () -> T): T {
     var result: T? = null
@@ -85,4 +87,21 @@ fun getBaseNotification(context: Context): NotificationCompat.Builder {
 
             setAutoCancel(true)
         }
+}
+
+fun notifyNotConnectedNotification(context: Context) {
+    val notification = NotificationCompat.Builder(context, "clinic_info")
+        .apply {
+
+            setContentText(context.getString(R.string.no_connection))
+
+            setContentTitle(context.getString(R.string.app_name))
+
+            setSmallIcon(R.drawable.ic_launcher_foreground)
+
+            priority = NotificationCompat.PRIORITY_MAX
+
+            setAutoCancel(true)
+        }
+    NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification.build())
 }

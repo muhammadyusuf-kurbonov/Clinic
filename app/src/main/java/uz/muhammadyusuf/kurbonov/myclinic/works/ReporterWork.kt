@@ -9,10 +9,11 @@ import org.koin.java.KoinJavaComponent
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationInfo
+import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCheckMismatchException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.getCallDetails
 import uz.muhammadyusuf.kurbonov.myclinic.utils.maskPhoneNumber
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
+import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.type
 
 class ReporterWork(val context: Context, workerParams: WorkerParameters) :
@@ -27,6 +28,7 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
         val status = callDetails.status
         val duration = callDetails.duration
 
+        stopMonitoring()
         NotificationManagerCompat.from(context).cancelAll()
 
         if (DataHolder.searchState is SearchStates.NotFound) {

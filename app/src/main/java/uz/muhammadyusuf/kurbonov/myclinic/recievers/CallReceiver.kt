@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.services
+package uz.muhammadyusuf.kurbonov.myclinic.recievers
 
 import android.content.Context
 import androidx.work.*
@@ -96,6 +96,7 @@ class CallReceiver : PhoneCallReceiver() {
         starterWork.setInputData(Data.Builder().apply {
             putString(StartRecognizeWork.INPUT_PHONE, number)
             DataHolder.phoneNumber = number ?: ""
+            DataHolder.type = if (type == "outgoing") CallTypes.OUTGOING else CallTypes.INCOME
             putString(INPUT_TYPE, type)
         }.build())
 

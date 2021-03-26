@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.viewmodel
+package uz.muhammadyusuf.kurbonov.myclinic.states
 
 import uz.muhammadyusuf.kurbonov.myclinic.model.Contact
 

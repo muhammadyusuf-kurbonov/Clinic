@@ -20,7 +20,6 @@
     <string name="logging_in_caption">Подождите …</string>
     <string name="login_success">Вход успешен</string>
     <string name="login_failed">Вход не удался. Неверный логин или пароль</string>
-    <string name="no_connection_caption">Нет соединения</string>
     <string name="explain_title">Укажите цель вызова</string>
     <string name="book_appointment">Запись на приём</string>
     <string name="additional_info">Дополнительная информация</string>

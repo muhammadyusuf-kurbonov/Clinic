@@ -10,7 +10,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.NewUserActivity
-import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver.Companion.NOTIFICATION_ID
+import uz.muhammadyusuf.kurbonov.myclinic.recievers.CallReceiver.Companion.NOTIFICATION_ID
 
 class NewUserAskWork(val context: Context, workerParams: WorkerParameters) : Worker(
     context,

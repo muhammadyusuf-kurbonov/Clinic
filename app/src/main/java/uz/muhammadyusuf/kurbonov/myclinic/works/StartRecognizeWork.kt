@@ -5,7 +5,8 @@ import android.widget.RemoteViews
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
+import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
+import uz.muhammadyusuf.kurbonov.myclinic.utils.startNetworkMonitoring
 
 class StartRecognizeWork(
     val context: Context,
@@ -24,7 +25,9 @@ class StartRecognizeWork(
         val type = workerParams.inputData.getString(INPUT_TYPE)
 
         DataHolder.phoneNumber = phoneNumber
-        DataHolder.type = if (type == "incoming") CallTypes.INCOME else CallTypes.OUTCOME
+        DataHolder.type = if (type == "incoming") CallTypes.INCOME else CallTypes.OUTGOING
+
+        startNetworkMonitoring(context)
 
         view.setTextViewText(R.id.tvName, context.getString(R.string.searching_text))
         return Result.success()

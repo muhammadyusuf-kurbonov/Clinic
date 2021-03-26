@@ -10,7 +10,7 @@ import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
+import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.phoneNumber
 
 class SearchWork(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
@@ -44,9 +44,7 @@ class SearchWork(context: Context, workerParams: WorkerParameters) : Worker(cont
         }
         DataHolder.searchState = states
 
-        return if (states is SearchStates.Error)
-            Result.failure()
-        else Result.success()
+        return Result.success()
     }
 
 }

@@ -10,7 +10,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
-import uz.muhammadyusuf.kurbonov.myclinic.services.CallReceiver
+import uz.muhammadyusuf.kurbonov.myclinic.recievers.CallReceiver
 import uz.muhammadyusuf.kurbonov.myclinic.utils.getCallDetails
 
 class PurposeSelectorWork(

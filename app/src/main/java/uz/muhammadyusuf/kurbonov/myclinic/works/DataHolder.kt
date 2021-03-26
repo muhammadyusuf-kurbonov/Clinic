@@ -1,7 +1,7 @@
 package uz.muhammadyusuf.kurbonov.myclinic.works
 
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodel.SearchStates
+import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
 
 object DataHolder {
     var phoneNumber: String = ""
@@ -37,12 +37,12 @@ object DataHolder {
 }
 
 enum class CallTypes {
-    INCOME, OUTCOME;
+    INCOME, OUTGOING;
 
     fun getAsString(): String {
         return when (this) {
             INCOME -> "incoming"
-            OUTCOME -> "outgoing"
+            OUTGOING -> "outgoing"
         }
     }
 }
