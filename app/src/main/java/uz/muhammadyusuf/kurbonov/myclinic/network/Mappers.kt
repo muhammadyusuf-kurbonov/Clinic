@@ -10,9 +10,12 @@ import java.util.*
 fun CustomerDTO.toContact(): Contact {
     val data = this.data[0]
     val last = this.appointments[0].prev
-    val lastAppointment = if (last != null) {
+
+    val lastAppointment: Appointment?
+
+    if (last != null && last.services.isNotEmpty()) {
         val user = last.services[0].user
-        Appointment(
+        lastAppointment = Appointment(
             last.startAt.reformatDate(
                 "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
                 "dd MMM yyyy HH:mm",
@@ -25,11 +28,17 @@ fun CustomerDTO.toContact(): Contact {
                 ) else null,
             last.services[0].treatment?.service?.label ?: ""
         )
-    } else null
+    } else {
+        lastAppointment = null
+    }
+
+
     val next = this.appointments[0].next
-    val nextAppointment = if (next != null) {
+    val nextAppointment: Appointment?
+
+    if (next != null && next.services.isNotEmpty()) {
         val user = next.services[0].user
-        Appointment(
+        nextAppointment = Appointment(
             next.startAt.reformatDate(
                 "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
                 "dd MMM yyyy HH:mm",
@@ -42,7 +51,11 @@ fun CustomerDTO.toContact(): Contact {
                 ) else null,
             next.services[0].treatment?.service?.label ?: ""
         )
-    } else null
+    } else {
+        nextAppointment = null
+    }
+
+
     return Contact(
         id = data._id,
         name = "${data.last_name} ${data.first_name}",
