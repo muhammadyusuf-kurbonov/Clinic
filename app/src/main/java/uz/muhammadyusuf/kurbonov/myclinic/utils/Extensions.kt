@@ -9,6 +9,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
 import uz.muhammadyusuf.kurbonov.myclinic.recievers.CallReceiver.Companion.NOTIFICATION_ID
+import java.net.UnknownHostException
 
 inline fun <reified T> retries(count: Int, block: () -> T): T {
     var result: T? = null
@@ -16,7 +17,7 @@ inline fun <reified T> retries(count: Int, block: () -> T): T {
     while (result == null && currentIteration < count) {
         try {
             result = block()
-        } catch (e: Exception) {
+        } catch (e: UnknownHostException) {
             FirebaseCrashlytics.getInstance().recordException(
                 RetriesInternalException(e)
             )
@@ -31,13 +32,6 @@ class RetriesInternalException(e: Exception) : Exception("Error occurred $e", e)
 
 class RetriesExpiredException(retriesCount: Int) :
     Exception("All retries ($retriesCount) are failed")
-
-class PhoneCheckMismatchException(phone1: String, phone2: String) :
-    IllegalArgumentException("Invalid phone numbers ${phone1.maskPhoneNumber()} and ${phone2.maskPhoneNumber()}")
-
-fun String.maskPhoneNumber(): String {
-    return dropLast(5) + "***" + drop(length - 2)
-}
 
 fun getCallDetails(context: Context): CommunicationDataHolder {
     val contacts = CallLog.Calls.CONTENT_URI

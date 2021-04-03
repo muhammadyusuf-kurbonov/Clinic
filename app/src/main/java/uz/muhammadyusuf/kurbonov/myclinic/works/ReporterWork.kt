@@ -10,9 +10,7 @@ import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationInfo
 import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
-import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCheckMismatchException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.getCallDetails
-import uz.muhammadyusuf.kurbonov.myclinic.utils.maskPhoneNumber
 import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.type
 
@@ -28,7 +26,6 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
         val status = callDetails.status
         val duration = callDetails.duration
 
-        stopMonitoring()
         NotificationManagerCompat.from(context).cancelAll()
 
         if (DataHolder.searchState is SearchStates.NotFound) {
@@ -49,12 +46,16 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
         if (DataHolder.phoneNumber != callDetails.phone) {
 
             val data = Data.Builder()
-                .putString("phone from journal", callDetails.phone.maskPhoneNumber())
-                .putString("required phone mask", DataHolder.phoneNumber.maskPhoneNumber())
+                .putString("phone from journal", callDetails.phone)
+                .putString("required phone mask", DataHolder.phoneNumber)
                 .build()
 
             FirebaseCrashlytics.getInstance().recordException(
-                PhoneCheckMismatchException(callDetails.phone, DataHolder.phoneNumber)
+                IllegalStateException(
+                    "Phone numbers are different: " +
+                            "from singleton: ${DataHolder.phoneNumber}," +
+                            "from journal: ${callDetails.phone}"
+                )
             )
 
             return Result.failure(
@@ -88,6 +89,7 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
 
             Timber.d("$communications")
 
+            stopMonitoring()
             if (communications.isSuccessful) {
                 DataHolder.communicationId = communications.body()!!._id
                 WorkManager.getInstance(context)
@@ -124,6 +126,7 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
 //                        ExistingWorkPolicy.REPLACE,
 //                        request
 //                    )
+
 
         }
     }

@@ -20,7 +20,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-class ExampleUnitTest {
+class NetworkTests {
 
     private var token: String = ""
     private lateinit var customer_id: String
