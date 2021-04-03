@@ -6,8 +6,9 @@ import androidx.work.WorkerParameters
 import kotlinx.coroutines.runBlocking
 import org.koin.java.KoinJavaComponent
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
+import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
 
-class NoteInsertWork(context: Context, val workerParams: WorkerParameters) : Worker(
+class NoteInsertWork(context: Context, private val workerParams: WorkerParameters) : Worker(
     context,
     workerParams
 ) {
@@ -20,6 +21,7 @@ class NoteInsertWork(context: Context, val workerParams: WorkerParameters) : Wor
 
         return runBlocking {
             val response = apiService.updateCommunicationBody(id, body)
+            stopMonitoring()
             if (response.isSuccessful) {
                 Result.success()
             } else {

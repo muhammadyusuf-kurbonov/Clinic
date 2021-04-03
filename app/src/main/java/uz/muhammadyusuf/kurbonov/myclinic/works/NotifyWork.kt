@@ -1,9 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic.works
 
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
-import android.os.Build
 import android.widget.RemoteViews
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
@@ -12,12 +9,9 @@ import com.squareup.picasso.Picasso
 import kotlinx.coroutines.TimeoutCancellationException
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.recievers.CallReceiver
-import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
 import uz.muhammadyusuf.kurbonov.myclinic.utils.getBaseNotification
-import uz.muhammadyusuf.kurbonov.myclinic.utils.notifyNotConnectedNotification
-import uz.muhammadyusuf.kurbonov.myclinic.utils.validNetworks
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.phoneNumber
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -31,11 +25,11 @@ class NotifyWork(val context: Context, workerParams: WorkerParameters) :
         val states = DataHolder.searchState
 
         when (DataHolder.type) {
-            CallTypes.INCOME -> view.setImageViewResource(
+            CallDirection.INCOME -> view.setImageViewResource(
                 R.id.imgType,
                 R.drawable.ic_baseline_phone_in_24
             )
-            CallTypes.OUTGOING -> view.setImageViewResource(
+            CallDirection.OUTGOING -> view.setImageViewResource(
                 R.id.imgType,
                 R.drawable.ic_phone_outgoing
             )
@@ -43,9 +37,9 @@ class NotifyWork(val context: Context, workerParams: WorkerParameters) :
 
         view.setTextViewText(
             R.id.tvName, when (states) {
-                is SearchStates.Loading -> context.getString(R.string.searching_text)
-                is SearchStates.Found -> states.contact.name
-                is SearchStates.Error -> {
+                is State.Loading -> context.getString(R.string.searching_text)
+                is State.Found -> states.customer.name
+                is State.Error -> {
                     val exception = states.exception
                     Timber.e(exception)
                     when (exception) {
@@ -57,15 +51,15 @@ class NotifyWork(val context: Context, workerParams: WorkerParameters) :
                     }
                 }
 //                SearchStates.ConnectionError -> context.getString(R.string.connection_error)
-                SearchStates.NotFound -> context.getString(R.string.not_found)
-                SearchStates.AuthRequest -> context.getString(R.string.auth_text)
+                State.NotFound -> context.getString(R.string.not_found)
+                State.AuthRequest -> context.getString(R.string.auth_text)
                 else -> ""
             }
         )
 
-        if (states is SearchStates.Found) {
+        if (states is State.Found) {
             with(view) {
-                val contact = states.contact
+                val contact = states.customer
                 setTextViewText(R.id.tvPhone, contact.phoneNumber)
                 setTextViewText(
                     R.id.tvBalance,
@@ -105,20 +99,6 @@ class NotifyWork(val context: Context, workerParams: WorkerParameters) :
             }
         }
 
-        if (states is SearchStates.AuthRequest) {
-            notification.setContentIntent(
-                PendingIntent.getActivity(
-                    context,
-                    111,
-                    Intent(context, LoginActivity::class.java).apply {
-                        putExtra("uz.muhammadyusuf.kurbonov.myclinic.phone", phoneNumber)
-                    },
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                    else 0
-                )
-            )
-        }
 
         notification.setContent(view)
 
@@ -126,9 +106,6 @@ class NotifyWork(val context: Context, workerParams: WorkerParameters) :
         notification.setCustomBigContentView(view)
         NotificationManagerCompat.from(context)
             .notify(CallReceiver.NOTIFICATION_ID, notification.build())
-
-        if (validNetworks.size < 1)
-            notifyNotConnectedNotification(context)
 
         return Result.success()
     }

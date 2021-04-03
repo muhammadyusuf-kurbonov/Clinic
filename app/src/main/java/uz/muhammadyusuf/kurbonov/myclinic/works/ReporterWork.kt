@@ -9,9 +9,9 @@ import org.koin.java.KoinJavaComponent
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationInfo
-import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
 import uz.muhammadyusuf.kurbonov.myclinic.utils.getCallDetails
 import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.type
 
 class ReporterWork(val context: Context, workerParams: WorkerParameters) :
@@ -28,14 +28,14 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
 
         NotificationManagerCompat.from(context).cancelAll()
 
-        if (DataHolder.searchState is SearchStates.NotFound) {
+        if (DataHolder.searchState is State.NotFound) {
             WorkManager.getInstance(context).enqueue(
                 OneTimeWorkRequest.from(NewUserAskWork::class.java)
             )
             return Result.success()
         }
 
-        if (DataHolder.searchState !is SearchStates.Found)
+        if (DataHolder.searchState !is State.Found)
             return Result.success()
 
         if (type == null) return Result.failure()
@@ -63,7 +63,7 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
             )
         }
 
-        val actualNumber = (DataHolder.searchState as SearchStates.Found).contact.phoneNumber
+        val actualNumber = (DataHolder.searchState as State.Found).customer.phoneNumber
             .replace(" ", "")
         if (actualNumber != DataHolder.phoneNumber)
             throw IllegalStateException(
@@ -75,7 +75,7 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
             val apiService = KoinJavaComponent.get(APIService::class.java)
             NotificationManagerCompat.from(context)
                 .cancelAll()
-            val user = (DataHolder.searchState as SearchStates.Found).contact
+            val user = (DataHolder.searchState as State.Found).customer
             val communications =
                 apiService.communications(
                     CommunicationInfo(
@@ -89,7 +89,6 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
 
             Timber.d("$communications")
 
-            stopMonitoring()
             if (communications.isSuccessful) {
                 DataHolder.communicationId = communications.body()!!._id
                 WorkManager.getInstance(context)
@@ -97,8 +96,10 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
                         OneTimeWorkRequestBuilder<PurposeSelectorWork>().build()
                     )
                 return@runBlocking Result.success()
-            } else
+            } else {
+                stopMonitoring()
                 return@runBlocking Result.failure()
+            }
 //
 //                val data = Data.Builder()
 //                data.putString(SendReportWork.INPUT_PHONE, DataHolder.phoneNumber)

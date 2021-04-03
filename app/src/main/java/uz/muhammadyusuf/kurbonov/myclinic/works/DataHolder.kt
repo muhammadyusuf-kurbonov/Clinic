@@ -1,14 +1,14 @@
 package uz.muhammadyusuf.kurbonov.myclinic.works
 
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
 
 object DataHolder {
     var phoneNumber: String = ""
         set(value) {
             if (value.isEmpty() || value.isBlank()) return
             if (field != value) {
-                searchState = SearchStates.Loading
+                searchState = State.Loading
             }
             field = value
         }
@@ -24,14 +24,14 @@ object DataHolder {
                 field
         }
 
-    var type: CallTypes? = null
+    var type: CallDirection? = null
 
-    var searchState: SearchStates = SearchStates.Loading
+    var searchState: State = State.Loading
         set(value) {
-            communicationId = if (value !is SearchStates.Found)
+            communicationId = if (value !is State.Found)
                 null
             else
-                value.contact.id
+                value.customer.id
             field = value
         }
 
@@ -43,13 +43,23 @@ object DataHolder {
     }
 }
 
-enum class CallTypes {
+enum class CallDirection {
     INCOME, OUTGOING;
 
     fun getAsString(): String {
         return when (this) {
             INCOME -> "incoming"
             OUTGOING -> "outgoing"
+        }
+    }
+
+    companion object {
+        fun parseString(direction: String): CallDirection {
+            return when (direction) {
+                "outgoing" -> OUTGOING
+                "incoming" -> INCOME
+                else -> throw IllegalArgumentException("Invalid call direction: $direction")
+            }
         }
     }
 }

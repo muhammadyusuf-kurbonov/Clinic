@@ -1,13 +1,13 @@
 package uz.muhammadyusuf.kurbonov.myclinic.network
 
 import uz.muhammadyusuf.kurbonov.myclinic.model.Appointment
-import uz.muhammadyusuf.kurbonov.myclinic.model.Contact
+import uz.muhammadyusuf.kurbonov.myclinic.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.model.Doctor
 import uz.muhammadyusuf.kurbonov.myclinic.network.customer_search.CustomerDTO
 import uz.muhammadyusuf.kurbonov.myclinic.utils.reformatDate
 import java.util.*
 
-fun CustomerDTO.toContact(): Contact {
+fun CustomerDTO.toContact(): Customer {
     val data = this.data[0]
     val last = this.appointments[0].prev
 
@@ -56,7 +56,7 @@ fun CustomerDTO.toContact(): Contact {
     }
 
 
-    return Contact(
+    return Customer(
         id = data._id,
         name = "${data.last_name} ${data.first_name}",
         phoneNumber = data.phone,

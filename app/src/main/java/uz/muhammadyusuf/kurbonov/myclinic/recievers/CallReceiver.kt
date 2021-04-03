@@ -1,12 +1,16 @@
 package uz.muhammadyusuf.kurbonov.myclinic.recievers
 
 import android.content.Context
-import androidx.work.*
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
-import uz.muhammadyusuf.kurbonov.myclinic.works.*
-import uz.muhammadyusuf.kurbonov.myclinic.works.StartRecognizeWork.Companion.INPUT_TYPE
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
+import uz.muhammadyusuf.kurbonov.myclinic.works.CallDirection
+import uz.muhammadyusuf.kurbonov.myclinic.works.ReporterWork
 import java.util.*
 
 
@@ -88,22 +92,16 @@ class CallReceiver : PhoneCallReceiver() {
             ExistingWorkPolicy.REPLACE,
             OneTimeWorkRequestBuilder<ReporterWork>().build()
         )
+        App.appViewModel.reduceBlocking(Action.Finish)
     }
 
     private fun startRecognition(ctx: Context, number: String?, type: String) {
-        val starterWork = OneTimeWorkRequestBuilder<StartRecognizeWork>()
-
-        starterWork.setInputData(Data.Builder().apply {
-            putString(StartRecognizeWork.INPUT_PHONE, number)
-            DataHolder.phoneNumber = number ?: ""
-            DataHolder.type = if (type == "outgoing") CallTypes.OUTGOING else CallTypes.INCOME
-            putString(INPUT_TYPE, type)
-        }.build())
-
-        WorkManager.getInstance(ctx).beginWith(
-            starterWork.build()
-        ).then(OneTimeWorkRequest.from(SearchWork::class.java))
-            .then(OneTimeWorkRequest.from(NotifyWork::class.java))
-            .enqueue()
+        App.appViewModel.reduceBlocking(Action.Start(ctx))
+        App.appViewModel.reduceBlocking(Action.SetCallDirection(CallDirection.parseString(type)))
+        App.appViewModel.reduceBlocking(
+            Action.Search(
+                number ?: throw IllegalStateException("No number yet?")
+            )
+        )
     }
 }

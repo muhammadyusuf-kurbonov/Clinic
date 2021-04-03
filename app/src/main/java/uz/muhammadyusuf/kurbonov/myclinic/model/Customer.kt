@@ -3,7 +3,7 @@ package uz.muhammadyusuf.kurbonov.myclinic.model
 import androidx.annotation.Keep
 
 @Keep
-data class Contact(
+data class Customer(
     var id: String = "",
     var name: String = "",
     var phoneNumber: String = "",

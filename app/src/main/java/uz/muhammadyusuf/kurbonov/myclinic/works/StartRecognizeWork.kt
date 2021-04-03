@@ -5,8 +5,8 @@ import android.widget.RemoteViews
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.states.SearchStates
 import uz.muhammadyusuf.kurbonov.myclinic.utils.startNetworkMonitoring
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
 
 class StartRecognizeWork(
     val context: Context,
@@ -19,13 +19,13 @@ class StartRecognizeWork(
     }
 
     override fun doWork(): Result {
-        DataHolder.searchState = SearchStates.Loading
+        DataHolder.searchState = State.Loading
         val view = RemoteViews(context.packageName, R.layout.notification_view)
         val phoneNumber = workerParams.inputData.getString(INPUT_PHONE) ?: ""
         val type = workerParams.inputData.getString(INPUT_TYPE)
 
         DataHolder.phoneNumber = phoneNumber
-        DataHolder.type = if (type == "incoming") CallTypes.INCOME else CallTypes.OUTGOING
+        DataHolder.type = if (type == "incoming") CallDirection.INCOME else CallDirection.OUTGOING
 
         startNetworkMonitoring(context)
 

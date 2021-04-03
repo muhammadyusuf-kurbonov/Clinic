@@ -4,9 +4,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
 import kotlinx.coroutines.launch
@@ -17,8 +14,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityNewUserBinding
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.customers.CustomerAddRequestBody
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
-import uz.muhammadyusuf.kurbonov.myclinic.works.ReporterWork
-import uz.muhammadyusuf.kurbonov.myclinic.works.SearchWork
 import java.util.*
 
 class NewUserActivity : AppCompatActivity() {
@@ -93,14 +88,7 @@ class NewUserActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     Timber.d("Successful added user")
                     DataHolder.phoneNumber = binding.edPhone.text.toString().replace("() -", "")
-                    WorkManager.getInstance(this@NewUserActivity).beginUniqueWork(
-                        "reporter",
-                        ExistingWorkPolicy.REPLACE,
-                        listOf(
-                            OneTimeWorkRequestBuilder<SearchWork>().build(),
-                            OneTimeWorkRequestBuilder<ReporterWork>().build()
-                        )
-                    ).enqueue()
+                    //TODO("Search and show")
                     finish()
                 } else {
                     FirebaseCrashlytics.getInstance().recordException(

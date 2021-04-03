@@ -25,9 +25,11 @@ val networkModule = module {
             .addInterceptor {
                 val url = it.request().toString()
                 Timber.tag("request").d(url)
+
                 val newRequest: Request = it.request().newBuilder()
                     .addHeader("Authorization", "Bearer ${get<String>(named("token"))}")
                     .build()
+
                 try {
                     retries(3) {
                         it.proceed(newRequest)

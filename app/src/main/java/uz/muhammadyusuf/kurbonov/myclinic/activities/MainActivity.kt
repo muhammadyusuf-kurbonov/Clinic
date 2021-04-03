@@ -1,8 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic.activities
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -11,14 +9,12 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
-import androidx.core.app.NotificationManagerCompat
 import org.koin.android.ext.android.get
 import org.koin.core.qualifier.named
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityMainBinding
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,31 +43,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             findViewById<TextView>(R.id.tvMain).text = getString(R.string.ready)
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "clinic_info",
-                "Notifications for call identification",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-                .apply {
-                    enableVibration(false)
-                }
-            NotificationManagerCompat.from(this)
-                .createNotificationChannel(channel)
-            val actionsChannel = NotificationChannel(
-                "action_request",
-                "Notifications for post call actions",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-                .apply {
-                    enableVibration(true)
-                }
-            NotificationManagerCompat.from(this)
-                .createNotificationChannel(actionsChannel)
-        }
-
-        Timber.d("TimeZone is ${TimeZone.getDefault()}")
 
         val token = get<String>(named("token"))
 

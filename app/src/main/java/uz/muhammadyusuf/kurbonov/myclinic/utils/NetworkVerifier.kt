@@ -8,15 +8,17 @@ import android.net.Network
 import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
 import android.net.NetworkRequest
 import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import uz.muhammadyusuf.kurbonov.myclinic.works.*
+import uz.muhammadyusuf.kurbonov.myclinic.App
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
+import uz.muhammadyusuf.kurbonov.myclinic.works.CallDirection
+import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
+import uz.muhammadyusuf.kurbonov.myclinic.works.StartRecognizeWork
 import java.io.IOException
 import java.net.InetSocketAddress
 import javax.net.SocketFactory
@@ -67,17 +69,12 @@ fun startNetworkMonitoring(context: Context) {
                 putString(StartRecognizeWork.INPUT_PHONE, DataHolder.phoneNumber)
                 putString(
                     StartRecognizeWork.INPUT_TYPE,
-                    if (DataHolder.type == CallTypes.OUTGOING) "outgoing" else "incoming"
+                    if (DataHolder.type == CallDirection.OUTGOING) "outgoing" else "incoming"
                 )
             }.build())
 
-            WorkManager.getInstance(context).beginWith(
-                starterWork.build()
-            ).then(OneTimeWorkRequest.from(SearchWork::class.java))
-                .then(OneTimeWorkRequest.from(NotifyWork::class.java))
-                .enqueue()
         } else {
-            notifyNotConnectedNotification(context)
+            App.appViewModel.reduceBlocking(Action.SetNoConnectionState)
             connected = false
         }
     }

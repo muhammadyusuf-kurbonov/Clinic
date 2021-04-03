@@ -7,9 +7,7 @@ import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -23,8 +21,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.type
-import uz.muhammadyusuf.kurbonov.myclinic.works.NotifyWork
-import uz.muhammadyusuf.kurbonov.myclinic.works.SearchWork
 import uz.muhammadyusuf.kurbonov.myclinic.works.StartRecognizeWork
 import java.net.InetAddress
 import kotlin.coroutines.resume
@@ -83,12 +79,13 @@ class LoginActivity : AppCompatActivity() {
                                 putString(StartRecognizeWork.INPUT_PHONE, DataHolder.phoneNumber)
                                 putString(StartRecognizeWork.INPUT_TYPE, type?.getAsString())
                             }.build())
+// TODO("Start search task")
 
-                            WorkManager.getInstance(this@LoginActivity).beginWith(
-                                enterWorker.build()
-                            ).then(OneTimeWorkRequest.from(SearchWork::class.java))
-                                .then(OneTimeWorkRequest.from(NotifyWork::class.java))
-                                .enqueue()
+//                            WorkManager.getInstance(this@LoginActivity).beginWith(
+//                                enterWorker.build()
+//                            ).then(OneTimeWorkRequest.from(SearchWork::class.java))
+//                                .then(OneTimeWorkRequest.from(NotifyWork::class.java))
+//                                .enqueue()
                         }
                         delay(1500)
                         finish()
