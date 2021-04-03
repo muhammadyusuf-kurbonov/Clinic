@@ -34,6 +34,13 @@ object DataHolder {
                 value.contact.id
             field = value
         }
+
+    override fun toString(): String {
+        return "phone number: $phoneNumber," +
+                "communicationId: $communicationId," +
+                "type: $type," +
+                "searchState: $searchState"
+    }
 }
 
 enum class CallTypes {
