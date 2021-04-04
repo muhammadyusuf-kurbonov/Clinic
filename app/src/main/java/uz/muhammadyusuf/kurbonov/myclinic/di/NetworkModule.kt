@@ -1,5 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic.di
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import okhttp3.*
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -7,8 +8,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
+import uz.muhammadyusuf.kurbonov.myclinic.utils.NetworkIOException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.RetriesExpiredException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
+import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
+import java.io.IOException
 
 
 val networkModule = module {
@@ -34,24 +38,32 @@ val networkModule = module {
                     retries(3) {
                         it.proceed(newRequest)
                     }
-                } catch (e: RetriesExpiredException) {
+                } catch (e: IOException) {
+                    FirebaseCrashlytics.getInstance().log("DataHolder is $DataHolder")
+                    FirebaseCrashlytics.getInstance().recordException(
+                        NetworkIOException(e)
+                    )
                     Timber.d(e)
-                    Response.Builder()
-                        .request(newRequest)
-                        .body(
-                            ResponseBody.create(
-                                MediaType.get("application/json"),
-                                "{" +
-                                        "error: $e" +
-                                        "}"
-                            )
-                        )
-                        .protocol(Protocol.HTTP_1_1)
-                        .message(e.message ?: "")
-                        .code(407)
-                        .build()
+                    errorResponse(newRequest, e)
+                } catch (e: RetriesExpiredException) {
+                    errorResponse(newRequest, e)
                 }
             }
             .build()
     }
 }
+
+fun errorResponse(request: Request, e: Exception): Response = Response.Builder()
+    .request(request)
+    .body(
+        ResponseBody.create(
+            MediaType.get("application/json"),
+            "{" +
+                    "error: $e" +
+                    "}"
+        )
+    )
+    .protocol(Protocol.HTTP_1_1)
+    .message(e.message ?: "")
+    .code(407)
+    .build()

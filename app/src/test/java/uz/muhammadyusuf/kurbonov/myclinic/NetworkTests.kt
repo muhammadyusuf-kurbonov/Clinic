@@ -1,6 +1,5 @@
 package uz.muhammadyusuf.kurbonov.myclinic
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import org.junit.Assert.assertEquals
@@ -28,7 +27,6 @@ class NetworkTests {
 
     @Before
     fun getAuthData() {
-
         val okhttp = OkHttpClient.Builder()
             .addInterceptor {
                 val url = it.request().toString()
@@ -42,7 +40,6 @@ class NetworkTests {
                     }
                 } catch (e: RetriesExpiredException) {
                     Timber.d(e)
-                    FirebaseCrashlytics.getInstance().recordException(e)
                     Response.Builder()
                         .request(newRequest)
                         .body(
@@ -63,10 +60,12 @@ class NetworkTests {
 
         apiService = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl("http://app.32desk.com:3030/")
+            .baseUrl("https://app.32desk.com:3030/")
             .client(okhttp)
             .build()
             .create(APIService::class.java)
+
+
         runBlocking {
             val response = apiService.authenticate(
                 AuthRequest(

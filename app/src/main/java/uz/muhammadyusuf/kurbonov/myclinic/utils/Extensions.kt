@@ -4,26 +4,16 @@ import android.content.Context
 import android.provider.CallLog
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
-import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
 import java.io.IOException
 
 inline fun <reified T> retries(count: Int, block: () -> T): T {
     var result: T? = null
     var currentIteration = 0
     while (result == null && currentIteration < count) {
-        try {
-            result = block()
-        } catch (e: IOException) {
-            FirebaseCrashlytics.getInstance().log("DataHolder is $DataHolder")
-            FirebaseCrashlytics.getInstance().recordException(
-                NetworkIOException(e)
-            )
-        } finally {
-            currentIteration++
-        }
+        result = block()
+        currentIteration++
     }
     return result ?: throw RetriesExpiredException(count)
 }

@@ -23,7 +23,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.utils.startNetworkMonitoring
 import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
 import uz.muhammadyusuf.kurbonov.myclinic.works.CallDirection
-import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
 import uz.muhammadyusuf.kurbonov.myclinic.works.MainWorker
 
 class AppViewModel {
@@ -43,7 +42,7 @@ class AppViewModel {
                 try {
                     withTimeout(12000) {
                         val response = withContext(Dispatchers.IO) {
-                            apiService.searchCustomer(DataHolder.phoneNumber, withAppointments = 0)
+                            apiService.searchCustomer(action.phoneNumber, withAppointments = 0)
                         }
 
                         _state.value = getStateOfResponse(response)
