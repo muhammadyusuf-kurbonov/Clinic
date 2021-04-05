@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.koin.core.context.stopKoin
-import org.koin.java.KoinJavaComponent.inject
 import retrofit2.Response
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
@@ -25,14 +24,12 @@ import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
 import uz.muhammadyusuf.kurbonov.myclinic.works.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.works.MainWorker
 
-class AppViewModel {
+class AppViewModel(private val apiService: APIService) {
     private val _state = MutableStateFlow<State>(State.Loading)
     val state: StateFlow<State> = _state.asStateFlow()
 
-    private lateinit var callDirection: CallDirection
-
-    private val apiService by inject(APIService::class.java)
-
+    lateinit var callDirection: CallDirection
+    private lateinit var instance: WorkManager
 
     suspend fun reduce(action: Action) {
         when (action) {
@@ -70,6 +67,7 @@ class AppViewModel {
         }
     }
 
+
     private fun initialize(context: Context) {
         if (BuildConfig.DEBUG && Timber.treeCount() == 0)
             Timber.plant(Timber.DebugTree())
@@ -77,7 +75,8 @@ class AppViewModel {
         //TODO: Remove for release
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(false)
 
-        WorkManager.getInstance(context)
+        instance = WorkManager.getInstance(context)
+        instance
             .enqueueUniqueWork(
                 "main_work",
                 ExistingWorkPolicy.KEEP,
@@ -119,6 +118,7 @@ class AppViewModel {
     }
 
     private fun onFinished() {
+        instance.cancelUniqueWork("main_work")
         FirebaseCrashlytics.getInstance().deleteUnsentReports()
         stopMonitoring()
         stopKoin()
@@ -128,4 +128,6 @@ class AppViewModel {
         Timber.d(message)
         FirebaseCrashlytics.getInstance().log(message)
     }
+
+
 }

@@ -6,18 +6,21 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.model.Customer
+import uz.muhammadyusuf.kurbonov.myclinic.recievers.CallReceiver
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
 
 class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
@@ -75,6 +78,70 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
     private fun createCustomerInfoNotification(customer: Customer) {
         printToConsole(customer.toString())
+        val view = RemoteViews(applicationContext.packageName, R.layout.notification_view)
+        val notification = NotificationCompat.Builder(applicationContext, "clinic_info")
+            .apply {
+
+                setContent(view)
+
+                setSmallIcon(R.drawable.ic_launcher_foreground)
+
+                priority = NotificationCompat.PRIORITY_MAX
+
+                setCustomBigContentView(view)
+
+                setAutoCancel(true)
+            }
+
+        when (App.appViewModel.callDirection) {
+            CallDirection.INCOME -> view.setImageViewResource(
+                R.id.imgType,
+                R.drawable.ic_baseline_phone_in_24
+            )
+            CallDirection.OUTGOING -> view.setImageViewResource(
+                R.id.imgType,
+                R.drawable.ic_phone_outgoing
+            )
+        }
+
+        view.setTextViewText(R.id.tvName, customer.name)
+
+        with(view) {
+            setTextViewText(R.id.tvPhone, customer.phoneNumber)
+
+            setTextViewText(
+                R.id.tvBalance,
+                applicationContext.getString(R.string.balance) + customer.balance
+            )
+
+            try {
+                setImageViewBitmap(R.id.imgAvatar, Picasso.get().load(customer.avatarLink).get())
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+
+            if (customer.lastAppointment != null) {
+                val lastAppointment = customer.lastAppointment!!
+                val lastAppointmentText =
+                    "${lastAppointment.date} - ${lastAppointment.doctor?.name ?: ""} - ${lastAppointment.diagnosys}"
+                setTextViewText(R.id.tvLastVisit, lastAppointmentText)
+            }
+
+            if (customer.nextAppointment != null) {
+                val nextAppointment = customer.nextAppointment!!
+                val nextAppointmentText = "${
+                    nextAppointment.date
+                } - ${nextAppointment.doctor} - ${nextAppointment.diagnosys}"
+                setTextViewText(R.id.tvNextVisit, nextAppointmentText)
+            }
+        }
+
+
+        notification.setContent(view)
+        notification.setCustomBigContentView(view)
+        NotificationManagerCompat.from(applicationContext)
+            .notify(CallReceiver.NOTIFICATION_ID, notification.build())
+
     }
 
 
