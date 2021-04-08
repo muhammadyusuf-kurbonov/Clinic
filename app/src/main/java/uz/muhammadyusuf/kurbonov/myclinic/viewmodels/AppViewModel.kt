@@ -1,8 +1,10 @@
 package uz.muhammadyusuf.kurbonov.myclinic.viewmodels
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +75,7 @@ class AppViewModel(private val apiService: APIService) {
     }
 
 
+    @SuppressLint("UnsafeExperimentalUsageError")
     private fun initialize(context: Context) {
         if (BuildConfig.DEBUG && Timber.treeCount() == 0)
             Timber.plant(Timber.DebugTree())
@@ -85,7 +88,9 @@ class AppViewModel(private val apiService: APIService) {
             .enqueueUniqueWork(
                 "main_work",
                 ExistingWorkPolicy.KEEP,
-                OneTimeWorkRequestBuilder<MainWorker>().build()
+                OneTimeWorkRequestBuilder<MainWorker>()
+                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                    .build()
             )
         startNetworkMonitoring(context)
     }

@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
+import androidx.work.ExperimentalExpeditedWork
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.squareup.picasso.Picasso
@@ -32,14 +33,16 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
     private var isActive = true
     private val notificationID = 15
 
+    @ExperimentalExpeditedWork
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        return ForegroundInfo(notificationID, getNotificationTemplate().build())
+    }
+
     override suspend fun doWork(): Result {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel()
         }
-
-        ForegroundInfo(notificationID, getNotificationTemplate().build())
-        TODO("Replace with getForegroundInfo()")
 
         App.appViewModel.state.collect { state ->
             when (state) {
