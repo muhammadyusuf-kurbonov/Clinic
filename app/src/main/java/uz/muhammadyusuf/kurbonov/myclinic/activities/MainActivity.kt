@@ -2,19 +2,18 @@ package uz.muhammadyusuf.kurbonov.myclinic.activities
 
 import android.Manifest
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
-import org.koin.android.ext.android.get
-import org.koin.core.qualifier.named
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityMainBinding
+import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,7 +43,7 @@ class MainActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.tvMain).text = getString(R.string.ready)
         }
 
-        val token = get<String>(named("token"))
+        val token = DI.getToken()
 
         if (token.trim().isEmpty() or token.isBlank()) {
             startActivity(Intent(this, LoginActivity::class.java))
@@ -52,7 +51,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<AppCompatButton>(R.id.btn_logout)
             .setOnClickListener {
-                get<SharedPreferences>().edit()
+                App.pref.edit()
                     .putString("token", "")
                     .apply()
                 startActivity(Intent(this, LoginActivity::class.java))

@@ -9,6 +9,7 @@ sealed class State {
     class Found(val customer: Customer) : State()
     object NotFound : State()
 
+    class AddNewCustomerRequest(val phone: String) : State()
     object AuthRequest : State()
 
     class Error(val exception: Exception) : State()

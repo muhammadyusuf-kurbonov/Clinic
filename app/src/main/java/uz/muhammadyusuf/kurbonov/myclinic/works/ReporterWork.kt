@@ -5,9 +5,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.work.*
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.runBlocking
-import org.koin.java.KoinJavaComponent
 import timber.log.Timber
-import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
+import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationInfo
 import uz.muhammadyusuf.kurbonov.myclinic.utils.getCallDetails
 import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
@@ -29,9 +28,6 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
         NotificationManagerCompat.from(context).cancelAll()
 
         if (DataHolder.searchState is State.NotFound) {
-            WorkManager.getInstance(context).enqueue(
-                OneTimeWorkRequest.from(NewUserAskWork::class.java)
-            )
             return Result.success()
         }
 
@@ -72,7 +68,7 @@ class ReporterWork(val context: Context, workerParams: WorkerParameters) :
             )
 
         return runBlocking {
-            val apiService = KoinJavaComponent.get(APIService::class.java)
+            val apiService = DI.getAPIService()
             NotificationManagerCompat.from(context)
                 .cancelAll()
             val user = (DataHolder.searchState as State.Found).customer

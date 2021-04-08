@@ -7,11 +7,10 @@ import androidx.lifecycle.lifecycleScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
 import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityNewUserBinding
-import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
+import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.network.customers.CustomerAddRequestBody
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
 import java.util.*
@@ -75,7 +74,7 @@ class NewUserActivity : AppCompatActivity() {
             binding.btnOk.isEnabled = false
 
             lifecycleScope.launch {
-                val api = KoinJavaComponent.getKoin().get(APIService::class)
+                val api = DI.getAPIService()
 
                 val response = api.addCustomer(
                     CustomerAddRequestBody(

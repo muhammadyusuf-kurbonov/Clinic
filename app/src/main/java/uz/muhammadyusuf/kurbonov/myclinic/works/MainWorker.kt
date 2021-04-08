@@ -19,6 +19,7 @@ import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
+import uz.muhammadyusuf.kurbonov.myclinic.activities.NewUserActivity
 import uz.muhammadyusuf.kurbonov.myclinic.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.recievers.CallReceiver
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
@@ -37,7 +38,8 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
             createNotificationChannel()
         }
 
-        setForeground(ForegroundInfo(notificationID, getNotificationTemplate().build()))
+        ForegroundInfo(notificationID, getNotificationTemplate().build())
+        TODO("Replace with getForegroundInfo()")
 
         App.appViewModel.state.collect { state ->
             when (state) {
@@ -46,6 +48,7 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
 
                 State.AuthRequest -> createAuthRequestNotification()
+                is State.AddNewCustomerRequest -> createAddCustomerNotification()
 
 
                 State.ConnectionError -> changeNotificationMessage(R.string.no_connection)
@@ -63,6 +66,43 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
         }
 
         return Result.success()
+    }
+
+    private fun createAddCustomerNotification() {
+        val notification = NotificationCompat.Builder(applicationContext, "action_request")
+            .apply {
+                setContentIntent(
+                    PendingIntent.getActivity(
+                        applicationContext,
+                        0,
+                        Intent(applicationContext, NewUserActivity::class.java).apply {
+                            putExtra("phone", DataHolder.phoneNumber)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        },
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                            PendingIntent.FLAG_IMMUTABLE
+                        else 0
+                    )
+                )
+
+                setSmallIcon(R.drawable.ic_launcher_foreground)
+
+                priority = NotificationCompat.PRIORITY_MAX
+
+                setOngoing(false)
+
+                setAutoCancel(true)
+
+                setContentText(
+                    applicationContext.getString(
+                        R.string.add_user_request,
+                        DataHolder.phoneNumber
+                    )
+                )
+            }
+
+        NotificationManagerCompat.from(applicationContext)
+            .notify(CallReceiver.NOTIFICATION_ID, notification.build())
     }
 
     private fun createAuthRequestNotification() {

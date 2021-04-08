@@ -8,5 +8,6 @@ sealed class Action {
     class SetCallDirection(val callDirection: CallDirection) : Action()
     object SetNoConnectionState : Action()
     class Search(val phoneNumber: String) : Action()
+    class EndCall(val phone: String) : Action()
     object Finish : Action()
 }

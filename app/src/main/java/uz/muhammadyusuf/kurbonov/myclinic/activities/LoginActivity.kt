@@ -1,7 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic.activities
 
 import android.annotation.SuppressLint
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
@@ -12,12 +11,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.android.ext.android.get
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityAuthBinding
-import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
+import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
 import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.type
@@ -42,7 +41,7 @@ class LoginActivity : AppCompatActivity() {
             .setOnClickListener {
                 setStatus(AuthResult.STARTED)
 
-                val authService = get<APIService>()
+                val authService = DI.getAPIService()
                 lifecycleScope.launch {
 
                     if (!checkInternetConnection()) {
@@ -60,7 +59,7 @@ class LoginActivity : AppCompatActivity() {
                     Timber.d("$response")
 
                     if (response.isSuccessful) {
-                        get<SharedPreferences>().edit()
+                        App.pref.edit()
                             .putString("token", response.body()?.accessToken)
                             .apply()
                         setStatus(AuthResult.SUCCESS)

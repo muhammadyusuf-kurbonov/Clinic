@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import org.koin.core.context.stopKoin
 import retrofit2.Response
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
@@ -53,7 +52,13 @@ class AppViewModel(private val apiService: APIService) {
                 onFinished()
                 _state.value = State.Finished
             }
-
+            is Action.EndCall -> {
+                if (state.value is State.Found) {
+                    //TODO: Send statistics data
+                } else if (state.value is State.NotFound) {
+                    _state.value = State.AddNewCustomerRequest(action.phone)
+                }
+            }
 
             Action.SetNoConnectionState -> _state.value = State.ConnectionError
             is Action.Start -> initialize(action.context)
@@ -121,7 +126,6 @@ class AppViewModel(private val apiService: APIService) {
         instance.cancelUniqueWork("main_work")
         FirebaseCrashlytics.getInstance().deleteUnsentReports()
         stopMonitoring()
-        stopKoin()
     }
 
     private fun log(message: String) {

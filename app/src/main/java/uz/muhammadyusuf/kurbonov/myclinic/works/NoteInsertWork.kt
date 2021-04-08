@@ -4,8 +4,7 @@ import android.content.Context
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.runBlocking
-import org.koin.java.KoinJavaComponent
-import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
+import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
 
 class NoteInsertWork(context: Context, private val workerParams: WorkerParameters) : Worker(
@@ -17,7 +16,7 @@ class NoteInsertWork(context: Context, private val workerParams: WorkerParameter
             ?: throw IllegalArgumentException("Id wasn't sent")
         val body = workerParams.inputData.getString("body")
             ?: throw IllegalArgumentException("Body wasn't sent")
-        val apiService = KoinJavaComponent.get(APIService::class.java)
+        val apiService = DI.getAPIService()
 
         return runBlocking {
             val response = apiService.updateCommunicationBody(id, body)
