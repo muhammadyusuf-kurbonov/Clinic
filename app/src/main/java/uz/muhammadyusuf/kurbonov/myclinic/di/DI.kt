@@ -10,7 +10,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.utils.NetworkIOException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.RetriesExpiredException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
-import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
 import java.io.IOException
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -48,7 +47,6 @@ class DI {
                         it.proceed(newRequest)
                     }
                 } catch (e: IOException) {
-                    FirebaseCrashlytics.getInstance().log("DataHolder is $DataHolder")
                     FirebaseCrashlytics.getInstance().recordException(
                         NetworkIOException(e)
                     )

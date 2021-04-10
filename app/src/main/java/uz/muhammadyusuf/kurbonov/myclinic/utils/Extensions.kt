@@ -7,11 +7,20 @@ import java.io.IOException
 
 inline fun <reified T> retries(count: Int, block: () -> T): T {
     var result: T? = null
+    var e: Throwable? = null
     var currentIteration = 0
     while (result == null && currentIteration < count) {
-        result = block()
-        currentIteration++
+        try {
+            result = block()
+            break
+        } catch (error: Throwable) {
+            e = error
+        } finally {
+            currentIteration++
+        }
     }
+    if (e != null)
+        throw e
     return result ?: throw RetriesExpiredException(count)
 }
 

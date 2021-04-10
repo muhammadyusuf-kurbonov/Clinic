@@ -7,8 +7,6 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
 import android.net.NetworkRequest
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,9 +14,6 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
-import uz.muhammadyusuf.kurbonov.myclinic.works.CallDirection
-import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
-import uz.muhammadyusuf.kurbonov.myclinic.works.StartRecognizeWork
 import java.io.IOException
 import java.net.InetSocketAddress
 import javax.net.SocketFactory
@@ -63,15 +58,8 @@ fun startNetworkMonitoring(context: Context) {
             if (connected) return
 
             connected = true
-            val starterWork = OneTimeWorkRequestBuilder<StartRecognizeWork>()
 
-            starterWork.setInputData(Data.Builder().apply {
-                putString(StartRecognizeWork.INPUT_PHONE, DataHolder.phoneNumber)
-                putString(
-                    StartRecognizeWork.INPUT_TYPE,
-                    if (DataHolder.type == CallDirection.OUTGOING) "outgoing" else "incoming"
-                )
-            }.build())
+            App.appViewModel.reduceBlocking(Action.Restart)
 
         } else {
             App.appViewModel.reduceBlocking(Action.SetNoConnectionState)

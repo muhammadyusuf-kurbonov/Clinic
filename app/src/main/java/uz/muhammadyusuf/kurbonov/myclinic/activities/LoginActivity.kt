@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -18,9 +16,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityAuthBinding
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
-import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
-import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder.type
-import uz.muhammadyusuf.kurbonov.myclinic.works.StartRecognizeWork
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 import java.net.InetAddress
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -72,19 +68,14 @@ class LoginActivity : AppCompatActivity() {
 
                     if (response.isSuccessful) {
                         if (intent.extras?.containsKey("uz.muhammadyusuf.kurbonov.myclinic.phone") == true) {
-                            val enterWorker = OneTimeWorkRequestBuilder<StartRecognizeWork>()
-
-                            enterWorker.setInputData(Data.Builder().apply {
-                                putString(StartRecognizeWork.INPUT_PHONE, DataHolder.phoneNumber)
-                                putString(StartRecognizeWork.INPUT_TYPE, type?.getAsString())
-                            }.build())
-// TODO("Start search task")
-
-//                            WorkManager.getInstance(this@LoginActivity).beginWith(
-//                                enterWorker.build()
-//                            ).then(OneTimeWorkRequest.from(SearchWork::class.java))
-//                                .then(OneTimeWorkRequest.from(NotifyWork::class.java))
-//                                .enqueue()
+                            App.appViewModel.reduce(
+                                Action.Search(
+                                    intent.extras!!.getString(
+                                        "uz.muhammadyusuf.kurbonov.myclinic.phone",
+                                        ""
+                                    )
+                                )
+                            )
                         }
                         delay(1500)
                         finish()

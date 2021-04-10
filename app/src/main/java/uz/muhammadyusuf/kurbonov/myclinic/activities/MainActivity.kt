@@ -35,8 +35,6 @@ class MainActivity : AppCompatActivity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                         Manifest.permission.FOREGROUND_SERVICE
                     else "",
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
                 ), 241
             )
         } else {

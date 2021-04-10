@@ -1,16 +1,12 @@
 package uz.muhammadyusuf.kurbonov.myclinic.recievers
 
 import android.content.Context
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 import uz.muhammadyusuf.kurbonov.myclinic.works.CallDirection
-import uz.muhammadyusuf.kurbonov.myclinic.works.ReporterWork
 import java.util.*
 
 
@@ -20,6 +16,7 @@ class CallReceiver : PhoneCallReceiver() {
         if (BuildConfig.DEBUG && Timber.treeCount() == 0)
             Timber.plant(Timber.DebugTree())
     }
+
     companion object {
         const val NOTIFICATION_ID = 155
 
@@ -55,7 +52,7 @@ class CallReceiver : PhoneCallReceiver() {
         else setFlag(true)
 
         endCall(
-            ctx
+            ctx, number
         )
     }
 
@@ -73,7 +70,7 @@ class CallReceiver : PhoneCallReceiver() {
         else setFlag(true)
 
         endCall(
-            ctx
+            ctx, number
         )
     }
 
@@ -81,18 +78,24 @@ class CallReceiver : PhoneCallReceiver() {
         if (isSent)
             return
         else setFlag(true)
-        endCall(ctx)
+        endCall(ctx, number)
     }
 
     private fun endCall(
-        context: Context
+        context: Context,
+        number: String?
     ) {
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            "reporter",
-            ExistingWorkPolicy.REPLACE,
-            OneTimeWorkRequestBuilder<ReporterWork>().build()
+//        WorkManager.getInstance(context).enqueueUniqueWork(
+//            "reporter",
+//            ExistingWorkPolicy.REPLACE,
+//            OneTimeWorkRequestBuilder<ReporterWork>().build()
+//        )
+        App.appViewModel.reduceBlocking(
+            Action.EndCall(
+                context,
+                number ?: throw IllegalArgumentException("null number")
+            )
         )
-        App.appViewModel.reduceBlocking(Action.Finish)
     }
 
     private fun startRecognition(ctx: Context, number: String?, type: String) {

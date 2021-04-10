@@ -8,7 +8,7 @@
     <string name="next_appointment">След. визит</string>
     <string name="previous_appointment">Пред. визит</string>
     <string name="searching_text">Поиск …</string>
-    <string name="too_slow">Слишком медленный интренет</string>
+    <string name="too_slow">Слишком низкая скорость подключения. Пожалуйста, смените подключение</string>
     <string name="no_connection">Нет соединения</string>
     <string name="unknown_error">Возникла ошибка</string>
     <string name="not_found">Не найдено</string>
@@ -28,7 +28,7 @@
     <string name="send_caption">Отправить</string>
     <string name="description_hint">Описание</string>
     <string name="connection_error">Ошибка соединения</string>
-    <string name="purpose_msg">Укажите цель последнего вызова</string>
+    <string name="purpose_msg">Укажите цель последнего вызова от клиента %1s</string>
     <string name="add_user_request">Нажмите на уведомление для регистрации %1s в качестве нового пациента</string>
     <string name="first_name_hint">Имя</string>
     <string name="last_name">Фамилия</string>

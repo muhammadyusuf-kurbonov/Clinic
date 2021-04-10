@@ -8,23 +8,26 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityNewUserBinding
+import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityNewCustomerBinding
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.network.customers.CustomerAddRequestBody
-import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 import java.util.*
 
-class NewUserActivity : AppCompatActivity() {
+class NewCustomerActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityNewUserBinding
+    private lateinit var binding: ActivityNewCustomerBinding
 
     private var phoneFieldFormatted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityNewUserBinding.inflate(layoutInflater)
+        binding = ActivityNewCustomerBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        App.appViewModel.reduceBlocking(Action.Finish)
 
         if (intent.extras?.containsKey("phone") == true) {
             binding.edPhone.setText(intent.extras?.getString("phone") ?: "")
@@ -86,8 +89,8 @@ class NewUserActivity : AppCompatActivity() {
 
                 if (response.isSuccessful) {
                     Timber.d("Successful added user")
-                    DataHolder.phoneNumber = binding.edPhone.text.toString().replace("() -", "")
-                    //TODO("Search and show")
+                    App.appViewModel.phone = binding.edPhone.text.toString().replace("() -", "")
+                    App.appViewModel.reduceBlocking(Action.Restart)
                     finish()
                 } else {
                     FirebaseCrashlytics.getInstance().recordException(

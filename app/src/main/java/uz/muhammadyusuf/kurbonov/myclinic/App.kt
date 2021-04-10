@@ -8,18 +8,17 @@ import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.AppViewModel
 class App : Application() {
     companion object {
         lateinit var pref: SharedPreferences
-        val appViewModel: AppViewModel by lazy {
-            val apiService by lazy {
-                DI.getAPIService()
-            }
-            AppViewModel(apiService)
-        }
+        lateinit var appViewModel: AppViewModel
     }
 
     override fun onCreate() {
         super.onCreate()
         pref = getSharedPreferences("main", 0)
+
+        val apiService by lazy {
+            DI.getAPIService()
+        }
+
+        appViewModel = AppViewModel(apiService)
     }
-
-
 }

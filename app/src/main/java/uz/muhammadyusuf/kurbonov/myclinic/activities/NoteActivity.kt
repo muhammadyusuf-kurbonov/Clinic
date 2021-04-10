@@ -11,8 +11,6 @@ import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityExplainBinding
-import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
-import uz.muhammadyusuf.kurbonov.myclinic.works.DataHolder
 import uz.muhammadyusuf.kurbonov.myclinic.works.NoteInsertWork
 
 class NoteActivity : AppCompatActivity() {
@@ -22,8 +20,7 @@ class NoteActivity : AppCompatActivity() {
     private var note: String = ""
 
     private lateinit var binding: ActivityExplainBinding
-    private lateinit var holder: CommunicationDataHolder
-
+    private var communicationId: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityExplainBinding.inflate(layoutInflater)
@@ -34,7 +31,8 @@ class NoteActivity : AppCompatActivity() {
 
         Timber.d("${intent.extras}")
 
-        holder = intent.getParcelableExtra("data") ?: throw IllegalStateException()
+        communicationId = intent.extras?.getString("communicationId")
+            ?: throw IllegalStateException("No id specified ${intent.extras}")
 
         binding.rgCause.setOnCheckedChangeListener { _, checkedId ->
             binding.edOther.isVisible = checkedId == R.id.rbOther
@@ -65,7 +63,7 @@ class NoteActivity : AppCompatActivity() {
                 OneTimeWorkRequestBuilder<NoteInsertWork>()
                     .setInputData(
                         workDataOf(
-                            "id" to DataHolder.communicationId,
+                            "id" to communicationId,
                             "body" to note
                         )
                     )
@@ -85,7 +83,7 @@ class NoteActivity : AppCompatActivity() {
         super.onStop()
         if (!isSent)
             startActivity(Intent(this, NoteActivity::class.java).apply {
-                putExtra("data", holder)
+                putExtra("communicationId", communicationId)
             })
     }
 }

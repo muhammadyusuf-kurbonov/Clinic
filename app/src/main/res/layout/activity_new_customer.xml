@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="8dp"
-    tools:context=".activities.NewUserActivity">
+    tools:context=".activities.NewCustomerActivity">
 
     <TextView
         style="@style/TextAppearance.MaterialComponents.Headline6"
@@ -24,7 +24,10 @@
             android:id="@+id/edFirstName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName" />
+            android:autofillHints="name"
+            android:hint="@string/first_name_hint"
+            android:inputType="textPersonName"
+            android:minHeight="48dp" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -39,7 +42,9 @@
             android:id="@+id/edLastName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName" />
+            android:autofillHints="name"
+            android:inputType="textPersonName"
+            android:minHeight="48dp" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -54,7 +59,9 @@
             android:id="@+id/edPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="phone" />
+            android:autofillHints="phone"
+            android:inputType="phone"
+            android:minHeight="48dp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout

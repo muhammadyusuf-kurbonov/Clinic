@@ -14,15 +14,20 @@ import androidx.work.CoroutineWorker
 import androidx.work.ExperimentalExpeditedWork
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
+import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
-import uz.muhammadyusuf.kurbonov.myclinic.activities.NewUserActivity
+import uz.muhammadyusuf.kurbonov.myclinic.activities.NewCustomerActivity
+import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.model.Customer
-import uz.muhammadyusuf.kurbonov.myclinic.recievers.CallReceiver
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
 
 class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
@@ -31,7 +36,11 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 ) {
 
     private var isActive = true
-    private val notificationID = 15
+        set(value) {
+            printToConsole("activated changed: new value $value")
+            field = value
+        }
+    private val notificationID = 100
 
     @ExperimentalExpeditedWork
     override suspend fun getForegroundInfo(): ForegroundInfo {
@@ -39,47 +48,89 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
     }
 
     override suspend fun doWork(): Result {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel()
         }
+        isActive = true
+        val scope = CoroutineScope(Dispatchers.Default)
+        scope.launch {
+            App.appViewModel.state.collect { state ->
+                printToConsole("received state $state")
+                when (state) {
+                    State.Loading -> changeNotificationMessage(R.string.searching_text)
+                    State.Finished -> deactivateWorker()
 
-        App.appViewModel.state.collect { state ->
-            when (state) {
-                State.Loading -> changeNotificationMessage(R.string.searching_text)
-                State.Finished -> deactivateWorker()
+                    is State.AuthRequest -> createAuthRequestNotification(state.phone)
+                    is State.AddNewCustomerRequest -> createAddCustomerNotification(state.phone)
+
+                    State.ConnectionError -> changeNotificationMessage(R.string.no_connection)
+                    State.TooSlowConnectionError -> changeNotificationMessage(R.string.too_slow)
+                    is State.Error -> {
+                        FirebaseCrashlytics.getInstance().recordException(state.exception)
+                        changeNotificationMessage(R.string.unknown_error)
+                    }
 
 
-                State.AuthRequest -> createAuthRequestNotification()
-                is State.AddNewCustomerRequest -> createAddCustomerNotification()
-
-
-                State.ConnectionError -> changeNotificationMessage(R.string.no_connection)
-                is State.Error -> changeNotificationMessage(R.string.unknown_error)
-
-
-                State.NotFound -> changeNotificationMessage(R.string.not_found)
-                is State.Found -> createCustomerInfoNotification(state.customer)
+                    State.NotFound -> changeNotificationMessage(R.string.not_found)
+                    is State.Found -> createCustomerInfoNotification(state.customer)
+                    is State.CommunicationInfoSent -> createPurposeSelectionNotification(
+                        state.customer,
+                        state._id
+                    )
+                }
             }
         }
+
+        printToConsole("new scope created and launcher")
 
         // Keep worker live
         while (isActive) {
             // cycle
         }
 
+        printToConsole("Work done!")
         return Result.success()
     }
 
-    private fun createAddCustomerNotification() {
+    private fun createPurposeSelectionNotification(customer: Customer, _id: String) {
+        val activityIntent = Intent(applicationContext, NoteActivity::class.java).apply {
+            putExtra(
+                "communicationId", _id
+            )
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+
+        val notification = getNotificationTemplate().apply {
+            setSmallIcon(R.drawable.ic_launcher_foreground)
+            setOngoing(true)
+            setContentText(applicationContext.getString(R.string.purpose_msg, customer.name))
+            setContentIntent(
+                PendingIntent.getActivity(
+                    applicationContext,
+                    0,
+                    activityIntent,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                        PendingIntent.FLAG_IMMUTABLE
+                    else 0
+                )
+            )
+            setAutoCancel(true)
+        }.build()
+        NotificationManagerCompat.from(applicationContext)
+            .notify(notificationID, notification)
+    }
+
+    private fun createAddCustomerNotification(phone: String) {
+        printToConsole("new user request")
         val notification = NotificationCompat.Builder(applicationContext, "action_request")
             .apply {
                 setContentIntent(
                     PendingIntent.getActivity(
                         applicationContext,
                         0,
-                        Intent(applicationContext, NewUserActivity::class.java).apply {
-                            putExtra("phone", DataHolder.phoneNumber)
+                        Intent(applicationContext, NewCustomerActivity::class.java).apply {
+                            putExtra("phone", phone)
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         },
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -99,20 +150,20 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
                 setContentText(
                     applicationContext.getString(
                         R.string.add_user_request,
-                        DataHolder.phoneNumber
+                        phone
                     )
                 )
             }
 
         NotificationManagerCompat.from(applicationContext)
-            .notify(CallReceiver.NOTIFICATION_ID, notification.build())
+            .notify(notificationID, notification.build())
     }
 
-    private fun createAuthRequestNotification() {
+    private fun createAuthRequestNotification(phone: String) {
         NotificationManagerCompat.from(applicationContext)
             .notify(notificationID, getNotificationTemplate().apply {
 
-                setContentIntent(getAuthActivityIntent())
+                setContentIntent(getAuthActivityIntent(phone))
 
                 setContentText(applicationContext.getText(R.string.auth_text))
 
@@ -183,7 +234,7 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
         notification.setContent(view)
         notification.setCustomBigContentView(view)
         NotificationManagerCompat.from(applicationContext)
-            .notify(CallReceiver.NOTIFICATION_ID, notification.build())
+            .notify(notificationID, notification.build())
 
     }
 
@@ -212,18 +263,16 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
     }
 
     private fun deactivateWorker() {
-        NotificationManagerCompat.from(applicationContext)
-            .cancelAll()
-
+        printToConsole("deactivation ...")
         // must be last
         isActive = false
     }
 
-    private fun getAuthActivityIntent() = PendingIntent.getActivity(
+    private fun getAuthActivityIntent(phone: String) = PendingIntent.getActivity(
         applicationContext,
         111,
         Intent(applicationContext, LoginActivity::class.java).apply {
-            putExtra("uz.muhammadyusuf.kurbonov.myclinic.phone", DataHolder.phoneNumber)
+            putExtra("uz.muhammadyusuf.kurbonov.myclinic.phone", phone)
         },
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             PendingIntent.FLAG_UPDATE_CURRENT
@@ -251,6 +300,8 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
 
     private fun printToConsole(msg: String) {
-        Timber.d(msg)
+        if (BuildConfig.DEBUG && Timber.treeCount() == 0)
+            Timber.plant(Timber.DebugTree())
+        Timber.tag("main_worker").d(msg)
     }
 }

@@ -8,7 +8,7 @@
     <string name="next_appointment">Next Appointment</string>
     <string name="previous_appointment">Previous Appointment</string>
     <string name="searching_text">Searching …</string>
-    <string name="too_slow">Too slow internet</string>
+    <string name="too_slow">Too slow internet connection. Please use other connection</string>
     <string name="no_connection">No internet connection</string>
     <string name="unknown_error">Sorry, error occurred!</string>
     <string name="not_found">Nobody was found</string>
@@ -28,7 +28,7 @@
     <string name="address_label">Ask address</string>
     <string name="book_appointment">Make an appointment</string>
     <string name="connection_error">Connection error</string>
-    <string name="purpose_msg">Please, specify purpose of call</string>
+    <string name="purpose_msg">Please, specify purpose of call from %1s </string>
     <string name="add_user_request">Tap to add %1s as new patient</string>
     <string name="first_name_hint">First name</string>
     <string name="last_name">Last name</string>
