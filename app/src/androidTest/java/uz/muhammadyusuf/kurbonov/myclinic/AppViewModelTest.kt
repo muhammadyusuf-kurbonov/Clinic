@@ -2,9 +2,10 @@ package uz.muhammadyusuf.kurbonov.myclinic
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.work.WorkManager
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -12,24 +13,55 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
+import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
+import java.nio.charset.StandardCharsets
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class AppViewModelTest {
 
+
+    companion object {
+        private var oldUrl = ""
+    }
+
+    private fun changeBaseUrl(url: String) {
+        if (oldUrl == url)
+            return
+        println("URL changed to $url")
+        oldUrl = url
+        App.appViewModel.reduceBlocking(Action.Finish)
+        val api = Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl(url)
+            .client(DI.getOkHTTPClient())
+            .build()
+            .create(APIService::class.java)
+        val viewModel = AppViewModel(api)
+        App.appViewModel = viewModel
+        App.appViewModel.reduceBlocking(Action.Start(InstrumentationRegistry.getInstrumentation().context))
+    }
+
+    private val mockWebServer = MockWebServer()
+
     @Before
     fun prepare() {
-        val context = InstrumentationRegistry.getInstrumentation().context
-        App.appViewModel.reduceBlocking(Action.Start(context))
-
-        val authService by lazy {
-            DI.getAPIService()
-        }
         runBlocking {
+            val context = InstrumentationRegistry.getInstrumentation().context
+            mockWebServer.start(8080)
+            changeBaseUrl(mockWebServer.url("/").toString())
+
+            val authService by lazy {
+                DI.getAPIService()
+            }
+            App.appViewModel.reduce(Action.Start(context))
             val response = authService.authenticate(
                 AuthRequest(
                     email = "demo@32desk.com",
@@ -60,7 +92,10 @@ class AppViewModelTest {
             val context = InstrumentationRegistry.getInstrumentation().context
             App.appViewModel.reduce(Action.Start(context))
 
+            mockWebServer.enqueueResponse("found.json", 200)
+
             App.appViewModel.reduce(Action.Search("+998994801416"))
+
             assertTrue(
                 "State is ${App.appViewModel.state.value}",
                 App.appViewModel.state.value is State.Found
@@ -74,6 +109,8 @@ class AppViewModelTest {
             val context = InstrumentationRegistry.getInstrumentation().context
             App.appViewModel.reduce(Action.Start(context))
 
+            mockWebServer.enqueueResponse("not-found.json", 404)
+
             App.appViewModel.reduce(Action.Search("+99894801416"))
             assertEquals(State.NotFound, App.appViewModel.state.value)
         }
@@ -85,10 +122,13 @@ class AppViewModelTest {
             val context = InstrumentationRegistry.getInstrumentation().context
             App.appViewModel.reduce(Action.Start(context))
 
+            mockWebServer.enqueueResponse("not-found.json", 404)
+
             App.appViewModel.reduce(Action.Search("+998945886633"))
             assertTrue(App.appViewModel.state.value is State.NotFound)
 
-            App.appViewModel.reduce(Action.EndCall("+998945886633"))
+            mockWebServer.enqueueResponse("authentification_success.json", 200)
+            App.appViewModel.reduce(Action.EndCall(context, "+998945886633"))
             assertTrue(App.appViewModel.state.value is State.AddNewCustomerRequest)
         }
     }
@@ -104,23 +144,24 @@ class AppViewModelTest {
         }
     }
 
-    @Test
-    fun zTestMainWorkerLifecycle() {
-        runBlocking {
-            val context = InstrumentationRegistry.getInstrumentation().context
-            App.appViewModel.reduce(Action.Start(context))
-            var info = WorkManager.getInstance(context).getWorkInfosForUniqueWork("main_work").get()
-            info.forEach {
-                println("${it.id} is ${it.state}")
-                assert(!it.state.isFinished)
-            }
-            delay(2500)
-            App.appViewModel.reduce(Action.Finish)
-            info = WorkManager.getInstance(context).getWorkInfosForUniqueWork("main_work").get()
-            info.forEach {
-                println("${it.id} is ${it.state}")
-                assert(it.state.isFinished)
-            }
+
+    @After
+    fun tearDown() {
+        mockWebServer.shutdown()
+        App.appViewModel.reduceBlocking(Action.Finish)
+        println("End test")
+    }
+
+    private fun MockWebServer.enqueueResponse(fileName: String, code: Int) {
+        val inputStream = javaClass.classLoader?.getResourceAsStream("api-response/$fileName")
+
+        val source = inputStream?.let { inputStream.buffered() }
+        source?.let {
+            enqueue(
+                MockResponse()
+                    .setResponseCode(code)
+                    .setBody(source.bufferedReader(StandardCharsets.UTF_8).readText())
+            )
         }
     }
 }
