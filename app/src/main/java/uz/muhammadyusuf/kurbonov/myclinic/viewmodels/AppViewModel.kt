@@ -175,7 +175,7 @@ class AppViewModel(private val apiService: APIService) {
     private fun onFinished() {
         FirebaseCrashlytics.getInstance().deleteUnsentReports()
         stopMonitoring()
-//        instance.cancelUniqueWork("main_work")
+        instance.cancelUniqueWork("main_work")
     }
 
     private fun log(message: String) {

@@ -8,9 +8,11 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isVisible
 import androidx.work.*
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityExplainBinding
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 import uz.muhammadyusuf.kurbonov.myclinic.works.NoteInsertWork
 
 class NoteActivity : AppCompatActivity() {
@@ -38,6 +40,7 @@ class NoteActivity : AppCompatActivity() {
             binding.edOther.isVisible = checkedId == R.id.rbOther
         }
 
+        App.appViewModel.reduceBlocking(Action.Finish)
         NotificationManagerCompat.from(applicationContext)
             .cancelAll()
 
