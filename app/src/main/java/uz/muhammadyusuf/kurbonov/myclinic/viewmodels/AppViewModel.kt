@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import retrofit2.Response
 import timber.log.Timber
-import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
@@ -21,6 +20,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationIn
 import uz.muhammadyusuf.kurbonov.myclinic.network.customer_search.CustomerDTO
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.utils.getCallDetails
+import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import uz.muhammadyusuf.kurbonov.myclinic.utils.startNetworkMonitoring
 import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
 import uz.muhammadyusuf.kurbonov.myclinic.works.CallDirection
@@ -123,11 +123,7 @@ class AppViewModel(private val apiService: APIService) {
 
     @SuppressLint("UnsafeExperimentalUsageError")
     private fun initialize(context: Context) {
-        if (BuildConfig.DEBUG && Timber.treeCount() == 0)
-            Timber.plant(Timber.DebugTree())
-
-        //TODO: Remove for release
-        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(false)
+        initTimber()
 
         instance = WorkManager.getInstance(context)
         instance.enqueueUniqueWork(
@@ -137,6 +133,7 @@ class AppViewModel(private val apiService: APIService) {
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()
         )
+
         startNetworkMonitoring(context)
     }
 
@@ -173,7 +170,7 @@ class AppViewModel(private val apiService: APIService) {
     }
 
     private fun onFinished() {
-        FirebaseCrashlytics.getInstance().deleteUnsentReports()
+//        FirebaseCrashlytics.getInstance().deleteUnsentReports()
         stopMonitoring()
         instance.cancelUniqueWork("main_work")
     }

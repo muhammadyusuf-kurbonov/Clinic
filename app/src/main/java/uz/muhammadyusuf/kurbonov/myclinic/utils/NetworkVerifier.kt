@@ -7,9 +7,8 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
 import android.net.NetworkRequest
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
@@ -24,14 +23,14 @@ object DoesNetworkHaveInternet {
     // Make sure to execute this on a background thread.
     fun execute(socketFactory: SocketFactory): Boolean {
         return try {
-            Timber.d("PINGING google.")
+            Timber.tag("network_verification").d("PINGING google.")
             val socket = socketFactory.createSocket() ?: throw IOException("Socket is null.")
             socket.connect(InetSocketAddress("8.8.8.8", 53), 1500)
             socket.close()
-            Timber.d("PING success.")
+            Timber.tag("network_verification").d("PING success.")
             true
         } catch (e: IOException) {
-            Timber.e("No internet connection. $e")
+            Timber.tag("network_verification").e("No internet connection. $e")
             false
         }
     }
@@ -47,7 +46,7 @@ object DoesNetworkHaveInternet {
  */
 private lateinit var networkCallback: ConnectivityManager.NetworkCallback
 private lateinit var cm: ConnectivityManager
-private var connected = true
+private var connected = false
 val validNetworks: MutableSet<Network> = HashSet()
 
 
@@ -76,13 +75,13 @@ fun startNetworkMonitoring(context: Context) {
           Source: https://developer.android.com/reference/android/net/ConnectivityManager.NetworkCallback#onAvailable(android.net.Network)
          */
         override fun onAvailable(network: Network) {
-            Timber.d("onAvailable: $network")
+            Timber.tag("network_verification").d("onAvailable: $network")
             val networkCapabilities = cm.getNetworkCapabilities(network)
             val hasInternetCapability = networkCapabilities?.hasCapability(NET_CAPABILITY_INTERNET)
-            Timber.d("onAvailable: ${network}, $hasInternetCapability")
+            Timber.tag("network_verification").d("onAvailable: ${network}, $hasInternetCapability")
             if (hasInternetCapability == true) {
                 // check if this network actually has internet
-                CoroutineScope(Dispatchers.IO).launch {
+                runBlocking {
                     val hasInternet = DoesNetworkHaveInternet.execute(network.socketFactory)
                     if (hasInternet) {
                         withContext(Dispatchers.Main) {
@@ -100,7 +99,7 @@ fun startNetworkMonitoring(context: Context) {
           Source: https://developer.android.com/reference/android/net/ConnectivityManager.NetworkCallback#onLost(android.net.Network)
          */
         override fun onLost(network: Network) {
-            Timber.d("onLost: $network")
+            Timber.tag("network_verification").d("onLost: $network")
             validNetworks.remove(network)
             verify()
         }

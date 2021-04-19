@@ -22,13 +22,14 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.NewCustomerActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.model.Customer
+import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
+import kotlin.random.Random
 
 class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
     appContext,
@@ -36,89 +37,17 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 ) {
 
     private var isActive = true
-        set(value) {
-            printToConsole("activated changed: new value $value")
-            field = value
-        }
     private val notificationID = 100
 
-    @ExperimentalExpeditedWork
-    override suspend fun getForegroundInfo(): ForegroundInfo {
-        return ForegroundInfo(notificationID, getNotificationTemplate().build())
-    }
-
-    override suspend fun doWork(): Result {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
-        }
-        isActive = true
-        val scope = CoroutineScope(Dispatchers.Default)
-        scope.launch {
-            App.appViewModel.state.collect { state ->
-                printToConsole("received state $state")
-                when (state) {
-                    State.Loading -> changeNotificationMessage(R.string.searching_text)
-                    State.Finished -> deactivateWorker()
-
-                    is State.AuthRequest -> createAuthRequestNotification(state.phone)
-                    is State.AddNewCustomerRequest -> createAddCustomerNotification(state.phone)
-
-                    State.ConnectionError -> changeNotificationMessage(R.string.no_connection)
-                    State.TooSlowConnectionError -> changeNotificationMessage(R.string.too_slow)
-                    is State.Error -> {
-                        FirebaseCrashlytics.getInstance().recordException(state.exception)
-                        changeNotificationMessage(R.string.unknown_error)
-                    }
-
-
-                    State.NotFound -> changeNotificationMessage(R.string.not_found)
-                    is State.Found -> createCustomerInfoNotification(state.customer)
-                    is State.CommunicationInfoSent -> createPurposeSelectionNotification(
-                        state.customer,
-                        state._id
-                    )
-                }
-            }
-        }
-
-        printToConsole("new scope created and launcher")
-
-        // Keep worker live
-        while (isActive) {
-            // cycle
-        }
-
-        printToConsole("Work done!")
-        return Result.success()
-    }
-
-    private fun createPurposeSelectionNotification(customer: Customer, _id: String) {
-        val activityIntent = Intent(applicationContext, NoteActivity::class.java).apply {
-            putExtra(
-                "communicationId", _id
-            )
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-
-
-        val notification = getNotificationTemplate().apply {
-            setSmallIcon(R.drawable.ic_launcher_foreground)
-            setOngoing(true)
-            setContentText(applicationContext.getString(R.string.purpose_msg, customer.name))
-            setContentIntent(
-                PendingIntent.getActivity(
-                    applicationContext,
-                    0,
-                    activityIntent,
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                        PendingIntent.FLAG_IMMUTABLE
-                    else 0
-                )
-            )
-            setAutoCancel(true)
-        }.build()
+    private fun changeNotificationMessage(msg: String) {
         NotificationManagerCompat.from(applicationContext)
-            .notify(notificationID, notification)
+            .notify(notificationID, getNotificationTemplate().apply {
+                setContentText(msg)
+            }.build())
+    }
+
+    private fun changeNotificationMessage(msgStringId: Int) {
+        changeNotificationMessage(applicationContext.getString(msgStringId))
     }
 
     private fun createAddCustomerNotification(phone: String) {
@@ -173,18 +102,21 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
     private fun createCustomerInfoNotification(customer: Customer) {
         printToConsole(customer.toString())
         val view = RemoteViews(applicationContext.packageName, R.layout.notification_view)
-        val notification = NotificationCompat.Builder(applicationContext, "clinic_info")
-            .apply {
+        val notification =
+            NotificationCompat.Builder(applicationContext, "32desk_notification_channel")
+                .apply {
 
-                setContent(view)
+                    setContent(view)
 
-                setSmallIcon(R.drawable.ic_launcher_foreground)
+                    setChannelId("32desk_notification_channel")
 
-                priority = NotificationCompat.PRIORITY_MAX
+                    setSmallIcon(R.drawable.ic_launcher_foreground)
 
-                setCustomBigContentView(view)
+                    priority = NotificationCompat.PRIORITY_MAX
 
-                setAutoCancel(true)
+                    setCustomBigContentView(view)
+
+                    setAutoCancel(true)
             }
 
         when (App.appViewModel.callDirection) {
@@ -238,7 +170,6 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
     }
 
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
@@ -246,26 +177,94 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
             "Notifications of app 32Desk.com",
             NotificationManager.IMPORTANCE_HIGH
         )
+        channel.enableVibration(true)
         NotificationManagerCompat.from(applicationContext)
             .createNotificationChannel(channel)
 
     }
 
-    private fun changeNotificationMessage(msg: String) {
-        NotificationManagerCompat.from(applicationContext)
-            .notify(notificationID, getNotificationTemplate().apply {
-                setContentText(msg)
-            }.build())
-    }
+    private fun createPurposeSelectionNotification(customer: Customer, communicationId: String) {
+        printToConsole("communicationId is $communicationId by creating notification")
+        val activityIntent = Intent(applicationContext, NoteActivity::class.java).apply {
+            putExtra(
+                "communicationId", communicationId
+            )
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
 
-    private fun changeNotificationMessage(msgStringId: Int) {
-        changeNotificationMessage(applicationContext.getString(msgStringId))
+
+        val notification = getNotificationTemplate().apply {
+            setSmallIcon(R.drawable.ic_launcher_foreground)
+            setOngoing(true)
+            setContentText(applicationContext.getString(R.string.purpose_msg, customer.name))
+            setContentIntent(
+                PendingIntent.getActivity(
+                    applicationContext,
+                    Random.nextInt(),
+                    activityIntent,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                        PendingIntent.FLAG_IMMUTABLE
+                    else 0
+                )
+            )
+            priority = NotificationCompat.PRIORITY_MAX
+            setAutoCancel(true)
+        }.build()
+        NotificationManagerCompat.from(applicationContext)
+            .notify(notificationID, notification)
     }
 
     private fun deactivateWorker() {
         printToConsole("deactivation ...")
         // must be last
         isActive = false
+    }
+
+    override suspend fun doWork(): Result {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel()
+        }
+        isActive = true
+
+        val scope = CoroutineScope(Dispatchers.Default)
+
+        scope.launch {
+            App.appViewModel.state.collect { state ->
+                printToConsole("received state $state")
+                when (state) {
+                    State.Loading -> changeNotificationMessage(R.string.searching_text)
+                    State.Finished -> deactivateWorker()
+
+                    is State.AuthRequest -> createAuthRequestNotification(state.phone)
+                    is State.AddNewCustomerRequest -> createAddCustomerNotification(state.phone)
+
+                    State.ConnectionError -> changeNotificationMessage(R.string.no_connection)
+                    State.TooSlowConnectionError -> changeNotificationMessage(R.string.too_slow)
+                    is State.Error -> {
+                        FirebaseCrashlytics.getInstance().recordException(state.exception)
+                        changeNotificationMessage(R.string.unknown_error)
+                    }
+
+
+                    State.NotFound -> changeNotificationMessage(R.string.not_found)
+                    is State.Found -> createCustomerInfoNotification(state.customer)
+                    is State.CommunicationInfoSent -> createPurposeSelectionNotification(
+                        state.customer,
+                        state.communicationId
+                    )
+                }
+            }
+        }
+
+        printToConsole("new scope created and launcher")
+
+        // Keep worker live
+        while (isActive) {
+            // cycle
+        }
+
+        printToConsole("Work done!")
+        return Result.success()
     }
 
     private fun getAuthActivityIntent(phone: String) = PendingIntent.getActivity(
@@ -279,8 +278,13 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
         else 0
     )
 
+    @ExperimentalExpeditedWork
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        return ForegroundInfo(notificationID, getNotificationTemplate().build())
+    }
+
     private fun getNotificationTemplate() =
-        NotificationCompat.Builder(applicationContext, "clinic_info")
+        NotificationCompat.Builder(applicationContext, "32desk_notification_channel")
             .apply {
 
                 setChannelId("32desk_notification_channel")
@@ -293,15 +297,11 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
                 setOngoing(false)
 
-                setOnlyAlertOnce(true)
-
                 setAutoCancel(true)
             }
 
-
     private fun printToConsole(msg: String) {
-        if (BuildConfig.DEBUG && Timber.treeCount() == 0)
-            Timber.plant(Timber.DebugTree())
+        initTimber()
         Timber.tag("main_worker").d(msg)
     }
 }

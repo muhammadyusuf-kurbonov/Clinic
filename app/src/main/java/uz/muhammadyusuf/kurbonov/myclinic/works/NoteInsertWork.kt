@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
+import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 
 class NoteInsertWork(context: Context, private val workerParams: WorkerParameters) : Worker(
@@ -22,17 +23,28 @@ class NoteInsertWork(context: Context, private val workerParams: WorkerParameter
         val apiService = DI.getAPIService()
 
         return runBlocking {
-            val response = apiService.updateCommunicationBody(id, body)
+            val response = retries(10) {
+                apiService.updateCommunicationBody(id, body)
+            }
             App.appViewModel.reduceBlocking(Action.Finish)
             if (response.isSuccessful) {
-                Result.success()
-            } else {
-                Timber.d(response.errorBody()?.string())
-                Result.failure(
+                Result.success(
                     workDataOf(
-                        "error" to response.errorBody().toString()
+                        "id" to id,
+                        "body" to body,
+                        "response" to response.raw().message()
                     )
                 )
+            } else {
+                Timber.d(response.errorBody()?.string())
+                if (runAttemptCount < 10)
+                    Result.retry() else
+                    Result.failure(
+                        workDataOf(
+                            "error" to response.errorBody()?.byteStream()?.bufferedReader()
+                                ?.readText()
+                        )
+                    )
             }
         }
     }

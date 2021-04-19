@@ -1,6 +1,5 @@
 package uz.muhammadyusuf.kurbonov.myclinic.di
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import okhttp3.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -47,10 +46,7 @@ class DI {
                         it.proceed(newRequest)
                     }
                 } catch (e: IOException) {
-                    FirebaseCrashlytics.getInstance().recordException(
-                        NetworkIOException(e)
-                    )
-                    Timber.d(e)
+                    Timber.d(NetworkIOException(e))
                     errorResponse(newRequest, e)
                 } catch (e: RetriesExpiredException) {
                     errorResponse(newRequest, e)
