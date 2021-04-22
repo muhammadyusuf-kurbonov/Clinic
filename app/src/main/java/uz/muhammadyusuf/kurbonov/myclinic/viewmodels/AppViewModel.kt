@@ -8,9 +8,7 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import retrofit2.Response
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
@@ -19,10 +17,10 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationInfo
 import uz.muhammadyusuf.kurbonov.myclinic.network.customer_search.CustomerDTO
 import uz.muhammadyusuf.kurbonov.myclinic.network.toContact
+import uz.muhammadyusuf.kurbonov.myclinic.utils.NetworkTracker
 import uz.muhammadyusuf.kurbonov.myclinic.utils.getCallDetails
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
-import uz.muhammadyusuf.kurbonov.myclinic.utils.startNetworkMonitoring
-import uz.muhammadyusuf.kurbonov.myclinic.utils.stopMonitoring
+import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
 import uz.muhammadyusuf.kurbonov.myclinic.works.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.works.MainWorker
 
@@ -33,6 +31,10 @@ class AppViewModel(private val apiService: APIService) {
     lateinit var callDirection: CallDirection
     lateinit var phone: String
     private lateinit var instance: WorkManager
+    private val job = Job()
+
+    // Don't use this scope, because it is observing network until state finished
+    private val networkTrackerScope = CoroutineScope(Dispatchers.Default + job)
 
     suspend fun reduce(action: Action) {
         when (action) {
@@ -78,7 +80,7 @@ class AppViewModel(private val apiService: APIService) {
             Action.SetNoConnectionState -> _state.value = State.ConnectionError
             is Action.Start -> initialize(action.context)
             is Action.SetCallDirection -> callDirection = action.callDirection
-            Action.Restart -> reduce(Action.Search(phone))
+            Action.Restart -> if (this::phone.isInitialized) reduce(Action.Search(phone))
         }
     }
 
@@ -92,22 +94,26 @@ class AppViewModel(private val apiService: APIService) {
         runBlocking {
             val apiService = DI.getAPIService()
             val communications =
-                apiService.communications(
-                    CommunicationInfo(
-                        customer.id,
-                        status,
-                        duration,
-                        callDirection.getAsString(),
-                        body = ""
+                retries(10) {
+                    apiService.communications(
+                        CommunicationInfo(
+                            customer.id,
+                            status,
+                            duration,
+                            callDirection.getAsString(),
+                            body = ""
+                        )
                     )
-                )
+                }
             if (communications.isSuccessful) {
-                _state.value = State.CommunicationInfoSent(
-                    customer, communications.body()?._id
-                        ?: throw IllegalStateException("communicationId is null")
-                )
+                if (duration > 0)
+                    _state.value = State.CommunicationInfoSent(
+                        customer, communications.body()?._id
+                            ?: throw IllegalStateException("communicationId is null")
+                    )
+                else
+                    reduce(Action.Finish)
             } else {
-                stopMonitoring()
                 _state.value = State.Error(
                     IllegalStateException(communications.errorBody().toString())
                 )
@@ -125,6 +131,8 @@ class AppViewModel(private val apiService: APIService) {
     private fun initialize(context: Context) {
         initTimber()
 
+        initNetworkTracker(context)
+
         instance = WorkManager.getInstance(context)
         instance.enqueueUniqueWork(
             "main_work",
@@ -133,8 +141,19 @@ class AppViewModel(private val apiService: APIService) {
                 .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()
         )
+    }
 
-        startNetworkMonitoring(context)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun initNetworkTracker(context: Context) {
+        networkTrackerScope.launch {
+            NetworkTracker(context).connectedToInternet.distinctUntilChanged().collect {
+                if (!it) {
+                    reduce(Action.SetNoConnectionState)
+                } else {
+                    reduce(Action.Restart)
+                }
+            }
+        }
     }
 
     private fun getStateOfResponse(response: Response<CustomerDTO>): State {
@@ -171,8 +190,8 @@ class AppViewModel(private val apiService: APIService) {
 
     private fun onFinished() {
 //        FirebaseCrashlytics.getInstance().deleteUnsentReports()
-        stopMonitoring()
         instance.cancelUniqueWork("main_work")
+        job.cancel()
     }
 
     private fun log(message: String) {

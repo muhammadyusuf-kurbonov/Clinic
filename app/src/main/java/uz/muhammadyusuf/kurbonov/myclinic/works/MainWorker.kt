@@ -28,6 +28,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.activities.NewCustomerActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
+import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.State
 import kotlin.random.Random
 
@@ -52,31 +53,34 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
     private fun createAddCustomerNotification(phone: String) {
         printToConsole("new user request")
-        val notification = NotificationCompat.Builder(applicationContext, "action_request")
-            .apply {
-                setContentIntent(
-                    PendingIntent.getActivity(
-                        applicationContext,
-                        0,
-                        Intent(applicationContext, NewCustomerActivity::class.java).apply {
-                            putExtra("phone", phone)
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        },
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                            PendingIntent.FLAG_IMMUTABLE
-                        else 0
+        val notification =
+            NotificationCompat.Builder(applicationContext, "32desk_notification_channel")
+                .apply {
+                    setContentIntent(
+                        PendingIntent.getActivity(
+                            applicationContext,
+                            0,
+                            Intent(applicationContext, NewCustomerActivity::class.java).apply {
+                                putExtra("phone", phone)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            },
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                                PendingIntent.FLAG_IMMUTABLE
+                            else 0
+                        )
                     )
-                )
 
-                setSmallIcon(R.drawable.ic_launcher_foreground)
+                    setChannelId("32desk_notification_channel")
 
-                priority = NotificationCompat.PRIORITY_MAX
+                    setSmallIcon(R.drawable.ic_launcher_foreground)
 
-                setOngoing(false)
+                    priority = NotificationCompat.PRIORITY_MAX
 
-                setAutoCancel(true)
+                    setOngoing(false)
 
-                setContentText(
+                    setAutoCancel(true)
+
+                    setContentText(
                     applicationContext.getString(
                         R.string.add_user_request,
                         phone
@@ -95,7 +99,6 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
                 setContentIntent(getAuthActivityIntent(phone))
 
                 setContentText(applicationContext.getText(R.string.auth_text))
-
             }.build())
     }
 
@@ -185,6 +188,7 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
     private fun createPurposeSelectionNotification(customer: Customer, communicationId: String) {
         printToConsole("communicationId is $communicationId by creating notification")
+
         val activityIntent = Intent(applicationContext, NoteActivity::class.java).apply {
             putExtra(
                 "communicationId", communicationId
@@ -280,7 +284,9 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
     @ExperimentalExpeditedWork
     override suspend fun getForegroundInfo(): ForegroundInfo {
-        return ForegroundInfo(notificationID, getNotificationTemplate().build())
+        return ForegroundInfo(notificationID, getNotificationTemplate().build()).also {
+            App.appViewModel.reduceBlocking(Action.Restart)
+        }
     }
 
     private fun getNotificationTemplate() =

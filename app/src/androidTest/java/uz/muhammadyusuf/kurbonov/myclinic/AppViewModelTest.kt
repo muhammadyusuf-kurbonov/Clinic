@@ -37,7 +37,12 @@ class AppViewModelTest {
             return
         println("URL changed to $url")
         oldUrl = url
-        App.appViewModel.reduceBlocking(Action.Finish)
+
+        try {
+            App.appViewModel.reduceBlocking(Action.Finish)
+        } catch (e: Exception) {
+        }
+
         val api = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(url)
@@ -148,7 +153,6 @@ class AppViewModelTest {
     @After
     fun tearDown() {
         mockWebServer.shutdown()
-        App.appViewModel.reduceBlocking(Action.Finish)
         println("End test")
     }
 

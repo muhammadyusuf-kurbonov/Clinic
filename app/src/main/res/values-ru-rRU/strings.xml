@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_label">Предоставьте разрешения для нормальной работы</string>
+    <string name="main_label_ask_permission">Предоставьте разрешения для нормальной работы</string>
     <string name="open_medical_card">Открыть карту</string>
     <string name="email_hint">Электронная почта</string>
     <string name="password">Пароль</string>
@@ -14,8 +14,7 @@
     <string name="not_found">Не найдено</string>
     <string name="auth_text">Нажмите на уведомление для входа в аккаунт</string>
     <string name="balance">"Баланс: "</string>
-    <string name="not_avaible" />
-    <string name="ready">Готово</string>
+    <string name="main_label_text">Добро пожаловать.\nВы вошли как %s</string>
     <string name="logout">Выйти</string>
     <string name="logging_in_caption">Подождите …</string>
     <string name="login_success">Вход успешен</string>
@@ -29,7 +28,7 @@
     <string name="description_hint">Описание</string>
     <string name="connection_error">Ошибка соединения</string>
     <string name="purpose_msg">Укажите цель последнего вызова от клиента %1s</string>
-    <string name="add_user_request">Нажмите на уведомление для регистрации %1s в качестве нового пациента</string>
+    <string name="add_user_request">Нажмите на уведомление для регистрации %s в качестве нового пациента</string>
     <string name="first_name_hint">Имя</string>
     <string name="last_name">Фамилия</string>
     <string name="phone_number_hint">Телефон</string>

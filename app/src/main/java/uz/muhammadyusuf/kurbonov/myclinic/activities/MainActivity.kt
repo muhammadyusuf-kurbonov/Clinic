@@ -5,26 +5,23 @@ import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatButton
-import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityMainBinding
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
+import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        setContentView(R.layout.activity_main)
 
-        if (BuildConfig.DEBUG && Timber.treeCount() == 0)
-            Timber.plant(Timber.DebugTree())
+        initTimber()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(
@@ -38,7 +35,10 @@ class MainActivity : AppCompatActivity() {
                 ), 241
             )
         } else {
-            findViewById<TextView>(R.id.tvMain).text = getString(R.string.ready)
+            findViewById<TextView>(R.id.tvMain).text = getString(
+                R.string.main_label_text,
+                App.pref.getString("user.email", "(login again to see it)")
+            )
         }
 
         val token = DI.getToken()
@@ -47,13 +47,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, LoginActivity::class.java))
         }
 
-        findViewById<AppCompatButton>(R.id.btn_logout)
-            .setOnClickListener {
-                App.pref.edit()
-                    .putString("token", "")
-                    .apply()
-                startActivity(Intent(this, LoginActivity::class.java))
-            }
+        findViewById<TextView>(R.id.tvVersion).text = getString(
+            R.string.version_template,
+            getString(R.string.app_name),
+            BuildConfig.VERSION_NAME
+        )
     }
 
     override fun onRequestPermissionsResult(
@@ -70,8 +68,29 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (allGiven) {
-            findViewById<TextView>(R.id.tvMain).text = getString(R.string.ready)
+            findViewById<TextView>(R.id.tvMain).text = getString(
+                R.string.main_label_text,
+                App.pref.getString("user.email", "(login again to see it)")
+            )
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_option_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.mnLogout -> {
+                App.pref.edit()
+                    .putString("token", "")
+                    .putString("user.email", "")
+                    .apply()
+
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
 }

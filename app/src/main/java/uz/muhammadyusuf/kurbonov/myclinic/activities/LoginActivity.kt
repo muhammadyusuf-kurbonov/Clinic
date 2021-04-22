@@ -11,11 +11,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityAuthBinding
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
+import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 import java.net.InetAddress
 import kotlin.coroutines.resume
@@ -30,8 +30,7 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (BuildConfig.DEBUG && Timber.treeCount() == 0)
-            Timber.plant(Timber.DebugTree())
+        initTimber()
 
         binding.btnLogin
             .setOnClickListener {
@@ -57,9 +56,14 @@ class LoginActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         App.pref.edit()
                             .putString("token", response.body()?.accessToken)
+                            .putString("user.email", binding.inputEmail.text.toString())
                             .apply()
                         setStatus(AuthResult.SUCCESS)
                     } else {
+                        App.pref.edit()
+                            .putString("token", "")
+                            .putString("user.email", null)
+                            .apply()
                         setStatus(AuthResult.FAILED)
                     }
 
