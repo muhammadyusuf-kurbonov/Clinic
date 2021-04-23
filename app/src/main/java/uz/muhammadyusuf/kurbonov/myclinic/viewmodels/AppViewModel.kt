@@ -11,6 +11,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import retrofit2.Response
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
@@ -132,6 +133,8 @@ class AppViewModel(private val apiService: APIService) {
         initTimber()
 
         initNetworkTracker(context)
+
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
 
         instance = WorkManager.getInstance(context)
         instance.enqueueUniqueWork(
