@@ -14,7 +14,7 @@
     <string name="not_found">Не найдено</string>
     <string name="auth_text">Нажмите на уведомление для входа в аккаунт</string>
     <string name="balance">"Баланс: "</string>
-    <string name="main_label_text">Добро пожаловать.\nВы вошли как %s</string>
+    <string name="main_label_text">Добро пожаловать.\nВы вошли как \n %s</string>
     <string name="logout">Выйти</string>
     <string name="logging_in_caption">Подождите …</string>
     <string name="login_success">Вход успешен</string>

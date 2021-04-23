@@ -14,7 +14,7 @@
     <string name="not_found">Nobody was found</string>
     <string name="auth_text">Tap notification to login</string>
     <string name="balance">"Balance: "</string>
-    <string name="main_label_text">Welcome! Logged in as %s</string>
+    <string name="main_label_text">Welcome! Logged in as \n%s</string>
     <string name="logout">Logout</string>
     <string name="logging_in_caption">Wait please …</string>
     <string name="login_success">Login success</string>
