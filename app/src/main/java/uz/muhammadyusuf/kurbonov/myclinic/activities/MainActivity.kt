@@ -93,4 +93,12 @@ class MainActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
+
+    override fun onResume() {
+        super.onResume()
+        findViewById<TextView>(R.id.tvMain).text = getString(
+            R.string.main_label_text,
+            App.pref.getString("user.email", "(login again to see it)")
+        )
+    }
 }
