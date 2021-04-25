@@ -10,10 +10,10 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.api.customers.CustomerAddRequestBody
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityNewCustomerBinding
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
-import uz.muhammadyusuf.kurbonov.myclinic.network.customers.CustomerAddRequestBody
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 import java.util.*
 
 class NewCustomerActivity : AppCompatActivity() {

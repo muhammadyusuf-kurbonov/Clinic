@@ -1,6 +1,8 @@
 package uz.muhammadyusuf.kurbonov.myclinic.activities
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
@@ -8,12 +10,21 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.lifecycleScope
+import androidx.work.WorkManager
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
+import uz.muhammadyusuf.kurbonov.myclinic.works.MainWorker
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,6 +33,22 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         initTimber()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel()
+        }
+
+        lifecycleScope.launch {
+            delay(5000)
+            if (App.appViewModel.state.value is State.None) {
+                try {
+                    App.appViewModel.reduce(Action.Finish)
+                    WorkManager.getInstance(this@MainActivity)
+                        .cancelUniqueWork(MainWorker.WORKER_ID)
+                } catch (e: Exception) {
+                }
+            }
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(
@@ -92,6 +119,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel() {
+        val channel = NotificationChannel(
+            "32desk_notification_channel",
+            "Notifications of app 32Desk.com",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        channel.enableVibration(true)
+        NotificationManagerCompat.from(applicationContext)
+            .createNotificationChannel(channel)
     }
 
     override fun onResume() {

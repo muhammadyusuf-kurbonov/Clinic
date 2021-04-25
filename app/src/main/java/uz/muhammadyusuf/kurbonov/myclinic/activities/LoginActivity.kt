@@ -12,16 +12,21 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.api.authentification.AuthRequest
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityAuthBinding
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
-import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 import java.net.InetAddress
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class LoginActivity : AppCompatActivity() {
+
+    companion object {
+        const val EXTRA_PHONE = "uz.muhammadyusuf.kurbonov.myclinic.phone"
+    }
+
     private lateinit var binding: ActivityAuthBinding
 
     @SuppressLint("InflateParams")
@@ -71,13 +76,13 @@ class LoginActivity : AppCompatActivity() {
                         setStatus(AuthResult.NO_CONNECTION)
 
                     if (response.isSuccessful) {
-                        if (intent.extras?.containsKey("uz.muhammadyusuf.kurbonov.myclinic.phone") == true) {
+                        if (intent.extras?.containsKey(EXTRA_PHONE) == true) {
                             App.appViewModel.reduce(
                                 Action.Search(
                                     intent.extras!!.getString(
                                         "uz.muhammadyusuf.kurbonov.myclinic.phone",
                                         ""
-                                    )
+                                    ), App.appViewModel.callDirection
                                 )
                             )
                         }

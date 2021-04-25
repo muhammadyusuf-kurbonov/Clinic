@@ -2,8 +2,8 @@ package uz.muhammadyusuf.kurbonov.myclinic
 
 import android.app.Application
 import android.content.SharedPreferences
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.AppViewModel
 
 class App : Application() {
     companion object {

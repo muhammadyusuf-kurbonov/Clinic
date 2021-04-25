@@ -11,8 +11,8 @@ import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityExplainBinding
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 import uz.muhammadyusuf.kurbonov.myclinic.works.NoteInsertWork
 
 class NoteActivity : AppCompatActivity() {

@@ -8,9 +8,9 @@ import org.junit.Test
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
-import uz.muhammadyusuf.kurbonov.myclinic.network.APIService
-import uz.muhammadyusuf.kurbonov.myclinic.network.authentification.AuthRequest
-import uz.muhammadyusuf.kurbonov.myclinic.network.communications.CommunicationInfo
+import uz.muhammadyusuf.kurbonov.myclinic.api.APIService
+import uz.muhammadyusuf.kurbonov.myclinic.api.authentification.AuthRequest
+import uz.muhammadyusuf.kurbonov.myclinic.api.communications.CommunicationInfo
 import uz.muhammadyusuf.kurbonov.myclinic.utils.RetriesExpiredException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
 

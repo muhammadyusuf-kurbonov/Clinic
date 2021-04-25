@@ -4,9 +4,9 @@ import android.content.Context
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
-import uz.muhammadyusuf.kurbonov.myclinic.works.CallDirection
 import java.util.*
 
 
@@ -100,10 +100,10 @@ class CallReceiver : PhoneCallReceiver() {
 
     private fun startRecognition(ctx: Context, number: String?, type: String) {
         App.appViewModel.reduceBlocking(Action.Start(ctx))
-        App.appViewModel.reduceBlocking(Action.SetCallDirection(CallDirection.parseString(type)))
         App.appViewModel.reduceBlocking(
             Action.Search(
-                number ?: throw IllegalStateException("No number yet?")
+                number ?: throw IllegalStateException("No number yet?"),
+                CallDirection.parseString(type)
             )
         )
     }

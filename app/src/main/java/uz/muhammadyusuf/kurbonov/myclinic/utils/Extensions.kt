@@ -6,7 +6,7 @@ import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
-import uz.muhammadyusuf.kurbonov.myclinic.model.CommunicationDataHolder
+import uz.muhammadyusuf.kurbonov.myclinic.core.model.CommunicationDataHolder
 import java.io.IOException
 
 inline fun <reified T> retries(count: Int, block: () -> T): T {

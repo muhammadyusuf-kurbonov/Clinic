@@ -7,9 +7,9 @@ import androidx.work.workDataOf
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
-import uz.muhammadyusuf.kurbonov.myclinic.viewmodels.Action
 
 class NoteInsertWork(context: Context, private val workerParams: WorkerParameters) : Worker(
     context,

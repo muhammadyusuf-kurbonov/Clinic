@@ -93,7 +93,7 @@
           "Images"
         ],
         "label": "i.jpeg",
-        "filename": "5dc2bf249a76124f5374648b/d00ec7b898f6fd6d4519def23be297f12f2b0dd0b22b17475024405880e0f00b.jpeg",
+        "filename": null,
         "size": 10196,
         "mimetype": "image/jpeg",
         "tooth": null,
@@ -103,8 +103,8 @@
         "createdAt": "2020-05-04T15:25:11.380Z",
         "updatedAt": "2020-05-04T15:25:11.423Z",
         "__v": 0,
-        "preview": "http://app.32desk.com/uploads/5dc2bf249a76124f5374648b/thumb200-d00ec7b898f6fd6d4519def23be297f12f2b0dd0b22b17475024405880e0f00b.jpeg",
-        "url": "http://app.32desk.com/uploads/5dc2bf249a76124f5374648b/d00ec7b898f6fd6d4519def23be297f12f2b0dd0b22b17475024405880e0f00b.jpeg"
+        "preview": null,
+        "url": null
       },
       "schedule": [],
       "can_update": true,
