@@ -19,6 +19,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.activities.NewCustomerActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
+import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_NOTIFICATIONS_VIEW
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import kotlin.random.Random
 
@@ -278,7 +279,7 @@ class NotificationView(
 
     private fun log(msg: String) {
         initTimber()
-        Timber.tag("notification_view").d(msg)
+        Timber.tag(TAG_NOTIFICATIONS_VIEW).d(msg)
     }
 
     var onFinished: () -> Unit = {}

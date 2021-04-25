@@ -1,7 +1,10 @@
 package uz.muhammadyusuf.kurbonov.myclinic
 
+import androidx.test.filters.LargeTest
+import org.junit.AfterClass
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 
 @RunWith(Suite::class)
 @Suite.SuiteClasses(
@@ -9,4 +12,12 @@ import org.junit.runners.Suite
     NotificationViewTests::class,
     IntegratedTests::class
 )
-class GeneralTests
+@LargeTest
+class GeneralTests {
+    companion object {
+        @AfterClass
+        fun close() {
+            App.appViewModel.reduceBlocking(Action.Finish)
+        }
+    }
+}

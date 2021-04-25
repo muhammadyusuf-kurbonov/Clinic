@@ -1,6 +1,10 @@
 package uz.muhammadyusuf.kurbonov.myclinic
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.util.Log
+import androidx.core.app.NotificationManagerCompat
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
@@ -52,3 +56,14 @@ internal suspend fun <T> StateFlow<T>.waitUntil(
 }
 
 class SuccessException : CancellationException()
+
+fun createNotificationChannel(context: Context) {
+    val channel = NotificationChannel(
+        "32desk_notification_channel",
+        "Notifications of app 32Desk.com",
+        NotificationManager.IMPORTANCE_HIGH
+    )
+    channel.enableVibration(true)
+    NotificationManagerCompat.from(context)
+        .createNotificationChannel(channel)
+}

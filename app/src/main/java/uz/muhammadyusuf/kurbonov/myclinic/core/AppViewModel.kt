@@ -156,7 +156,6 @@ class AppViewModel(private val apiService: APIService) {
         )
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun initNetworkTracker(context: Context) {
         networkTrackerScope.launch {
             NetworkTracker(context).connectedToInternet.distinctUntilChanged().collect {
@@ -208,7 +207,7 @@ class AppViewModel(private val apiService: APIService) {
     }
 
     private fun log(message: String) {
-        Timber.d(message)
+        Timber.tag(TAG_APP_VIEW_MODEL).d(message)
         FirebaseCrashlytics.getInstance().log(message)
     }
 

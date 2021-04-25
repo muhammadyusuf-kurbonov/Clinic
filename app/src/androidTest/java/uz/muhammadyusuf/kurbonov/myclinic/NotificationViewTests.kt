@@ -26,6 +26,10 @@ class NotificationViewTests {
     @Before
     fun prepare() {
         state.value = State.None
+
+        createNotificationChannel(context)
+
+
         notificationView = NotificationView(context, state)
         notificationView.start()
     }

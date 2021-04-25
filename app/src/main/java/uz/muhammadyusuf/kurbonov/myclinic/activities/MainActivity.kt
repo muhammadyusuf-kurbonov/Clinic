@@ -13,18 +13,11 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.lifecycleScope
-import androidx.work.WorkManager
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
-import uz.muhammadyusuf.kurbonov.myclinic.works.MainWorker
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,18 +29,6 @@ class MainActivity : AppCompatActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel()
-        }
-
-        lifecycleScope.launch {
-            delay(5000)
-            if (App.appViewModel.state.value is State.None) {
-                try {
-                    App.appViewModel.reduce(Action.Finish)
-                    WorkManager.getInstance(this@MainActivity)
-                        .cancelUniqueWork(MainWorker.WORKER_ID)
-                } catch (e: Exception) {
-                }
-            }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

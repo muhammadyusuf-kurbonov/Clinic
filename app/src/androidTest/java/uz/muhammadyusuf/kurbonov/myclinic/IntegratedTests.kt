@@ -1,6 +1,9 @@
 package uz.muhammadyusuf.kurbonov.myclinic
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.util.Log
+import androidx.core.app.NotificationManagerCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -41,6 +44,15 @@ class IntegratedTests {
 
         Log.d("test-system", "Initializing...")
 
+        val channel = NotificationChannel(
+            "32desk_notification_channel",
+            "Notifications of app 32Desk.com",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        channel.enableVibration(true)
+        NotificationManagerCompat.from(context)
+            .createNotificationChannel(channel)
+
         mockWebServer.start()
 
         val api = Retrofit.Builder()
@@ -60,6 +72,7 @@ class IntegratedTests {
 
     @After
     fun dismiss() {
+        viewModel.reduceBlocking(Action.Finish)
         mockWebServer.shutdown()
         println("End test")
     }

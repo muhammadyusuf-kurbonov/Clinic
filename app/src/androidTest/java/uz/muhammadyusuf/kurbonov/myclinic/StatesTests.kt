@@ -33,6 +33,7 @@ class StatesTests {
 
         mockWebServer.start()
 
+        createNotificationChannel(InstrumentationRegistry.getInstrumentation().targetContext)
 
         val api = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
@@ -48,6 +49,7 @@ class StatesTests {
 
     @After
     fun dismiss() {
+        viewModel.reduceBlocking(Action.Finish)
         mockWebServer.shutdown()
         println("End test")
     }
