@@ -14,6 +14,17 @@ class App : Application() {
     companion object {
         lateinit var pref: SharedPreferences
         lateinit var appViewModel: AppViewModel
+
+        fun getAppViewModelInstance(): AppViewModel {
+            if (!this::appViewModel.isInitialized) {
+                val apiService by lazy {
+                    DI.getAPIService()
+                }
+
+                appViewModel = AppViewModel(apiService)
+            }
+            return appViewModel
+        }
     }
 
     override fun onCreate() {
@@ -26,11 +37,6 @@ class App : Application() {
 
         WorkManager.getInstance(this).cancelUniqueWork(MainWorker.WORKER_ID)
 
-        val apiService by lazy {
-            DI.getAPIService()
-        }
-
-        appViewModel = AppViewModel(apiService)
     }
 
 

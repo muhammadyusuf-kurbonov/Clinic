@@ -18,8 +18,6 @@ class CallReceiver : PhoneCallReceiver() {
     }
 
     companion object {
-        const val NOTIFICATION_ID = 155
-
         @JvmField
         @Volatile
         var isSent = false
@@ -90,7 +88,7 @@ class CallReceiver : PhoneCallReceiver() {
 //            ExistingWorkPolicy.REPLACE,
 //            OneTimeWorkRequestBuilder<ReporterWork>().build()
 //        )
-        App.appViewModel.reduceBlocking(
+        App.getAppViewModelInstance().reduceBlocking(
             Action.EndCall(
                 context,
                 number ?: throw IllegalArgumentException("null number")
@@ -99,8 +97,8 @@ class CallReceiver : PhoneCallReceiver() {
     }
 
     private fun startRecognition(ctx: Context, number: String?, type: String) {
-        App.appViewModel.reduceBlocking(Action.Start(ctx))
-        App.appViewModel.reduceBlocking(
+        App.getAppViewModelInstance().reduceBlocking(Action.Start(ctx))
+        App.getAppViewModelInstance().reduceBlocking(
             Action.Search(
                 number ?: throw IllegalStateException("No number yet?"),
                 CallDirection.parseString(type)

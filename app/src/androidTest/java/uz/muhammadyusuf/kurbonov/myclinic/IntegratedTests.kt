@@ -20,16 +20,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 import uz.muhammadyusuf.kurbonov.myclinic.api.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.core.NotificationView
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
 
 @RunWith(AndroidJUnit4::class)
 class IntegratedTests {
-    private lateinit var notificationView: NotificationView
-
     private val mockWebServer = MockWebServer()
-    private lateinit var viewModel: AppViewModel
 
     private val context by lazy {
         InstrumentationRegistry.getInstrumentation().targetContext
@@ -61,18 +57,15 @@ class IntegratedTests {
             .client(DI.getOkHTTPClient())
             .build()
             .create(APIService::class.java)
-        viewModel = AppViewModel(api)
+        App.appViewModel = AppViewModel(api)
 
-        viewModel.reduceBlocking(Action.Start(context))
-        notificationView = NotificationView(context, viewModel.state)
-        notificationView.start()
-
+        App.getAppViewModelInstance().reduceBlocking(Action.Start(context))
         Log.d("test-system", "Initialized")
     }
 
     @After
     fun dismiss() {
-        viewModel.reduceBlocking(Action.Finish)
+        App.getAppViewModelInstance().reduceBlocking(Action.Finish)
         mockWebServer.shutdown()
         println("End test")
     }
@@ -82,7 +75,8 @@ class IntegratedTests {
     fun testNotFound() {
         runBlocking {
             mockWebServer.enqueueResponse("not-found.json", 404)
-            viewModel.reduce(Action.Search("+998945886633", CallDirection.INCOME))
+            App.getAppViewModelInstance()
+                .reduce(Action.Search("+998945886633", CallDirection.INCOME))
 
             uiDevice.openNotification()
 
@@ -94,7 +88,8 @@ class IntegratedTests {
     fun testFound() {
         runBlocking {
             mockWebServer.enqueueResponse("found.json", 200)
-            viewModel.reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
+            App.getAppViewModelInstance()
+                .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
 
             uiDevice.openNotification()
             uiDevice.wait(Until.findObject(By.textContains("Иван")), 15000)

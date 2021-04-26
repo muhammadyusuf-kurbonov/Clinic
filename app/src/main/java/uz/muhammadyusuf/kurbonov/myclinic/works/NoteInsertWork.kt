@@ -26,7 +26,7 @@ class NoteInsertWork(context: Context, private val workerParams: WorkerParameter
             val response = retries(10) {
                 apiService.updateCommunicationBody(id, body)
             }
-            App.appViewModel.reduceBlocking(Action.Finish)
+            App.getAppViewModelInstance().reduceBlocking(Action.Finish)
             if (response.isSuccessful) {
                 Result.success(
                     workDataOf(

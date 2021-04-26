@@ -27,7 +27,7 @@ class NewCustomerActivity : AppCompatActivity() {
         binding = ActivityNewCustomerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        App.appViewModel.reduceBlocking(Action.Finish)
+        App.getAppViewModelInstance().reduceBlocking(Action.Finish)
 
         if (intent.extras?.containsKey("phone") == true) {
             binding.edPhone.setText(intent.extras?.getString("phone") ?: "")
@@ -89,8 +89,9 @@ class NewCustomerActivity : AppCompatActivity() {
 
                 if (response.isSuccessful) {
                     Timber.d("Successful added user")
-                    App.appViewModel.phone = binding.edPhone.text.toString().replace("() -", "")
-                    App.appViewModel.reduceBlocking(Action.Restart)
+                    App.getAppViewModelInstance().phone =
+                        binding.edPhone.text.toString().replace("() -", "")
+                    App.getAppViewModelInstance().reduceBlocking(Action.Restart)
                     finish()
                 } else {
                     FirebaseCrashlytics.getInstance().recordException(

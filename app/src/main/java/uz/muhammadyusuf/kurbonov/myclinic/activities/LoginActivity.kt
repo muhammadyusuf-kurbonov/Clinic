@@ -77,12 +77,12 @@ class LoginActivity : AppCompatActivity() {
 
                     if (response.isSuccessful) {
                         if (intent.extras?.containsKey(EXTRA_PHONE) == true) {
-                            App.appViewModel.reduce(
+                            App.getAppViewModelInstance().reduce(
                                 Action.Search(
                                     intent.extras!!.getString(
                                         "uz.muhammadyusuf.kurbonov.myclinic.phone",
                                         ""
-                                    ), App.appViewModel.callDirection
+                                    ), App.getAppViewModelInstance().callDirection
                                 )
                             )
                         }

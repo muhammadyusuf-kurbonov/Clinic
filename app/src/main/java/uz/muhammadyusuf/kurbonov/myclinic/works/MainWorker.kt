@@ -35,7 +35,8 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
         isActive = true
 
-        val notificationView = NotificationView(applicationContext, App.appViewModel.state)
+        val notificationView =
+            NotificationView(applicationContext, App.getAppViewModelInstance().state)
         notificationView.onFinished = {
             deactivateWorker()
         }
@@ -55,7 +56,7 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
     @ExperimentalExpeditedWork
     override suspend fun getForegroundInfo(): ForegroundInfo {
         return ForegroundInfo(primaryNotificationID, getNotificationTemplate().build()).also {
-            App.appViewModel.reduceBlocking(Action.Restart)
+            App.getAppViewModelInstance().reduceBlocking(Action.Restart)
         }
     }
 
