@@ -18,7 +18,6 @@ import androidx.core.app.NotificationManagerCompat
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 
@@ -103,8 +102,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
-
-        App.getAppViewModelInstance().reduceBlocking(Action.Start(applicationContext))
     }
 
     private fun verifyToken() {
@@ -138,9 +135,9 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
-            "32desk_notification_channel",
+            App.NOTIFICATION_CHANNEL_ID,
             "Notifications of app 32Desk.com",
-            NotificationManager.IMPORTANCE_HIGH
+            NotificationManager.IMPORTANCE_DEFAULT
         )
         channel.enableVibration(true)
         NotificationManagerCompat.from(applicationContext)

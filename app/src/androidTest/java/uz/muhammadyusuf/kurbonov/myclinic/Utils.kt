@@ -59,9 +59,9 @@ class SuccessException : CancellationException()
 
 fun createNotificationChannel(context: Context) {
     val channel = NotificationChannel(
-        "32desk_notification_channel",
+        App.NOTIFICATION_CHANNEL_ID,
         "Notifications of app 32Desk.com",
-        NotificationManager.IMPORTANCE_HIGH
+        NotificationManager.IMPORTANCE_DEFAULT
     )
     channel.enableVibration(true)
     NotificationManagerCompat.from(context)

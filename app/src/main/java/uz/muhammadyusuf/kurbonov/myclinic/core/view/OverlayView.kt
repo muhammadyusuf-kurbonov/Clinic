@@ -2,18 +2,28 @@ package uz.muhammadyusuf.kurbonov.myclinic.core.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.LinearLayout
 import androidx.core.view.isVisible
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
+import uz.muhammadyusuf.kurbonov.myclinic.activities.NewCustomerActivity
+import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
+import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
+import uz.muhammadyusuf.kurbonov.myclinic.databinding.CustomerInfoBinding
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.OverlayMainBinding
+import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_NOTIFICATIONS_VIEW
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 
@@ -32,14 +42,6 @@ class OverlayView(
 
     private lateinit var view: View
     private lateinit var windowManager: WindowManager
-
-    private suspend fun showTextBalloon() = withContext(Dispatchers.Main) {
-        val container = binding.container
-        container.animate().scaleX(1f).scaleY(1f).withStartAction {
-            container.visibility = VISIBLE
-            printToLog("Showing")
-        }
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     suspend fun start() {
@@ -110,7 +112,6 @@ class OverlayView(
 
             windowManager.addView(view, layoutParams)
         }
-
         observeState()
     }
 
@@ -118,22 +119,180 @@ class OverlayView(
         stateFlow.collect { state ->
             printToLog("received state $state")
             when (state) {
-                is State.AddNewCustomerRequest -> TODO()
-                is State.AuthRequest -> TODO()
-                is State.CommunicationInfoSent -> TODO()
-                State.ConnectionError -> TODO()
-                is State.Error -> TODO()
+                is State.AddNewCustomerRequest -> requestAddNewCustomer(state.phone)
+                is State.AuthRequest -> requestAuth(state.phone)
+                is State.PurposeRequest -> requestPurpose(state.customer, state.communicationId)
+                State.ConnectionError -> noConnection()
+                is State.Error -> error(state.exception)
                 State.Finished -> {
                     windowManager.removeView(view)
                     coroutineScope.cancel()
                 }
-                is State.Found -> TODO()
+                is State.Found -> found(state.customer, state.callDirection)
                 State.None -> printToLog("None")
-                State.NotFound -> printToLog("Not found")
-                State.Searching -> printToLog("Searching $state")
-                State.Started -> printToLog("Started")
-                State.TooSlowConnectionError -> TODO()
+                State.NotFound -> notFound()
+                State.Searching -> searching()
+                State.Started -> welcome()
+                State.TooSlowConnectionError -> tooSlowInternet()
             }
+        }
+    }
+
+    //==============================================================================================
+
+    private suspend fun onlyText() = withContext(Dispatchers.Main) {
+        binding.text.visibility = VISIBLE
+        binding.btn.visibility = GONE
+        showTextBalloon()
+    }
+
+    private suspend fun onlyButton() = withContext(Dispatchers.Main) {
+        binding.text.visibility = GONE
+        binding.btn.visibility = VISIBLE
+        showTextBalloon()
+    }
+
+    private suspend fun textAndButton() = withContext(Dispatchers.Main) {
+        binding.text.visibility = VISIBLE
+        binding.btn.visibility = VISIBLE
+        showTextBalloon()
+    }
+
+    //==============================================================================================
+
+    private suspend fun ask(msg: String, block: () -> Unit) = withContext(Dispatchers.Main) {
+        textAndButton()
+        binding.text.text = msg
+        binding.btn.setText(android.R.string.ok)
+        binding.btn.setOnClickListener {
+            block()
+        }
+    }
+
+    private suspend fun say(msg: String) = withContext(Dispatchers.Main) {
+        onlyText()
+        binding.text.text = msg
+    }
+
+    private suspend fun say(resId: Int) {
+        say(context.getString(resId))
+    }
+
+    // =============================================================================================
+
+    private suspend fun requestAuth(phone: String) {
+        ask(context.getString(R.string.auth_text)) {
+            context.startActivity(Intent(context, LoginActivity::class.java).apply {
+                putExtra(LoginActivity.EXTRA_PHONE, phone)
+            })
+        }
+    }
+
+    private suspend fun requestAddNewCustomer(phone: String) {
+        ask(context.getString(R.string.add_user_request, phone)) {
+            context.startActivity(Intent(context, NewCustomerActivity::class.java).apply {
+                putExtra("phone", phone)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            })
+        }
+    }
+
+    private suspend fun requestPurpose(customer: Customer, communicationId: String) {
+        ask(context.getString(R.string.purpose_msg, customer.name)) {
+            context.startActivity(Intent(context, NoteActivity::class.java).apply {
+                putExtra(
+                    "communicationId", communicationId
+                )
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            })
+        }
+    }
+
+    private suspend fun searching() {
+        say(R.string.searching_text)
+    }
+
+    private suspend fun noConnection() {
+        say(R.string.no_connection)
+    }
+
+    private suspend fun notFound() {
+        say(R.string.not_found)
+    }
+
+    private suspend fun error(e: Exception) {
+        say(R.string.unknown_error)
+        Timber.e(e)
+    }
+
+    private suspend fun tooSlowInternet() {
+        say(R.string.too_slow)
+    }
+
+    private suspend fun welcome() {
+        say(R.string.logging_in_caption)
+    }
+
+    private suspend fun found(customer: Customer, callDirection: CallDirection) =
+        withContext(Dispatchers.Main) {
+            onlyButton()
+            val infoView = CustomerInfoBinding.inflate(LayoutInflater.from(context))
+
+            with(infoView) {
+                // Drawing icon for notification
+                when (callDirection) {
+                    CallDirection.INCOME -> imgType.setImageResource(
+                        R.drawable.ic_baseline_phone_in_24
+                    )
+                    CallDirection.OUTGOING -> imgType.setImageResource(
+                        R.drawable.ic_phone_outgoing
+                    )
+                }
+
+                tvName.text = customer.name
+                tvPhone.text = customer.phoneNumber
+
+                tvBalance.text = context.getString(R.string.balance, customer.balance)
+
+                try {
+                    Picasso.get().load(customer.avatarLink).into(imgAvatar)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
+
+                if (customer.lastAppointment != null) {
+                    val lastAppointment = customer.lastAppointment!!
+                    val lastAppointmentText =
+                        "${lastAppointment.date} - ${lastAppointment.doctor?.name ?: ""} - ${lastAppointment.diagnosys}"
+                    tvLastVisit.text = lastAppointmentText
+                }
+
+                if (customer.nextAppointment != null) {
+                    val nextAppointment = customer.nextAppointment!!
+                    val nextAppointmentText = "${
+                        nextAppointment.date
+                    } - ${nextAppointment.doctor} - ${nextAppointment.diagnosys}"
+                    tvNextVisit.text = nextAppointmentText
+                }
+            }
+
+            binding.container.addView(
+                infoView.root, 0, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+            )
+        }
+
+    //==============================================================================================
+
+    private suspend fun showTextBalloon() = withContext(Dispatchers.Main) {
+        val container = binding.container
+        if (container.isVisible) return@withContext
+        container.animate().scaleX(1f).scaleY(1f).withStartAction {
+            container.visibility = VISIBLE
+            printToLog("Showing")
         }
     }
 
@@ -145,6 +304,7 @@ class OverlayView(
         }
     }
 
+    //==============================================================================================
 
     private fun printToLog(msg: String) {
         initTimber()

@@ -1,9 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.util.Log
-import androidx.core.app.NotificationManagerCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -40,14 +37,7 @@ class IntegratedTests {
 
         Log.d("test-system", "Initializing...")
 
-        val channel = NotificationChannel(
-            "32desk_notification_channel",
-            "Notifications of app 32Desk.com",
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        channel.enableVibration(true)
-        NotificationManagerCompat.from(context)
-            .createNotificationChannel(channel)
+        createNotificationChannel(context)
 
         mockWebServer.start()
 
@@ -78,7 +68,7 @@ class IntegratedTests {
             App.getAppViewModelInstance()
                 .reduce(Action.Search("+998945886633", CallDirection.INCOME))
 
-            uiDevice.openNotification()
+
 
             checkNotificationWithText(uiDevice, context.getString(R.string.not_found))
         }
@@ -90,8 +80,6 @@ class IntegratedTests {
             mockWebServer.enqueueResponse("found.json", 200)
             App.getAppViewModelInstance()
                 .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
-
-            uiDevice.openNotification()
             uiDevice.wait(Until.findObject(By.textContains("Иван")), 15000)
         }
     }
@@ -103,7 +91,7 @@ class IntegratedTests {
             App.getAppViewModelInstance()
                 .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
 
-            uiDevice.openNotification()
+
             checkNotificationWithText(uiDevice, context.getString(R.string.auth_text))
         }
     }
@@ -115,7 +103,7 @@ class IntegratedTests {
                 .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
 
             mockWebServer.shutdown()
-            uiDevice.openNotification()
+
             checkNotificationWithText(uiDevice, context.getString(R.string.too_slow))
         }
     }

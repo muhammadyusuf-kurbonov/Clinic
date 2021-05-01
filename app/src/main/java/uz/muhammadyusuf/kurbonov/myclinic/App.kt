@@ -12,6 +12,9 @@ import uz.muhammadyusuf.kurbonov.myclinic.works.MainWorker
 
 class App : Application() {
     companion object {
+
+        const val NOTIFICATION_CHANNEL_ID = "32desk_notification_channel_low"
+
         lateinit var pref: SharedPreferences
         lateinit var appViewModel: AppViewModel
 

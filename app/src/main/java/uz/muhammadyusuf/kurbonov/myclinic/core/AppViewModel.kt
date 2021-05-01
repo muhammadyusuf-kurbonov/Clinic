@@ -123,7 +123,7 @@ class AppViewModel(private val apiService: APIService) {
 
             if (communications.isSuccessful) {
                 if (duration > 0)
-                    _state.value = State.CommunicationInfoSent(
+                    _state.value = State.PurposeRequest(
                         customer, communications.body()?._id
                             ?: throw IllegalStateException("communicationId is null")
                     )

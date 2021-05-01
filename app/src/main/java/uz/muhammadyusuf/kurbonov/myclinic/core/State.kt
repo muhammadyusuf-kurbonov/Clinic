@@ -14,7 +14,7 @@ sealed class State {
 
     data class AddNewCustomerRequest(val phone: String) : State()
     data class AuthRequest(val phone: String) : State()
-    data class CommunicationInfoSent(val customer: Customer, val communicationId: String) : State()
+    data class PurposeRequest(val customer: Customer, val communicationId: String) : State()
 
     data class Error(val exception: Exception) : State()
     object ConnectionError : State()

@@ -9,12 +9,10 @@ import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.view.OverlayView
-import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 
 class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
     appContext,
@@ -43,25 +41,17 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
     override suspend fun getForegroundInfo(): ForegroundInfo {
         return ForegroundInfo(
             primaryNotificationID,
-            NotificationCompat.Builder(applicationContext, "32desk_notification_channel")
+            NotificationCompat.Builder(applicationContext, App.NOTIFICATION_CHANNEL_ID)
                 .apply {
 
-                    setChannelId("32desk_notification_channel")
+                    setChannelId(App.NOTIFICATION_CHANNEL_ID)
 
                     setContentTitle(applicationContext.getString(R.string.app_name))
 
                     setSmallIcon(R.drawable.ic_launcher_foreground)
-
-                    setAutoCancel(true)
                 }.build()
         ).also {
             App.getAppViewModelInstance().reduceBlocking(Action.Restart)
         }
-    }
-
-
-    fun printToLog(msg: String) {
-        initTimber()
-        Timber.tag("main_worker").d(msg)
     }
 }

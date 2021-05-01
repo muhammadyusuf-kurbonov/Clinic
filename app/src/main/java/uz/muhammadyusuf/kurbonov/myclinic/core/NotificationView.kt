@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.NewCustomerActivity
@@ -44,7 +45,7 @@ class NotificationView(
     private fun createAddCustomerNotification(phone: String) {
         log("new user request")
         val notification =
-            NotificationCompat.Builder(context, "32desk_notification_channel")
+            NotificationCompat.Builder(context, App.NOTIFICATION_CHANNEL_ID)
                 .apply {
                     setContentIntent(
                         PendingIntent.getActivity(
@@ -60,7 +61,7 @@ class NotificationView(
                         )
                     )
 
-                    setChannelId("32desk_notification_channel")
+                    setChannelId(App.NOTIFICATION_CHANNEL_ID)
 
                     setSmallIcon(R.drawable.ic_launcher_foreground)
 
@@ -94,14 +95,14 @@ class NotificationView(
 
     private fun createCustomerInfoNotification(customer: Customer, callDirection: CallDirection) {
         log(customer.toString())
-        val view = RemoteViews(context.packageName, R.layout.notification_view)
+        val view = RemoteViews(context.packageName, R.layout.customer_info)
         val notification =
-            NotificationCompat.Builder(context, "32desk_notification_channel")
+            NotificationCompat.Builder(context, App.NOTIFICATION_CHANNEL_ID)
                 .apply {
 
                     setContent(view)
 
-                    setChannelId("32desk_notification_channel")
+                    setChannelId(App.NOTIFICATION_CHANNEL_ID)
 
                     setSmallIcon(R.drawable.ic_launcher_foreground)
 
@@ -233,7 +234,7 @@ class NotificationView(
                         state.customer,
                         state.callDirection
                     )
-                    is State.CommunicationInfoSent -> {
+                    is State.PurposeRequest -> {
                         createPurposeSelectionNotification(
                             state.customer,
                             state.communicationId
@@ -261,10 +262,10 @@ class NotificationView(
     )
 
     private fun getNotificationTemplate() =
-        NotificationCompat.Builder(context, "32desk_notification_channel")
+        NotificationCompat.Builder(context, App.NOTIFICATION_CHANNEL_ID)
             .apply {
 
-                setChannelId("32desk_notification_channel")
+                setChannelId(App.NOTIFICATION_CHANNEL_ID)
 
                 setContentTitle(context.getString(R.string.app_name))
 
