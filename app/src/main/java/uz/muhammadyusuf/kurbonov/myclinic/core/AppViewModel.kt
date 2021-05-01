@@ -66,6 +66,7 @@ class AppViewModel(private val apiService: APIService) {
                 onFinished()
                 _state.value = State.Finished
             }
+
             is Action.EndCall -> {
                 when (state.value) {
                     is State.Found -> {
@@ -81,10 +82,14 @@ class AppViewModel(private val apiService: APIService) {
             }
 
             Action.SetNoConnectionState -> _state.value = State.ConnectionError
+
+
             is Action.Start -> {
                 initialize(action.context)
                 _state.value = State.Started
             }
+
+
             Action.Restart -> if (this::phone.isInitialized) reduce(
                 Action.Search(
                     phone,

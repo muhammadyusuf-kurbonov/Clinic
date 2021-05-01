@@ -95,4 +95,29 @@ class IntegratedTests {
             uiDevice.wait(Until.findObject(By.textContains("Иван")), 15000)
         }
     }
+
+    @Test
+    fun testAuthRequest() {
+        runBlocking {
+            mockWebServer.enqueueResponse("found.json", 401)
+            App.getAppViewModelInstance()
+                .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
+
+            uiDevice.openNotification()
+            checkNotificationWithText(uiDevice, context.getString(R.string.auth_text))
+        }
+    }
+
+    @Test
+    fun testNoResponse() {
+        runBlocking {
+            App.getAppViewModelInstance()
+                .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
+
+            mockWebServer.shutdown()
+            uiDevice.openNotification()
+            checkNotificationWithText(uiDevice, context.getString(R.string.too_slow))
+        }
+    }
+
 }
