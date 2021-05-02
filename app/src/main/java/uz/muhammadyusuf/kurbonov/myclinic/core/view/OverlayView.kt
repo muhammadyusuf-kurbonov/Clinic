@@ -8,16 +8,20 @@ import android.os.Build
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.Button
+import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.NewCustomerActivity
 import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.CustomerInfoBinding
@@ -195,6 +199,22 @@ class OverlayView(
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             })
         }
+        binding.container.addView(
+            Button(
+                context,
+                null,
+                R.style.Widget_MaterialComponents_Button_TextButton
+            ).apply {
+                setText(android.R.string.cancel)
+                setOnClickListener {
+                    App.getAppViewModelInstance().reduceBlocking(Action.Finish)
+                }
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.CENTER_HORIZONTAL
+            })
     }
 
     private suspend fun requestPurpose(customer: Customer, communicationId: String) =

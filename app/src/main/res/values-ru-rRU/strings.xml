@@ -35,4 +35,5 @@
     <string name="register_new_patient">Добавить нового пациента</string>
     <string name="required_error">Обязательно</string>
     <string name="not_granted">Пожалуйста, предоставьте мне следующие разрешения:\n%1s\n</string>
+    <string name="call_direction">Направление вызова</string>
 </resources>

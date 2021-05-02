@@ -5,7 +5,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import uz.muhammadyusuf.kurbonov.myclinic.App
 
-class BackgroundCheckWorker(val appContext: Context, val workerParams: WorkerParameters) :
+class BackgroundCheckWorker(appContext: Context, workerParams: WorkerParameters) :
     Worker(appContext, workerParams) {
 
     companion object {

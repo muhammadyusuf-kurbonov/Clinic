@@ -8,6 +8,7 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
@@ -34,6 +35,7 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
         while (job.isActive) {
             //cycle
         }
+        delay(5000)
         return Result.success()
     }
 
