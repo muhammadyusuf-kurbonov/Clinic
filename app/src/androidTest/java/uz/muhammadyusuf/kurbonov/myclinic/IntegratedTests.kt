@@ -29,7 +29,9 @@ class IntegratedTests {
     }
 
     private val uiDevice by lazy {
-        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).apply {
+            pressHome()
+        }
     }
 
     @Before

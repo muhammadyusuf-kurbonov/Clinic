@@ -8,7 +8,6 @@ import android.os.Build
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
@@ -160,14 +159,15 @@ class OverlayView(
 
     //==============================================================================================
 
-    private suspend fun ask(msg: String, block: () -> Unit) = withContext(Dispatchers.Main) {
-        textAndButton()
-        binding.text.text = msg
-        binding.btn.setText(android.R.string.ok)
-        binding.btn.setOnClickListener {
-            block()
+    private suspend fun ask(msg: String, buttonMsg: String = "OK", block: () -> Unit) =
+        withContext(Dispatchers.Main) {
+            textAndButton()
+            binding.text.text = msg
+            binding.btn.text = buttonMsg
+            binding.btn.setOnClickListener {
+                block()
+            }
         }
-    }
 
     private suspend fun say(msg: String) = withContext(Dispatchers.Main) {
         onlyText()
@@ -197,16 +197,18 @@ class OverlayView(
         }
     }
 
-    private suspend fun requestPurpose(customer: Customer, communicationId: String) {
-        ask(context.getString(R.string.purpose_msg, customer.name)) {
-            context.startActivity(Intent(context, NoteActivity::class.java).apply {
-                putExtra(
-                    "communicationId", communicationId
-                )
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            })
+    private suspend fun requestPurpose(customer: Customer, communicationId: String) =
+        withContext(Dispatchers.Main) {
+            binding.customerInfoStub.visibility = GONE
+            ask(context.getString(R.string.purpose_msg, customer.name)) {
+                context.startActivity(Intent(context, NoteActivity::class.java).apply {
+                    putExtra(
+                        "communicationId", communicationId
+                    )
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            }
         }
-    }
 
     private suspend fun searching() {
         say(R.string.searching_text)
@@ -236,7 +238,8 @@ class OverlayView(
     private suspend fun found(customer: Customer, callDirection: CallDirection) =
         withContext(Dispatchers.Main) {
             onlyButton()
-            val infoView = CustomerInfoBinding.inflate(LayoutInflater.from(context))
+            binding.btn.setText(R.string.open_medical_card)
+            val infoView = CustomerInfoBinding.bind(binding.customerInfoStub.inflate())
 
             with(infoView) {
                 // Drawing icon for notification
@@ -275,14 +278,6 @@ class OverlayView(
                     tvNextVisit.text = nextAppointmentText
                 }
             }
-
-            binding.container.addView(
-                infoView.root, 0, LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    1f
-                )
-            )
         }
 
     //==============================================================================================

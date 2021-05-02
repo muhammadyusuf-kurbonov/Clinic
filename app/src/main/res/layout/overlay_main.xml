@@ -4,7 +4,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@android:color/transparent"
-    android:theme="@style/Theme.AppCompat">
+    android:theme="@style/Theme.MyClinic">
 
     <ImageView
         android:id="@+id/img"
@@ -13,7 +13,8 @@
         android:background="@drawable/overlay_img_background"
         android:contentDescription="@string/app_name"
         android:elevation="75dp"
-        android:padding="2dp"
+        android:layout_gravity="bottom"
+        android:padding="4dp"
         android:src="@mipmap/ic_launcher_round" />
 
     <LinearLayout
@@ -24,17 +25,24 @@
         android:orientation="vertical"
         android:visibility="gone"
         android:background="@drawable/overlay_text_background"
-        android:padding="4dp"
+        android:layout_marginStart="8dp"
+        android:padding="8dp"
         tools:visibility="visible">
+
+        <ViewStub
+            android:id="@+id/customerInfoStub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inflatedId="@+id/customerInfoStub"
+            android:layout="@layout/customer_info" />
 
         <TextView
             android:id="@+id/text"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_margin="4dp"
             android:gravity="center_vertical"
-            android:padding="8dp"
             android:textColor="@color/white"
+            android:padding="4dp"
             tools:text="@tools:sample/lorem/random" />
 
         <Button
