@@ -36,4 +36,5 @@
     <string name="required_error">Обязательно</string>
     <string name="not_granted">Пожалуйста, предоставьте мне следующие разрешения:\n%1s\n</string>
     <string name="call_direction">Направление вызова</string>
+    <string name="new_customer_toast">%1s теперь наш новый клиент</string>
 </resources>

@@ -99,42 +99,43 @@ class AppViewModel(private val apiService: APIService) {
         }
     }
 
-    private fun sendCallInfo(context: Context, customer: Customer) {
+    private suspend fun sendCallInfo(context: Context, customer: Customer) {
+
+        delay(2000)
 
         val callDetails = getCallDetails(context)
 
         val status = callDetails.status
         val duration = callDetails.duration
 
-        runBlocking {
-            val apiService = DI.getAPIService()
-            val communications =
-                retries(10) {
-                    apiService.communications(
-                        CommunicationInfo(
-                            customer.id,
-                            status,
-                            duration,
-                            callDirection.getAsString(),
-                            body = ""
-                        )
+        val apiService = DI.getAPIService()
+        val communications =
+            retries(10) {
+                apiService.communications(
+                    CommunicationInfo(
+                        customer.id,
+                        status,
+                        duration,
+                        callDirection.getAsString(),
+                        body = ""
                     )
-                }
-
-            if (communications.isSuccessful) {
-                if (duration > 0)
-                    _state.value = State.PurposeRequest(
-                        customer, communications.body()?._id
-                            ?: throw IllegalStateException("communicationId is null")
-                    )
-                else
-                    reduce(Action.Finish)
-            } else {
-                _state.value = State.Error(
-                    IllegalStateException(communications.errorBody().toString())
                 )
             }
+
+        if (communications.isSuccessful) {
+            if (duration > 0)
+                _state.value = State.PurposeRequest(
+                    customer, communications.body()?._id
+                        ?: throw IllegalStateException("communicationId is null")
+                )
+            else
+                reduce(Action.Finish)
+        } else {
+            _state.value = State.Error(
+                IllegalStateException(communications.errorBody().toString())
+            )
         }
+
     }
 
     fun reduceBlocking(action: Action) {
@@ -207,7 +208,7 @@ class AppViewModel(private val apiService: APIService) {
 
     private fun onFinished() {
         FirebaseCrashlytics.getInstance().deleteUnsentReports()
-        instance.cancelUniqueWork(MainWorker.WORKER_ID)
+//        instance.cancelUniqueWork(MainWorker.WORKER_ID)
         job.cancel()
     }
 

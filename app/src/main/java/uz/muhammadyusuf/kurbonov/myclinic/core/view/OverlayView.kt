@@ -36,6 +36,11 @@ class OverlayView(
     private val coroutineScope: CoroutineScope
 ) {
 
+    companion object {
+        const val OVERLAY_X_PREF_KEY = "overlay_x"
+        const val OVERLAY_Y_PREF_KEY = "overlay_y"
+    }
+
     private lateinit var binding: OverlayMainBinding
     private var initialTouchX = 0f
     private var initialTouchY = 0f
@@ -108,7 +113,12 @@ class OverlayView(
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT
             )
-            layoutParams.gravity = Gravity.TOP or Gravity.START
+            layoutParams.gravity = Gravity.CENTER_VERTICAL or Gravity.START
+
+            with(App.pref) {
+                layoutParams.x = getInt(OVERLAY_X_PREF_KEY, 0)
+                layoutParams.y = getInt(OVERLAY_Y_PREF_KEY, 0)
+            }
 
             windowManager =
                 context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -128,7 +138,7 @@ class OverlayView(
                 State.ConnectionError -> noConnection()
                 is State.Error -> error(state.exception)
                 State.Finished -> {
-                    windowManager.removeView(view)
+                    onFinished()
                     coroutineScope.cancel()
                 }
                 is State.Found -> found(state.customer, state.callDirection)
@@ -139,6 +149,15 @@ class OverlayView(
                 State.TooSlowConnectionError -> tooSlowInternet()
             }
         }
+    }
+
+    private fun onFinished() {
+        val params = view.layoutParams as WindowManager.LayoutParams
+        App.pref.edit()
+            .putInt(OVERLAY_X_PREF_KEY, params.x)
+            .putInt(OVERLAY_Y_PREF_KEY, params.y)
+            .apply()
+        windowManager.removeView(view)
     }
 
     //==============================================================================================
