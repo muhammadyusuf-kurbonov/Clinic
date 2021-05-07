@@ -37,4 +37,7 @@
     <string name="not_granted">Пожалуйста, предоставьте мне следующие разрешения:\n%1s\n</string>
     <string name="call_direction">Направление вызова</string>
     <string name="new_customer_toast">%1s теперь наш новый клиент</string>
+    <string name="ask_background_permission">На этом устройстве требуется разрешение для работы в фоне</string>
+    <string name="common_settings_category_title">Общие</string>
+    <string name="notification_pref_title">Тип уведомления</string>
 </resources>

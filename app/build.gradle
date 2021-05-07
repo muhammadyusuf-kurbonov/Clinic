@@ -14,7 +14,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 4
-        versionName '0.2.0.2'
+        versionName '0.2.1.0'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments clearPackageData: 'true'
@@ -42,12 +42,10 @@ android {
     testOptions{
         execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
-
-    buildToolsVersion '30.0.3'
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.32'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation platform('com.google.firebase:firebase-bom:26.4.0')
 
     // Declare the dependencies for the Crashlytics and Analytics libraries
@@ -85,7 +83,6 @@ dependencies {
 
     implementation 'io.michaelrocks:libphonenumber-android:8.12.21'
 
-
     androidTestImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
 
@@ -96,4 +93,5 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:3.1.0"
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    implementation 'androidx.preference:preference-ktx:1.1.1'
 }

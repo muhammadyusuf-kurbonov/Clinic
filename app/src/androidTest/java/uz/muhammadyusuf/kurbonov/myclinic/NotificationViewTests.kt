@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import uz.muhammadyusuf.kurbonov.myclinic.core.NotificationView
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
+import uz.muhammadyusuf.kurbonov.myclinic.core.view.NotificationView
 
 @RunWith(AndroidJUnit4::class)
 class NotificationViewTests {

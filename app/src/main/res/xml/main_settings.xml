@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="@string/common_settings_category_title">
+        <androidx.preference.ListPreference
+            android:entries="@array/interaction_type"
+            android:entryValues="@array/interaction_type_values"
+            android:key="interaction_type"
+            android:title="@string/notification_pref_title"
+            app:defaultValue="floatingButton"
+            app:icon="@drawable/ic_baseline_notifications_24"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+</androidx.preference.PreferenceScreen>

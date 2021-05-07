@@ -38,4 +38,7 @@
     <string name="not_granted">Grant, please those permissions: %1s</string>
     <string name="call_direction">Call direction</string>
     <string name="new_customer_toast">%1s is now our customer</string>
+    <string name="ask_background_permission">On this device you must allow us to run services in background</string>
+    <string name="common_settings_category_title">Common</string>
+    <string name="notification_pref_title">Notification type</string>
 </resources>

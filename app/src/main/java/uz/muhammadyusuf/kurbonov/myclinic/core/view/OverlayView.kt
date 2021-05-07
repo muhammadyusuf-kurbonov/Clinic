@@ -18,9 +18,9 @@ import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
-import uz.muhammadyusuf.kurbonov.myclinic.activities.NewCustomerActivity
-import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
+import uz.muhammadyusuf.kurbonov.myclinic.android.activities.LoginActivity
+import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NewCustomerActivity
+import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
@@ -284,7 +284,7 @@ class OverlayView(
                 // Drawing icon for notification
                 when (callDirection) {
                     CallDirection.INCOME -> imgType.setImageResource(
-                        R.drawable.ic_baseline_phone_in_24
+                        R.drawable.ic_phone_in_24
                     )
                     CallDirection.OUTGOING -> imgType.setImageResource(
                         R.drawable.ic_phone_outgoing

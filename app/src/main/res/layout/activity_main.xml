@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:theme="@style/Theme.MyClinic"
-    tools:context=".activities.MainActivity">
+    tools:context=".android.activities.MainActivity">
 
     <TextView
         android:id="@+id/tvMain"

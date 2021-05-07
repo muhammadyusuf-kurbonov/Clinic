@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="interaction_type_values">
+        <item>notification</item>
+        <item>floatingButton</item>
+    </array>
+    <array name="interaction_type">
+        <item>In notification panel</item>
+        <item>Over other apps</item>
+    </array>
+</resources>

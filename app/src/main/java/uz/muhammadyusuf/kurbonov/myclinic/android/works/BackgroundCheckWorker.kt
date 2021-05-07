@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.works
+package uz.muhammadyusuf.kurbonov.myclinic.android.works
 
 import android.content.Context
 import androidx.work.Worker

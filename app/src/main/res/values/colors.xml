@@ -4,6 +4,6 @@
     <color name="primaryVariant">#196D91</color>
     <color name="colorSecondary">#30a1d2</color>
     <color name="black">#FF000000</color>
-    <color name="subTitle2_color">#FFFFFF</color>
+    <color name="subtitle2_color">#4E4E4E</color>
     <color name="white">#FFFFFF</color>
 </resources>

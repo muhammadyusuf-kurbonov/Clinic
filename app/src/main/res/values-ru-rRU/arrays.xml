@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="interaction_type">
+        <item>В панели уведомлений</item>
+        <item>Поверх остальных приложений</item>
+    </array>
+</resources>

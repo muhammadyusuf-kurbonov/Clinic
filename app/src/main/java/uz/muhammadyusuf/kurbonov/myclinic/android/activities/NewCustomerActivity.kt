@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.activities
+package uz.muhammadyusuf.kurbonov.myclinic.android.activities
 
 import android.os.Bundle
 import android.widget.Toast

@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.works
+package uz.muhammadyusuf.kurbonov.myclinic.android.works
 
 import android.content.Context
 import androidx.core.app.NotificationCompat
@@ -6,13 +6,11 @@ import androidx.work.CoroutineWorker
 import androidx.work.ExperimentalExpeditedWork
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.view.NotificationView
 import uz.muhammadyusuf.kurbonov.myclinic.core.view.OverlayView
 
 class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
@@ -28,14 +26,28 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
 
     override suspend fun doWork(): Result {
-        val job = CoroutineScope(Dispatchers.Default).launch {
-            OverlayView(applicationContext, App.getAppViewModelInstance().state, this)
-                .start()
+        try {
+            val job =
+                CoroutineScope(Dispatchers.Default).launch {
+                    when (App.pref.getString("interaction_type", "floatingButton")) {
+                        "notification" -> NotificationView(
+                            applicationContext,
+                            App.getAppViewModelInstance().state,
+                            this
+                        ).start()
+                        else ->
+                            OverlayView(
+                                applicationContext,
+                                App.getAppViewModelInstance().state,
+                                this
+                            )
+                                .start()
+                    }
+                }
+            job.join()
+            delay(5000)
+        } catch (e: CancellationException) {
         }
-        while (job.isActive) {
-            //cycle
-        }
-        delay(5000)
         return Result.success()
     }
 

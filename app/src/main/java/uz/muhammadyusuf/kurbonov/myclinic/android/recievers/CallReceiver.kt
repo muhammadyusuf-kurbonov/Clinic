@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.recievers
+package uz.muhammadyusuf.kurbonov.myclinic.android.recievers
 
 import android.content.Context
 import timber.log.Timber

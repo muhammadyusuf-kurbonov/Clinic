@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
+    android:theme="@style/Theme.MyClinic"
     tools:showIn="@layout/overlay_main">
 
     <LinearLayout
@@ -19,8 +20,9 @@
             android:contentDescription="@string/call_direction"
             android:layout_height="24dp"
             android:layout_marginHorizontal="4dp"
+            android:foregroundTint="?attr/colorOnBackground"
             app:tint="?attr/colorOnBackground"
-            tools:src="@drawable/ic_baseline_phone_in_24" />
+            tools:src="@drawable/ic_phone_in_24" />
 
         <TextView
             android:id="@+id/tvName"
@@ -46,7 +48,7 @@
         style="@style/NotificationText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/white"
+        android:textColor="?attr/colorOnBackground"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
         tools:text="@tools:sample/us_phones" />
 
@@ -70,7 +72,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginTop="16dp"
                 android:text="@string/next_appointment"
-                android:textColor="@color/subTitle2_color"
+                android:textColor="@color/subtitle2_color"
                 android:textStyle="bold"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2" />
 
@@ -90,7 +92,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginTop="16dp"
                 android:text="@string/previous_appointment"
-                android:textColor="@color/subTitle2_color"
+                android:textColor="@color/subtitle2_color"
                 android:textStyle="bold"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2" />
 

@@ -23,19 +23,20 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
-            android:name=".activities.NewCustomerActivity"
+            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.SettingsActivity"
+            android:exported="true" />
+        <activity
+            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.NewCustomerActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.DayNight.Dialog.Alert" />
-
         <activity
-            android:name=".activities.NoteActivity"
+            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.NoteActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.DayNight.Dialog.Alert" />
-
         <activity
-            android:name=".activities.MainActivity"
+            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,13 +44,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name=".activities.LoginActivity"
+            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.LoginActivity"
             android:exported="true" />
 
         <receiver
-            android:name=".recievers.CallReceiver"
+            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.recievers.CallReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />

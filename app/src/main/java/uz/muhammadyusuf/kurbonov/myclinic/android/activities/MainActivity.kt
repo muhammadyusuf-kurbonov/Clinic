@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.activities
+package uz.muhammadyusuf.kurbonov.myclinic.android.activities
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -23,10 +23,10 @@ import androidx.work.WorkManager
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker
+import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker.Companion.AUTO_START_PREF_KEY
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
-import uz.muhammadyusuf.kurbonov.myclinic.works.BackgroundCheckWorker
-import uz.muhammadyusuf.kurbonov.myclinic.works.BackgroundCheckWorker.Companion.AUTO_START_PREF_KEY
 import java.util.concurrent.TimeUnit
 
 
@@ -59,12 +59,14 @@ class MainActivity : AppCompatActivity() {
                     "com.huawei.systemmanager.optimize.process.ProtectActivity"
                 )
             ),
+
             Intent().setComponent(
                 ComponentName(
                     "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"
+                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
                 )
             ),
+
             Intent().setComponent(
                 ComponentName(
                     "com.coloros.safecenter",
@@ -118,7 +120,13 @@ class MainActivity : AppCompatActivity() {
                     "com.asus.mobilemanager",
                     "com.asus.mobilemanager.MainActivity"
                 )
-            )
+            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.huawei.systemmanager",
+                    "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"
+                )
+            ),
         )
 
 
@@ -232,16 +240,28 @@ class MainActivity : AppCompatActivity() {
 
                 startActivity(Intent(this, LoginActivity::class.java))
             }
+            R.id.mnSettings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+            }
         }
         return super.onOptionsItemSelected(item)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {
-        val channel = NotificationChannel(
+        val lowChannel = NotificationChannel(
             App.NOTIFICATION_CHANNEL_ID,
-            "Notifications of app 32Desk.com",
+            "Low notifications of app 32Desk.com",
             NotificationManager.IMPORTANCE_DEFAULT
+        )
+        lowChannel.enableVibration(false)
+        NotificationManagerCompat.from(applicationContext)
+            .createNotificationChannel(lowChannel)
+
+        val channel = NotificationChannel(
+            App.HEADUP_NOTIFICATION_CHANNEL_ID,
+            "Notifications of app 32Desk.com",
+            NotificationManager.IMPORTANCE_HIGH
         )
         channel.enableVibration(true)
         NotificationManagerCompat.from(applicationContext)
@@ -278,7 +298,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                     val dialog = AlertDialog.Builder(this)
-                    dialog.setMessage("On this device you must allow us to run services in background")
+                    dialog.setMessage(getString(R.string.ask_background_permission))
                         .setPositiveButton(android.R.string.ok) { _, _ ->
                             val editor = pref.edit()
                             editor.putLong(

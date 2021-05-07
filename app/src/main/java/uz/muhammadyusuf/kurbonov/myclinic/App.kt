@@ -2,18 +2,20 @@ package uz.muhammadyusuf.kurbonov.myclinic
 
 import android.app.Application
 import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import androidx.work.WorkManager
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.android.works.MainWorker
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_APP_LIFECYCLE
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
-import uz.muhammadyusuf.kurbonov.myclinic.works.MainWorker
 
 class App : Application() {
     companion object {
 
         const val NOTIFICATION_CHANNEL_ID = "32desk_notification_channel_low"
+        const val HEADUP_NOTIFICATION_CHANNEL_ID = "32desk_notification_channel"
 
         lateinit var pref: SharedPreferences
         lateinit var appViewModel: AppViewModel
@@ -32,7 +34,7 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        pref = getSharedPreferences("main", 0)
+        pref = PreferenceManager.getDefaultSharedPreferences(this)
 
         initTimber()
 

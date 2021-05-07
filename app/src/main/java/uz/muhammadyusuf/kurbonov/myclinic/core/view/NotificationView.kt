@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.core
+package uz.muhammadyusuf.kurbonov.myclinic.core.view
 
 import android.app.PendingIntent
 import android.content.Context
@@ -9,15 +9,19 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.activities.LoginActivity
-import uz.muhammadyusuf.kurbonov.myclinic.activities.NewCustomerActivity
-import uz.muhammadyusuf.kurbonov.myclinic.activities.NoteActivity
+import uz.muhammadyusuf.kurbonov.myclinic.android.activities.LoginActivity
+import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NewCustomerActivity
+import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NoteActivity
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_NOTIFICATIONS_VIEW
@@ -26,7 +30,8 @@ import kotlin.random.Random
 
 class NotificationView(
     val context: Context,
-    private val stateFlow: StateFlow<State>
+    private val stateFlow: StateFlow<State>,
+    private val coroutineScope: CoroutineScope
 ) {
     private val primaryNotificationID = 100
     private val secondaryNotificationID = 101
@@ -45,7 +50,7 @@ class NotificationView(
     private fun createAddCustomerNotification(phone: String) {
         log("new user request")
         val notification =
-            NotificationCompat.Builder(context, App.NOTIFICATION_CHANNEL_ID)
+            NotificationCompat.Builder(context, App.HEADUP_NOTIFICATION_CHANNEL_ID)
                 .apply {
                     setContentIntent(
                         PendingIntent.getActivity(
@@ -61,7 +66,7 @@ class NotificationView(
                         )
                     )
 
-                    setChannelId(App.NOTIFICATION_CHANNEL_ID)
+                    setChannelId(App.HEADUP_NOTIFICATION_CHANNEL_ID)
 
                     setSmallIcon(R.drawable.ic_launcher_foreground)
 
@@ -97,12 +102,12 @@ class NotificationView(
         log(customer.toString())
         val view = RemoteViews(context.packageName, R.layout.customer_info)
         val notification =
-            NotificationCompat.Builder(context, App.NOTIFICATION_CHANNEL_ID)
+            NotificationCompat.Builder(context, App.HEADUP_NOTIFICATION_CHANNEL_ID)
                 .apply {
 
                     setContent(view)
 
-                    setChannelId(App.NOTIFICATION_CHANNEL_ID)
+                    setChannelId(App.HEADUP_NOTIFICATION_CHANNEL_ID)
 
                     setSmallIcon(R.drawable.ic_launcher_foreground)
 
@@ -120,7 +125,7 @@ class NotificationView(
             when (callDirection) {
                 CallDirection.INCOME -> setImageViewResource(
                     R.id.imgType,
-                    R.drawable.ic_baseline_phone_in_24
+                    R.drawable.ic_phone_in_24
                 )
                 CallDirection.OUTGOING -> setImageViewResource(
                     R.id.imgType,
@@ -133,7 +138,7 @@ class NotificationView(
 
             setTextViewText(
                 R.id.tvBalance,
-                context.getString(R.string.balance) + customer.balance
+                context.getString(R.string.balance, customer.balance)
             )
 
             try {
@@ -199,55 +204,53 @@ class NotificationView(
             .notify(secondaryNotificationID, notification)
     }
 
-    fun start() {
-        val scope = CoroutineScope(Dispatchers.Default)
-        scope.launch {
-            delay(1000)
-            stateFlow.collect { state ->
-                log("received state $state")
-                when (state) {
-                    State.Started -> {
-                        changeNotificationMessage("")
-                    }
-                    State.Finished -> {
-                        onFinished()
-                        cancel()
-                    }
+    suspend fun start() {
+        delay(1000)
+        stateFlow.collect { state ->
+            log("received state $state")
+            when (state) {
+                State.Started -> {
+                    changeNotificationMessage("")
+                }
+                State.Finished -> {
+                    onFinished()
+                    coroutineScope.cancel()
+                }
 
-                    State.Searching -> changeNotificationMessage(R.string.searching_text)
-                    is State.AuthRequest -> createAuthRequestNotification(state.phone)
-                    is State.AddNewCustomerRequest -> {
-                        createAddCustomerNotification(state.phone)
-                        onFinished()
-                    }
+                State.Searching -> changeNotificationMessage(R.string.searching_text)
+                is State.AuthRequest -> createAuthRequestNotification(state.phone)
+                is State.AddNewCustomerRequest -> {
+                    createAddCustomerNotification(state.phone)
+                    App.getAppViewModelInstance().reduce(Action.Finish)
+                }
 
-                    State.ConnectionError -> changeNotificationMessage(R.string.no_connection)
-                    State.TooSlowConnectionError -> changeNotificationMessage(R.string.too_slow)
+                State.ConnectionError -> changeNotificationMessage(R.string.no_connection)
+                State.TooSlowConnectionError -> changeNotificationMessage(R.string.too_slow)
 
-                    is State.Error -> {
-                        FirebaseCrashlytics.getInstance().recordException(state.exception)
-                        changeNotificationMessage(R.string.unknown_error)
-                    }
+                is State.Error -> {
+                    FirebaseCrashlytics.getInstance().recordException(state.exception)
+                    changeNotificationMessage(R.string.unknown_error)
+                }
 
-                    State.NotFound -> changeNotificationMessage(R.string.not_found)
-                    is State.Found -> createCustomerInfoNotification(
+                State.NotFound -> changeNotificationMessage(R.string.not_found)
+                is State.Found -> createCustomerInfoNotification(
+                    state.customer,
+                    state.callDirection
+                )
+                is State.PurposeRequest -> {
+                    createPurposeSelectionNotification(
                         state.customer,
-                        state.callDirection
+                        state.communicationId
                     )
-                    is State.PurposeRequest -> {
-                        createPurposeSelectionNotification(
-                            state.customer,
-                            state.communicationId
-                        )
-
-                        onFinished()
-                    }
-                    State.None -> {
-                        log("Worker started")
-                    }
+                    onFinished()
+                    App.getAppViewModelInstance().reduce(Action.Finish)
+                }
+                State.None -> {
+                    log("Worker started")
                 }
             }
         }
+
     }
 
     private fun getAuthActivityIntent(phone: String) = PendingIntent.getActivity(
@@ -262,10 +265,10 @@ class NotificationView(
     )
 
     private fun getNotificationTemplate() =
-        NotificationCompat.Builder(context, App.NOTIFICATION_CHANNEL_ID)
+        NotificationCompat.Builder(context, App.HEADUP_NOTIFICATION_CHANNEL_ID)
             .apply {
 
-                setChannelId(App.NOTIFICATION_CHANNEL_ID)
+                setChannelId(App.HEADUP_NOTIFICATION_CHANNEL_ID)
 
                 setContentTitle(context.getString(R.string.app_name))
 

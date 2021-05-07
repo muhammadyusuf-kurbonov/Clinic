@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.*
 import retrofit2.Response
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
+import uz.muhammadyusuf.kurbonov.myclinic.android.works.MainWorker
 import uz.muhammadyusuf.kurbonov.myclinic.api.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.api.communications.CommunicationInfo
 import uz.muhammadyusuf.kurbonov.myclinic.api.customer_search.CustomerDTO
@@ -19,7 +20,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.api.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.*
-import uz.muhammadyusuf.kurbonov.myclinic.works.MainWorker
 
 class AppViewModel(private val apiService: APIService) {
     private val _state = MutableStateFlow<State>(State.None)
