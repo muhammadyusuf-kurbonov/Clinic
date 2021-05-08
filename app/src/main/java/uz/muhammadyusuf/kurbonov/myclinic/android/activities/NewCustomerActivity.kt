@@ -92,7 +92,7 @@ class NewCustomerActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     Timber.d("Successful added user")
                     Toast.makeText(
-                        this@NewCustomerActivity,
+                        applicationContext,
                         getString(R.string.new_customer_toast, binding.edFirstName.text.toString()),
                         Toast.LENGTH_SHORT
                     ).show()

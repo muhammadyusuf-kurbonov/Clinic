@@ -19,7 +19,8 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
                 savedNumber = intent.extras!!.getString(EXTRA_PHONE_NUMBER)
             } else {
                 val stateStr = intent.extras!!.getString(TelephonyManager.EXTRA_STATE)
-                val number = intent.extras!!.getString(TelephonyManager.EXTRA_INCOMING_NUMBER)
+                @Suppress("DEPRECATION") val number =
+                    intent.extras!!.getString(TelephonyManager.EXTRA_INCOMING_NUMBER)
                 if (number != null)
                     savedNumber = number
                 else

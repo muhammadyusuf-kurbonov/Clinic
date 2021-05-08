@@ -3,6 +3,7 @@ package uz.muhammadyusuf.kurbonov.myclinic.core.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.PixelFormat
 import android.os.Build
 import android.view.*
@@ -207,11 +208,12 @@ class OverlayView(
         ask(context.getString(R.string.auth_text)) {
             context.startActivity(Intent(context, LoginActivity::class.java).apply {
                 putExtra(LoginActivity.EXTRA_PHONE, phone)
+                addFlags(FLAG_ACTIVITY_NEW_TASK)
             })
         }
     }
 
-    private suspend fun requestAddNewCustomer(phone: String) {
+    private suspend fun requestAddNewCustomer(phone: String) = withContext(Dispatchers.Main) {
         ask(context.getString(R.string.add_user_request, phone)) {
             context.startActivity(Intent(context, NewCustomerActivity::class.java).apply {
                 putExtra("phone", phone)

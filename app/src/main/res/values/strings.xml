@@ -41,4 +41,5 @@
     <string name="ask_background_permission">On this device you must allow us to run services in background</string>
     <string name="common_settings_category_title">Common</string>
     <string name="notification_pref_title">Notification type</string>
+    <string name="no_power_mangement_access">I haven\'t got access to go to settings. Please goto settings and manually disable battery optimization and allow background activity, please</string>
 </resources>

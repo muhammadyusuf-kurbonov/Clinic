@@ -20,6 +20,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
@@ -35,22 +37,11 @@ class MainActivity : AppCompatActivity() {
     companion object {
         @Suppress("SpellCheckingInspection")
         private val POWER_MANAGER_INTENTS = arrayOf(
-            Intent().setComponent(
-                ComponentName(
-                    "com.miui.securitycenter",
-                    "com.miui.permcenter.autostart.AutoStartManagementActivity"
-                )
-            ),
-            Intent().setComponent(
-                ComponentName(
-                    "com.letv.android.letvsafe",
-                    "com.letv.android.letvsafe.AutobootManageActivity"
-                )
-            ),
+            //region HAWEI
             Intent().setComponent(
                 ComponentName(
                     "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
+                    "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"
                 )
             ),
             Intent().setComponent(
@@ -59,14 +50,42 @@ class MainActivity : AppCompatActivity() {
                     "com.huawei.systemmanager.optimize.process.ProtectActivity"
                 )
             ),
+//            Intent().setComponent(
+//                ComponentName(
+//                    "com.huawei.systemmanager",
+//                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
+//                )
+//            ),
+            //endregion
 
+            //region XIAOMI
             Intent().setComponent(
                 ComponentName(
-                    "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
+                    "com.miui.securitycenter",
+                    "com.miui.permcenter.autostart.AutoStartManagementActivity"
                 )
             ),
+            Intent("miui.intent.action.POWER_HIDE_MODE_APP_LIST").addCategory(Intent.CATEGORY_DEFAULT),
+            Intent("miui.intent.action.OP_AUTO_START").addCategory(Intent.CATEGORY_DEFAULT),
+            Intent().setComponent(
+                ComponentName(
+                    "com.miui.securitycenter",
+                    "com.miui.powercenter.PowerSettings"
+                )
+            ),
+            //endregion
 
+            //region LETV
+            Intent().setComponent(
+                ComponentName(
+                    "com.letv.android.letvsafe",
+                    "com.letv.android.letvsafe.AutobootManageActivity"
+                )
+            ),
+            //endregion
+
+
+            //region COLOROS
             Intent().setComponent(
                 ComponentName(
                     "com.coloros.safecenter",
@@ -79,12 +98,20 @@ class MainActivity : AppCompatActivity() {
                     "com.coloros.safecenter.startupapp.StartupAppListActivity"
                 )
             ),
+            //endregion
+
+
+            //region OPPO
             Intent().setComponent(
                 ComponentName(
                     "com.oppo.safe",
                     "com.oppo.safe.permission.startup.StartupAppListActivity"
                 )
             ),
+            //endregion
+
+
+            //region IQOO
             Intent().setComponent(
                 ComponentName(
                     "com.iqoo.secure",
@@ -97,38 +124,48 @@ class MainActivity : AppCompatActivity() {
                     "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager"
                 )
             ),
+            //endregion
+
+
+            //region VIVO
             Intent().setComponent(
                 ComponentName(
                     "com.vivo.permissionmanager",
                     "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"
                 )
             ),
+            //endregion
+
+
+            //region SAMSUNG
             Intent().setComponent(
                 ComponentName(
                     "com.samsung.android.lool",
                     "com.samsung.android.sm.ui.battery.BatteryActivity"
                 )
             ),
+            //endregion
+
+            //region HTC
             Intent().setComponent(
                 ComponentName(
                     "com.htc.pitroad",
                     "com.htc.pitroad.landingpage.activity.LandingPageActivity"
                 )
             ),
+            //endregion
+
+
+            //region ASUS
             Intent().setComponent(
                 ComponentName(
                     "com.asus.mobilemanager",
                     "com.asus.mobilemanager.MainActivity"
                 )
             ),
-            Intent().setComponent(
-                ComponentName(
-                    "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"
-                )
-            ),
-        )
+            //endregion
 
+        )
 
     }
 
@@ -295,18 +332,31 @@ class MainActivity : AppCompatActivity() {
 
                     val powerManagement =
                         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                            if (it.resultCode == RESULT_OK) {
+                                val editor = pref.edit()
+                                editor.putLong(
+                                    AUTO_START_PREF_KEY,
+                                    System.currentTimeMillis()
+                                )
+                                editor.apply()
+                            }
                         }
 
                     val dialog = AlertDialog.Builder(this)
                     dialog.setMessage(getString(R.string.ask_background_permission))
                         .setPositiveButton(android.R.string.ok) { _, _ ->
-                            val editor = pref.edit()
-                            editor.putLong(
-                                AUTO_START_PREF_KEY,
-                                System.currentTimeMillis()
-                            )
-                            editor.apply()
-                            powerManagement.launch(intent)
+                            try {
+                                powerManagement.launch(intent)
+                            } catch (e: SecurityException) {
+                                Timber.d("Battery optimization is forbidden in ${Build.MANUFACTURER} + ${Build.BRAND} + ${Build.MODEL}")
+                                FirebaseCrashlytics.getInstance().recordException(e)
+                                AlertDialog.Builder(this)
+                                    .setMessage(getString(R.string.no_power_mangement_access))
+                                    .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                                        dialog.dismiss()
+                                        finish()
+                                    }.show()
+                            }
                         }
                         .setNegativeButton(android.R.string.cancel) { _, _ -> finish() }
                     dialog.show()
