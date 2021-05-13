@@ -92,7 +92,7 @@ class StatesTests {
         runBlocking {
             viewModel.reduce(Action.SetNoConnectionState)
             viewModel.state.waitUntil(15000) {
-                it == State.ConnectionError
+                it == State.NoConnectionState
             }
         }
     }

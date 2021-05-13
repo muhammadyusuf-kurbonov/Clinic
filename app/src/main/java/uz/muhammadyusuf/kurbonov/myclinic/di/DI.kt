@@ -10,6 +10,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.utils.NetworkIOException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.RetriesExpiredException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 @Suppress("MemberVisibilityCanBePrivate")
 class DI {
@@ -42,32 +43,37 @@ class DI {
                     .build()
 
                 try {
-                    retries(3) {
+                    retries(10) {
                         it.proceed(newRequest)
                     }
                 } catch (e: IOException) {
-                    Timber.d(NetworkIOException(e))
+                    Timber.e(NetworkIOException(e))
                     errorResponse(newRequest, e)
                 } catch (e: RetriesExpiredException) {
-                    errorResponse(newRequest, e)
+                    errorResponse(newRequest, e, 408)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    errorResponse(newRequest, e, 409)
                 }
             }
+            .callTimeout(15, TimeUnit.SECONDS)
             .build()
 
 
-        private fun errorResponse(request: Request, e: Exception): Response = Response.Builder()
-            .request(request)
-            .body(
-                ResponseBody.create(
-                    MediaType.get("application/json"),
-                    "{" +
-                            "error: $e" +
-                            "}"
+        private fun errorResponse(request: Request, e: Exception, code: Int = 407): Response =
+            Response.Builder()
+                .request(request)
+                .body(
+                    ResponseBody.create(
+                        MediaType.get("application/json"),
+                        "{" +
+                                "error: $e" +
+                                "}"
+                    )
                 )
-            )
-            .protocol(Protocol.HTTP_1_1)
-            .message(e.message ?: "")
-            .code(407)
+                .protocol(Protocol.HTTP_1_1)
+                .message(e.message ?: "")
+                .code(code)
             .build()
     }
 }

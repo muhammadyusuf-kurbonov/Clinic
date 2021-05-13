@@ -17,6 +17,6 @@ sealed class State {
     data class PurposeRequest(val customer: Customer, val communicationId: String) : State()
 
     data class Error(val exception: Exception) : State()
-    object ConnectionError : State()
+    object NoConnectionState : State()
     object TooSlowConnectionError : State()
 }

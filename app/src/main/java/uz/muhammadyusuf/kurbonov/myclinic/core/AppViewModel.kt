@@ -8,7 +8,10 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import retrofit2.Response
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
@@ -81,9 +84,6 @@ class AppViewModel(private val apiService: APIService) {
                 }
             }
 
-            Action.SetNoConnectionState -> _state.value = State.ConnectionError
-
-
             is Action.Start -> {
                 initialize(action.context)
                 _state.value = State.Started
@@ -96,6 +96,10 @@ class AppViewModel(private val apiService: APIService) {
                     callDirection
                 )
             )
+            Action.SetNoConnectionState -> {
+                if (_state.value is State.Searching)
+                    _state.value = State.NoConnectionState
+            }
         }
     }
 
@@ -131,9 +135,14 @@ class AppViewModel(private val apiService: APIService) {
             else
                 reduce(Action.Finish)
         } else {
-            _state.value = State.Error(
-                IllegalStateException(communications.errorBody().toString())
-            )
+            if (communications.code() == 407)
+                _state.value = State.NoConnectionState
+            else
+                _state.value = State.Error(
+                    IllegalStateException(communications.raw().toString())
+                )
+            delay(2500)
+            reduce(Action.Finish)
         }
 
     }
@@ -164,12 +173,10 @@ class AppViewModel(private val apiService: APIService) {
 
     private fun initNetworkTracker(context: Context) {
         networkTrackerScope.launch {
-            NetworkTracker(context).connectedToInternet.distinctUntilChanged().collect {
-                if (!it) {
-                    reduce(Action.SetNoConnectionState)
-                } else {
+            NetworkTracker(context).connectedToInternet.collect {
+                Timber.d("Network state received $it")
+                if (it && state.value is State.NoConnectionState)
                     reduce(Action.Restart)
-                }
             }
         }
     }
@@ -178,7 +185,13 @@ class AppViewModel(private val apiService: APIService) {
         return when {
             response.code() == 404 -> State.NotFound
             response.code() == 401 -> State.AuthRequest(phone)
-            response.code() == 407 -> State.ConnectionError
+            response.code() == 407 -> State.NoConnectionState
+            response.code() == 408 -> State.NoConnectionState
+            response.code() == 409 -> State.Error(
+                IllegalStateException(
+                    response.raw().toString()
+                )
+            )
             response.code() == 200 ->
                 if (response.body()!!.data.isNotEmpty()) {
                     State.Found(response.body()!!.toContact(), callDirection)
@@ -207,14 +220,12 @@ class AppViewModel(private val apiService: APIService) {
     }
 
     private fun onFinished() {
-        FirebaseCrashlytics.getInstance().deleteUnsentReports()
 //        instance.cancelUniqueWork(MainWorker.WORKER_ID)
         job.cancel()
     }
 
     private fun log(message: String) {
         Timber.tag(TAG_APP_VIEW_MODEL).d(message)
-        FirebaseCrashlytics.getInstance().log(message)
     }
 
 }

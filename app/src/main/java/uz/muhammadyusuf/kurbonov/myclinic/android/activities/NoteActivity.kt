@@ -9,11 +9,11 @@ import androidx.core.view.isVisible
 import androidx.work.*
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.works.NoteInsertWork
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityExplainBinding
+import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 
 class NoteActivity : AppCompatActivity() {
 
@@ -28,8 +28,7 @@ class NoteActivity : AppCompatActivity() {
         binding = ActivityExplainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (BuildConfig.DEBUG && Timber.treeCount() == 0)
-            Timber.plant(Timber.DebugTree())
+        initTimber()
 
         Timber.d("${intent.extras}")
 

@@ -7,7 +7,6 @@ import android.os.Build
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
@@ -224,11 +223,11 @@ class NotificationView(
                     App.getAppViewModelInstance().reduce(Action.Finish)
                 }
 
-                State.ConnectionError -> changeNotificationMessage(R.string.no_connection)
+                State.NoConnectionState -> changeNotificationMessage(R.string.no_connection)
                 State.TooSlowConnectionError -> changeNotificationMessage(R.string.too_slow)
 
                 is State.Error -> {
-                    FirebaseCrashlytics.getInstance().recordException(state.exception)
+                    Timber.e(state.exception)
                     changeNotificationMessage(R.string.unknown_error)
                 }
 

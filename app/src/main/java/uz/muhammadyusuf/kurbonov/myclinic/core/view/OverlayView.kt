@@ -25,7 +25,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
-import uz.muhammadyusuf.kurbonov.myclinic.databinding.CustomerInfoBinding
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.OverlayMainBinding
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_NOTIFICATIONS_VIEW
@@ -136,7 +135,7 @@ class OverlayView(
                 is State.AddNewCustomerRequest -> requestAddNewCustomer(state.phone)
                 is State.AuthRequest -> requestAuth(state.phone)
                 is State.PurposeRequest -> requestPurpose(state.customer, state.communicationId)
-                State.ConnectionError -> noConnection()
+                State.NoConnectionState -> noConnection()
                 is State.Error -> error(state.exception)
                 State.Finished -> {
                     onFinished()
@@ -164,18 +163,21 @@ class OverlayView(
     //==============================================================================================
 
     private suspend fun onlyText() = withContext(Dispatchers.Main) {
+        binding.customerInfoStub.visibility = GONE
         binding.text.visibility = VISIBLE
         binding.btn.visibility = GONE
         showTextBalloon()
     }
 
     private suspend fun onlyButton() = withContext(Dispatchers.Main) {
+        binding.customerInfoStub.visibility = GONE
         binding.text.visibility = GONE
         binding.btn.visibility = VISIBLE
         showTextBalloon()
     }
 
     private suspend fun textAndButton() = withContext(Dispatchers.Main) {
+        binding.customerInfoStub.visibility = GONE
         binding.text.visibility = VISIBLE
         binding.btn.visibility = VISIBLE
         showTextBalloon()
@@ -217,7 +219,7 @@ class OverlayView(
         ask(context.getString(R.string.add_user_request, phone)) {
             context.startActivity(Intent(context, NewCustomerActivity::class.java).apply {
                 putExtra("phone", phone)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(FLAG_ACTIVITY_NEW_TASK)
             })
         }
         binding.container.addView(
@@ -246,7 +248,7 @@ class OverlayView(
                     putExtra(
                         "communicationId", communicationId
                     )
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(FLAG_ACTIVITY_NEW_TASK)
                 })
             }
         }
@@ -279,8 +281,9 @@ class OverlayView(
     private suspend fun found(customer: Customer, callDirection: CallDirection) =
         withContext(Dispatchers.Main) {
             onlyButton()
+            binding.customerInfoStub.visibility = VISIBLE
             binding.btn.setText(R.string.open_medical_card)
-            val infoView = CustomerInfoBinding.bind(binding.customerInfoStub.inflate())
+            val infoView = binding.includeLayout
 
             with(infoView) {
                 // Drawing icon for notification

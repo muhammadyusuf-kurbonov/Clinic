@@ -46,7 +46,10 @@ class NetworkTracker(context: Context) {
                 commit()
             }
 
-            fun commit() = offer(validNetworks.isNotEmpty())
+            fun commit() {
+                Timber.tag(TAG_NETWORK_TRACKER).d("Network state is ${validNetworks.isNotEmpty()}")
+                offer(validNetworks.isNotEmpty())
+            }
         }
 
         val networkRequest = NetworkRequest.Builder()

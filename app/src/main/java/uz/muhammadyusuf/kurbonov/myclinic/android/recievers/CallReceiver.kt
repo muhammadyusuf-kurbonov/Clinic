@@ -3,18 +3,17 @@ package uz.muhammadyusuf.kurbonov.myclinic.android.recievers
 import android.content.Context
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
+import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import java.util.*
 
 
 class CallReceiver : PhoneCallReceiver() {
 
     init {
-        if (BuildConfig.DEBUG && Timber.treeCount() == 0)
-            Timber.plant(Timber.DebugTree())
+        initTimber()
     }
 
     companion object {
