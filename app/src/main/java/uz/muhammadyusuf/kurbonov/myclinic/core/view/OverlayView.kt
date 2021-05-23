@@ -230,7 +230,7 @@ class OverlayView(
             ).apply {
                 setText(android.R.string.cancel)
                 setOnClickListener {
-                    App.getAppViewModelInstance().reduceBlocking(Action.Finish)
+                    App.getAppViewModelInstance().reduce(Action.Finish)
                 }
             }, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,

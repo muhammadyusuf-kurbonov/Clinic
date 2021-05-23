@@ -65,7 +65,7 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
                     setSmallIcon(R.drawable.ic_launcher_foreground)
                 }.build()
         ).also {
-            App.getAppViewModelInstance().reduceBlocking(Action.Restart)
+            App.getAppViewModelInstance().reduce(Action.Restart)
         }
     }
 }

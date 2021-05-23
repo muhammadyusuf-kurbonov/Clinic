@@ -36,121 +36,130 @@ class AppViewModel(private val apiService: APIService) {
 
     // Don't use this scope, because it is observing network until state finished
     private val networkTrackerScope = CoroutineScope(Dispatchers.Default + job)
+    private val mainScope = CoroutineScope(Dispatchers.Default + job)
 
-    suspend fun reduce(action: Action) {
+    fun reduce(action: Action) {
+        mainScope.launch {
+            if (state.value == State.Finished && action !is Action.Start)
+                return@launch
 
-        if (state.value == State.Finished && action !is Action.Start)
-            return
+            when (action) {
+                is Action.Search -> {
+                    this@AppViewModel.callDirection = action.direction
+                    _state.value = State.Searching
+                    log("Searching ${action.phoneNumber}")
+                    try {
+                        withTimeout(12000) {
+                            val response = withContext(Dispatchers.IO) {
+                                apiService.searchCustomer(action.phoneNumber, withAppointments = 0)
+                            }
 
-        when (action) {
-            is Action.Search -> {
-                this.callDirection = action.direction
-                _state.value = State.Searching
-                log("Searching ${action.phoneNumber}")
-                try {
-                    withTimeout(12000) {
-                        val response = withContext(Dispatchers.IO) {
-                            apiService.searchCustomer(action.phoneNumber, withAppointments = 0)
+                            phone = action.phoneNumber
+
+                            _state.value = getStateOfResponse(response)
                         }
-
-                        phone = action.phoneNumber
-
-                        _state.value = getStateOfResponse(response)
-                    }
-                } catch (e: TimeoutCancellationException) {
-                    _state.value = State.TooSlowConnectionError
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    _state.value = State.Error(e)
-                }
-            }
-
-            is Action.Finish -> {
-                onFinished()
-                _state.value = State.Finished
-            }
-
-            is Action.EndCall -> {
-                when (state.value) {
-                    is State.Found -> {
-                        sendCallInfo(action.context, (state.value as State.Found).customer)
-                    }
-                    is State.NotFound -> {
-                        _state.value = State.AddNewCustomerRequest(action.phone)
-                    }
-                    else -> {
-                        reduce(Action.Finish)
+                    } catch (e: TimeoutCancellationException) {
+                        _state.value = State.TooSlowConnectionError
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        _state.value = State.Error(e)
                     }
                 }
-            }
 
-            is Action.Start -> {
-                initialize(action.context)
-                _state.value = State.Started
-            }
+                is Action.Finish -> {
+                    _state.value = State.Finished
+                    onFinished()
+                }
 
+                is Action.EndCall -> {
+                    when (state.value) {
+                        is State.Found -> {
+                            sendCallInfo(action.context, (state.value as State.Found).customer)
+                            mainScope.launch {
+                                delay(5_000)
+                                reduce(Action.Finish)
+                            }
+                        }
+                        is State.NotFound -> {
+                            _state.value = State.AddNewCustomerRequest(action.phone)
+                            mainScope.launch {
+                                delay(5_000)
+                                reduce(Action.Finish)
+                            }
+                        }
+                        else -> {
+                            reduce(Action.Finish)
+                        }
+                    }
+                }
 
-            Action.Restart -> if (this::phone.isInitialized) reduce(
-                Action.Search(
-                    phone,
-                    callDirection
-                )
-            )
-            Action.SetNoConnectionState -> {
-                if (_state.value is State.Searching)
-                    _state.value = State.NoConnectionState
+                is Action.Start -> {
+                    initialize(action.context)
+                    _state.value = State.Started
+                }
+
+                Action.Restart -> if (this@AppViewModel::phone.isInitialized) {
+                    reduce(
+                        Action.Search(
+                            phone,
+                            callDirection
+                        )
+                    )
+                }
+                Action.SetNoConnectionState -> {
+                    if (_state.value is State.Searching)
+                        _state.value = State.NoConnectionState
+                }
             }
         }
     }
 
-    private suspend fun sendCallInfo(context: Context, customer: Customer) {
+    private fun sendCallInfo(context: Context, customer: Customer) {
+        mainScope.launch {
+            delay(2000)
+            val callDetails = getCallDetails(context)
 
-        delay(2000)
+            val status = callDetails.status
+            val duration = callDetails.duration
 
-        val callDetails = getCallDetails(context)
-
-        val status = callDetails.status
-        val duration = callDetails.duration
-
-        val apiService = DI.getAPIService()
-        val communications =
-            retries(10) {
-                apiService.communications(
-                    CommunicationInfo(
-                        customer.id,
-                        status,
-                        duration,
-                        callDirection.getAsString(),
-                        body = ""
+            val apiService = DI.getAPIService()
+            val communications =
+                retries(10) {
+                    apiService.communications(
+                        CommunicationInfo(
+                            customer.id,
+                            status,
+                            duration,
+                            callDirection.getAsString(),
+                            body = ""
+                        )
                     )
-                )
-            }
+                }
 
-        if (communications.isSuccessful) {
-            if (duration > 0)
-                _state.value = State.PurposeRequest(
-                    customer, communications.body()?._id
-                        ?: throw IllegalStateException("communicationId is null")
-                )
-            else
+            if (communications.isSuccessful) {
+                if (duration > 0) {
+                    _state.value = State.PurposeRequest(
+                        customer, communications.body()?._id
+                            ?: throw IllegalStateException("communicationId is null")
+                    )
+                } else
+                    reduce(Action.Finish)
+            } else {
+                if (communications.code() == 407)
+                    _state.value = State.NoConnectionState
+                else
+                    _state.value = State.Error(
+                        IllegalStateException(communications.raw().toString())
+                    )
+                delay(2500)
                 reduce(Action.Finish)
-        } else {
-            if (communications.code() == 407)
-                _state.value = State.NoConnectionState
-            else
-                _state.value = State.Error(
-                    IllegalStateException(communications.raw().toString())
-                )
-            delay(2500)
-            reduce(Action.Finish)
+            }
         }
 
     }
 
     fun reduceBlocking(action: Action) {
-        runBlocking {
-            reduce(action)
-        }
+        reduce(action)
     }
 
     @SuppressLint("UnsafeExperimentalUsageError")

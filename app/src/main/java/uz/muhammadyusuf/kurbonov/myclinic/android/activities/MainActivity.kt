@@ -21,6 +21,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
@@ -30,6 +31,8 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker.Co
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 class MainActivity : AppCompatActivity() {
@@ -41,21 +44,21 @@ class MainActivity : AppCompatActivity() {
             Intent().setComponent(
                 ComponentName(
                     "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"
+                    "com.huawei.systemmanager.optimize.process.ProtectActivity"
                 )
             ),
             Intent().setComponent(
                 ComponentName(
                     "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.optimize.process.ProtectActivity"
+                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
                 )
             ),
-//            Intent().setComponent(
-//                ComponentName(
-//                    "com.huawei.systemmanager",
-//                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
-//                )
-//            ),
+            Intent().setComponent(
+                ComponentName(
+                    "com.huawei.systemmanager",
+                    "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"
+                )
+            ),
             //endregion
 
             //region XIAOMI
@@ -311,6 +314,7 @@ class MainActivity : AppCompatActivity() {
                 .build()
         )
 
+        var success = true
         val pref = App.pref
         val lastUpdate = pref.getLong(AUTO_START_PREF_KEY, -1)
         val updated = if (lastUpdate == -1L) {
@@ -329,40 +333,47 @@ class MainActivity : AppCompatActivity() {
                         PackageManager.MATCH_DEFAULT_ONLY
                     ) != null
                 ) {
-
-                    val powerManagement =
-                        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                            if (it.resultCode == RESULT_OK) {
-                                val editor = pref.edit()
-                                editor.putLong(
-                                    AUTO_START_PREF_KEY,
-                                    System.currentTimeMillis()
-                                )
-                                editor.apply()
-                            }
+                    runBlocking {
+                        success = success && suspendCoroutine { cont ->
+                            val dialog = AlertDialog.Builder(this@MainActivity)
+                            val powerManagement =
+                                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                                    if (it.resultCode == RESULT_OK) {
+                                        val editor = pref.edit()
+                                        editor.putLong(
+                                            AUTO_START_PREF_KEY,
+                                            System.currentTimeMillis()
+                                        )
+                                        cont.resume(true)
+                                        editor.apply()
+                                    } else {
+                                        cont.resume(false)
+                                    }
+                                }
+                            dialog.setMessage(getString(R.string.ask_background_permission))
+                                .setPositiveButton(android.R.string.ok) { _, _ ->
+                                    try {
+                                        powerManagement.launch(intent)
+                                    } catch (e: SecurityException) {
+                                        Timber.d("Battery optimization is forbidden in ${Build.MANUFACTURER} + ${Build.BRAND} + ${Build.MODEL}")
+                                        FirebaseCrashlytics.getInstance().recordException(e)
+                                        AlertDialog.Builder(this@MainActivity)
+                                            .setMessage(getString(R.string.no_power_mangement_access))
+                                            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                                                dialog.dismiss()
+                                                cont.resume(true)
+                                            }.show()
+                                    }
+                                }
+                                .setNegativeButton(android.R.string.cancel) { _, _ ->
+                                    cont.resume(false)
+                                    finish()
+                                }
+                            dialog.show()
                         }
-
-                    val dialog = AlertDialog.Builder(this)
-                    dialog.setMessage(getString(R.string.ask_background_permission))
-                        .setPositiveButton(android.R.string.ok) { _, _ ->
-                            try {
-                                powerManagement.launch(intent)
-                            } catch (e: SecurityException) {
-                                Timber.d("Battery optimization is forbidden in ${Build.MANUFACTURER} + ${Build.BRAND} + ${Build.MODEL}")
-                                FirebaseCrashlytics.getInstance().recordException(e)
-                                AlertDialog.Builder(this)
-                                    .setMessage(getString(R.string.no_power_mangement_access))
-                                    .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                                        dialog.dismiss()
-                                        finish()
-                                    }.show()
-                            }
-                        }
-                        .setNegativeButton(android.R.string.cancel) { _, _ -> finish() }
-                    dialog.show()
-                    return false
+                    }
                 }
         }
-        return true
+        return success
     }
 }
