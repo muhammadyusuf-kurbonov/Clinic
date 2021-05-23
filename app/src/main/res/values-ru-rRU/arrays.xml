@@ -4,4 +4,11 @@
         <item>В панели уведомлений</item>
         <item>Поверх остальных приложений</item>
     </array>
+    <array name="delays">
+        <item>Не показывать</item>
+        <item>2 сек</item>
+        <item>5 сек</item>
+        <item>10 сек</item>
+        <item>Не закрывать автоматически</item>
+    </array>
 </resources>
