@@ -8,4 +8,19 @@
         <item>In notification panel</item>
         <item>Over other apps</item>
     </array>
+
+    <string-array name="delays_values">
+        <item>0</item>
+        <item>2000</item>
+        <item>5000</item>
+        <item>1000</item>
+        <item>-1</item>
+    </string-array>
+    <array name="delays">
+        <item>Don\'t show</item>
+        <item>2s</item>
+        <item>5s</item>
+        <item>10s</item>
+        <item>Don\'t close automatically</item>
+    </array>
 </resources>

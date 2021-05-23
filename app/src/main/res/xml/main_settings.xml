@@ -11,5 +11,13 @@
             app:defaultValue="floatingButton"
             app:icon="@drawable/ic_baseline_notifications_24"
             app:useSimpleSummaryProvider="true" />
+        <androidx.preference.ListPreference
+            android:entries="@array/delays"
+            android:entryValues="@array/delays_values"
+            android:icon="@android:drawable/ic_lock_idle_alarm"
+            android:key="autocancel_delay"
+            android:title="@string/autoclose_title"
+            app:defaultValue="-1"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

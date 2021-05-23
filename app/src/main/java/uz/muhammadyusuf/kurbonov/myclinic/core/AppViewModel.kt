@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import retrofit2.Response
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.android.works.MainWorker
 import uz.muhammadyusuf.kurbonov.myclinic.api.APIService
@@ -75,16 +76,18 @@ class AppViewModel(private val apiService: APIService) {
                     when (state.value) {
                         is State.Found -> {
                             sendCallInfo(action.context, (state.value as State.Found).customer)
-                            mainScope.launch {
-                                delay(5_000)
-                                reduce(Action.Finish)
-                            }
                         }
                         is State.NotFound -> {
-                            _state.value = State.AddNewCustomerRequest(action.phone)
                             mainScope.launch {
-                                delay(5_000)
-                                reduce(Action.Finish)
+                                val delay =
+                                    App.pref.getString("autocancel_delay", "-1")?.toLong() ?: -1
+                                if (delay != -1L) {
+                                    _state.value = State.AddNewCustomerRequest(action.phone)
+                                    delay(delay)
+                                    reduce(Action.Finish)
+                                } else {
+                                    reduce(Action.Finish)
+                                }
                             }
                         }
                         else -> {
