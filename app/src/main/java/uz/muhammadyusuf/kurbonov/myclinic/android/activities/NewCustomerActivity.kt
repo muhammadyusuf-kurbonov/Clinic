@@ -28,7 +28,7 @@ class NewCustomerActivity : AppCompatActivity() {
         binding = ActivityNewCustomerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        App.getAppViewModelInstance().reduceBlocking(Action.Finish)
+        App.getAppViewModelInstance().reduce(Action.Finish)
 
         if (intent.extras?.containsKey("phone") == true) {
             binding.edPhone.setText(intent.extras?.getString("phone") ?: "")
@@ -96,7 +96,7 @@ class NewCustomerActivity : AppCompatActivity() {
                         getString(R.string.new_customer_toast, binding.edFirstName.text.toString()),
                         Toast.LENGTH_SHORT
                     ).show()
-                    App.getAppViewModelInstance().reduceBlocking(Action.Finish)
+                    App.getAppViewModelInstance().reduce(Action.Finish)
                     finish()
                 } else {
                     Timber.e(IllegalStateException(response.errorBody()?.charStream()?.readText()))

@@ -87,7 +87,7 @@ class CallReceiver : PhoneCallReceiver() {
 //            ExistingWorkPolicy.REPLACE,
 //            OneTimeWorkRequestBuilder<ReporterWork>().build()
 //        )
-        App.getAppViewModelInstance().reduceBlocking(
+        App.getAppViewModelInstance().reduce(
             Action.EndCall(
                 context,
                 number ?: throw IllegalArgumentException("null number")
@@ -96,8 +96,8 @@ class CallReceiver : PhoneCallReceiver() {
     }
 
     private fun startRecognition(ctx: Context, number: String?, type: String) {
-        App.getAppViewModelInstance().reduceBlocking(Action.Start(ctx))
-        App.getAppViewModelInstance().reduceBlocking(
+        App.getAppViewModelInstance().reduce(Action.Start(ctx))
+        App.getAppViewModelInstance().reduce(
             Action.Search(
                 number ?: throw IllegalStateException("No number yet?"),
                 CallDirection.parseString(type)

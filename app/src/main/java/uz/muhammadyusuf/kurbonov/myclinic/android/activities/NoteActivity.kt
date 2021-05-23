@@ -39,7 +39,7 @@ class NoteActivity : AppCompatActivity() {
             binding.edOther.isVisible = checkedId == R.id.rbOther
         }
 
-        App.getAppViewModelInstance().reduceBlocking(Action.Finish)
+        App.getAppViewModelInstance().reduce(Action.Finish)
         NotificationManagerCompat.from(applicationContext)
             .cancelAll()
 

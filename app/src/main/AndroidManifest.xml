@@ -23,20 +23,23 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
-            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.SettingsActivity"
+            android:name=".android.activities.ComposeActivity"
             android:exported="true" />
         <activity
-            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.NewCustomerActivity"
+            android:name=".android.activities.SettingsActivity"
+            android:exported="true" />
+        <activity
+            android:name=".android.activities.NewCustomerActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.DayNight.Dialog.Alert" />
         <activity
-            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.NoteActivity"
+            android:name=".android.activities.NoteActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.DayNight.Dialog.Alert" />
         <activity
-            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.MainActivity"
+            android:name=".android.activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,12 +48,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.activities.LoginActivity"
+            android:name=".android.activities.LoginActivity"
             android:exported="true"
             android:launchMode="singleTask" />
 
         <receiver
-            android:name="uz.muhammadyusuf.kurbonov.myclinic.android.recievers.CallReceiver"
+            android:name=".android.recievers.CallReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
