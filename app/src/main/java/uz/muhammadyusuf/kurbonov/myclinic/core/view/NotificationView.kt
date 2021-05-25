@@ -93,7 +93,7 @@ class NotificationView(
 
                 setContentIntent(getAuthActivityIntent(phone))
 
-                setContentText(context.getText(R.string.auth_text))
+                setContentText(context.getText(R.string.auth_request))
             }.build())
     }
 
@@ -224,7 +224,7 @@ class NotificationView(
                 }
 
                 State.NoConnectionState -> changeNotificationMessage(R.string.no_connection)
-                State.TooSlowConnectionError -> changeNotificationMessage(R.string.too_slow)
+                State.TooSlowConnectionError -> changeNotificationMessage(R.string.read_timeout)
 
                 is State.Error -> {
                     Timber.e(state.exception)

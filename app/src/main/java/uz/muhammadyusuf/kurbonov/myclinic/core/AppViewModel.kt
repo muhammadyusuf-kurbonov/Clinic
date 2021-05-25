@@ -27,7 +27,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.utils.*
 
 class AppViewModel(private val apiService: APIService) {
     private val _state = MutableStateFlow<State>(State.None)
-    val state: StateFlow<State> = _state.asStateFlow()
+    val stateFlow: StateFlow<State> = _state.asStateFlow()
 
     lateinit var callDirection: CallDirection
     lateinit var phone: String
@@ -41,7 +41,9 @@ class AppViewModel(private val apiService: APIService) {
 
     fun reduce(action: Action) {
         mainScope.launch {
-            if (state.value == State.Finished && action !is Action.Start)
+            log("reducing $action in state ${stateFlow.value}")
+            ensureActive()
+            if ((stateFlow.value is State.Finished) and (action !is Action.Start))
                 return@launch
 
             when (action) {
@@ -73,14 +75,14 @@ class AppViewModel(private val apiService: APIService) {
                 }
 
                 is Action.EndCall -> {
-                    when (state.value) {
+                    when (stateFlow.value) {
                         is State.Found -> {
-                            sendCallInfo(action.context, (state.value as State.Found).customer)
+                            sendCallInfo(action.context, (stateFlow.value as State.Found).customer)
                         }
                         is State.NotFound -> {
                             mainScope.launch {
                                 val delay =
-                                    App.pref.getString("autocancel_delay", "-1")?.toLong() ?: -1
+                                        App.pref.getString("autocancel_delay", "-1")?.toLong() ?: -1
                                 if (delay != -1L) {
                                     _state.value = State.AddNewCustomerRequest(action.phone)
                                     delay(delay)
@@ -161,10 +163,6 @@ class AppViewModel(private val apiService: APIService) {
 
     }
 
-    fun reduceBlocking(action: Action) {
-        reduce(action)
-    }
-
     @SuppressLint("UnsafeExperimentalUsageError")
     private fun initialize(context: Context) {
         initTimber()
@@ -187,7 +185,7 @@ class AppViewModel(private val apiService: APIService) {
         networkTrackerScope.launch {
             NetworkTracker(context).connectedToInternet.collect {
                 Timber.d("Network state received $it")
-                if (it && state.value is State.NoConnectionState)
+                if (it && stateFlow.value is State.NoConnectionState)
                     reduce(Action.Restart)
             }
         }
@@ -232,8 +230,9 @@ class AppViewModel(private val apiService: APIService) {
     }
 
     private fun onFinished() {
-//        instance.cancelUniqueWork(MainWorker.WORKER_ID)
-        job.cancel()
+        networkTrackerScope.cancel()
+        mainScope.cancel()
+        instance.cancelUniqueWork(MainWorker.WORKER_ID)
     }
 
     private fun log(message: String) {

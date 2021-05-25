@@ -8,11 +8,11 @@
     <string name="next_appointment">Next Appointment</string>
     <string name="previous_appointment">Previous Appointment</string>
     <string name="searching_text">Searching …</string>
-    <string name="too_slow">Too slow internet connection. Please use other connection</string>
+    <string name="read_timeout">Connection timeout</string>
     <string name="no_connection">No internet connection</string>
     <string name="unknown_error">Sorry, error occurred!</string>
     <string name="not_found">Nobody was found</string>
-    <string name="auth_text">Tap notification to login</string>
+    <string name="auth_request">Login, please</string>
     <string name="balance">Balance: %1d</string>
     <string name="main_label_text">Welcome! Logged in as \n%s</string>
     <string name="logout">Logout</string>

@@ -8,11 +8,11 @@
     <string name="next_appointment">След. визит</string>
     <string name="previous_appointment">Пред. визит</string>
     <string name="searching_text">Поиск …</string>
-    <string name="too_slow">Слишком низкая скорость подключения. Пожалуйста, смените подключение</string>
+    <string name="read_timeout">Время ожидания подключения истекло</string>
     <string name="no_connection">Нет соединения</string>
     <string name="unknown_error">Возникла ошибка</string>
     <string name="not_found">Не найдено</string>
-    <string name="auth_text">Нажмите на уведомление для входа в аккаунт</string>
+    <string name="auth_request">Войдите в систему, пожалуйста</string>
     <string name="balance">Баланс: %1d</string>
     <string name="main_label_text">Добро пожаловать.\nВы вошли как \n %s</string>
     <string name="logout">Выйти</string>

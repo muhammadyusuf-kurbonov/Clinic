@@ -51,13 +51,13 @@ class IntegratedTests {
             .create(APIService::class.java)
         App.appViewModel = AppViewModel(api)
 
-        App.getAppViewModelInstance().reduceBlocking(Action.Start(context))
+        App.getAppViewModelInstance().reduce(Action.Start(context))
         Log.d("test-system", "Initialized")
     }
 
     @After
     fun dismiss() {
-        App.getAppViewModelInstance().reduceBlocking(Action.Finish)
+        App.getAppViewModelInstance().reduce(Action.Finish)
         mockWebServer.shutdown()
         println("End test")
     }
@@ -94,7 +94,7 @@ class IntegratedTests {
                 .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
 
 
-            checkNotificationWithText(uiDevice, context.getString(R.string.auth_text))
+            checkNotificationWithText(uiDevice, context.getString(R.string.auth_request))
         }
     }
 
@@ -106,7 +106,7 @@ class IntegratedTests {
 
             mockWebServer.shutdown()
 
-            checkNotificationWithText(uiDevice, context.getString(R.string.too_slow))
+            checkNotificationWithText(uiDevice, context.getString(R.string.no_connection))
         }
     }
 

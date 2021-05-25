@@ -27,24 +27,22 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
     override suspend fun doWork(): Result {
         try {
-            val job =
-                CoroutineScope(Dispatchers.Default).launch {
-                    when (App.pref.getString("interaction_type", "floatingButton")) {
-                        "notification" -> NotificationView(
+            CoroutineScope(Dispatchers.Default).launch {
+                when (App.pref.getString("interaction_type", "floatingButton")) {
+                    "notification" -> NotificationView(
                             applicationContext,
-                            App.getAppViewModelInstance().state,
+                            App.getAppViewModelInstance().stateFlow,
                             this
-                        ).start()
-                        else ->
-                            OverlayView(
+                    ).start()
+                    else ->
+                        OverlayView(
                                 applicationContext,
-                                App.getAppViewModelInstance().state,
+                                App.getAppViewModelInstance().stateFlow,
                                 this
-                            )
-                                .start()
-                    }
+                        ).start()
                 }
-            job.join()
+                awaitCancellation()
+            }
             delay(5000)
         } catch (e: CancellationException) {
         }
