@@ -33,18 +33,20 @@ class AppViewModel(private val apiService: APIService) {
     lateinit var phone: String
 
     private lateinit var instance: WorkManager
-    private val job = Job()
+    private var job = Job()
 
     // Don't use this scope, because it is observing network until state finished
-    private val networkTrackerScope = CoroutineScope(Dispatchers.Default + job)
-    private val mainScope = CoroutineScope(Dispatchers.Default + job)
+    private var networkTrackerScope = CoroutineScope(Dispatchers.Default + job)
+    private var mainScope = CoroutineScope(Dispatchers.Default + job)
 
     fun reduce(action: Action) {
+        if (action is Action.Start) {
+            job = Job()
+            networkTrackerScope = CoroutineScope(Dispatchers.Default + job)
+            mainScope = CoroutineScope(Dispatchers.Default + job)
+        }
         mainScope.launch {
             log("reducing $action in state ${stateFlow.value}")
-            ensureActive()
-            if ((stateFlow.value is State.Finished) and (action !is Action.Start))
-                return@launch
 
             when (action) {
                 is Action.Search -> {
@@ -116,6 +118,7 @@ class AppViewModel(private val apiService: APIService) {
                         _state.value = State.NoConnectionState
                 }
             }
+            ensureActive()
         }
     }
 
@@ -232,7 +235,6 @@ class AppViewModel(private val apiService: APIService) {
     private fun onFinished() {
         networkTrackerScope.cancel()
         mainScope.cancel()
-        instance.cancelUniqueWork(MainWorker.WORKER_ID)
     }
 
     private fun log(message: String) {

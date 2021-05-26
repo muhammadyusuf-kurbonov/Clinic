@@ -34,13 +34,6 @@ class OverlayView(
         const val OVERLAY_X_PREF_KEY = "overlay_x"
         const val OVERLAY_Y_PREF_KEY = "overlay_y"
     }
-//
-//    private lateinit var binding: OverlayMainBinding
-//    private var initialTouchX = 0f
-//    private var initialTouchY = 0f
-//    private var initialX = 0
-//    private var initialY = 0
-//    private var startTime = System.currentTimeMillis()
 
     private lateinit var view: ComposeView
     private lateinit var windowManager: WindowManager
@@ -49,7 +42,6 @@ class OverlayView(
     suspend fun start() = withContext(Dispatchers.Main) {
         lifecycleRegistry.currentState = Lifecycle.State.INITIALIZED
         savedStateRegistryController.performRestore(null)
-        lifecycleRegistry.currentState = Lifecycle.State.CREATED
         view = ComposeView(context)
         view.setContent {
             val state by App.getAppViewModelInstance().stateFlow.collectAsState()
@@ -57,48 +49,7 @@ class OverlayView(
         }
         ViewTreeLifecycleOwner.set(view, this@OverlayView)
         ViewTreeSavedStateRegistryOwner.set(view, this@OverlayView)
-//            binding.img.setOnTouchListener { v, event ->
-//
-//                val mWindowsParams = view.layoutParams as WindowManager.LayoutParams
-//                when (event.action) {
-//                    MotionEvent.ACTION_DOWN -> {
-//                        initialX = mWindowsParams.x
-//                        initialY = mWindowsParams.y
-//                        initialTouchX = event.rawX
-//                        initialTouchY = event.rawY
-//                        startTime = System.currentTimeMillis()
-//                    }
-//                    MotionEvent.ACTION_UP -> {
-//                        if (System.currentTimeMillis() - startTime <= 700)
-//                            v.performClick()
-//                    }
-//                    MotionEvent.ACTION_MOVE -> {
-//                        mWindowsParams.x = initialX + (event.rawX - initialTouchX).toInt()
-//                        mWindowsParams.y = initialY + (event.rawY - initialTouchY).toInt()
-//                        windowManager.updateViewLayout(view, mWindowsParams)
-//                    }
-//
-//                }
-//                true
-//            }
-//
-//            binding.img.setOnClickListener {
-//                with(binding.container) {
-//                    pivotX = 0f
-//                    pivotY = measuredHeight.toFloat()
-//                    CoroutineScope(Dispatchers.Main).launch {
-//                        if (isVisible) {
-//                            hideTextBalloon()
-//                        } else {
-//                            showTextBalloon()
-//                        }
-//                    }
-//                }
-//            }
-//
-//            // Pivot points for animation
-//            binding.container.pivotX = 0f
-//            binding.container.pivotY = binding.container.measuredHeight.toFloat()
+        lifecycleRegistry.currentState = Lifecycle.State.CREATED
 
         val layoutParams = WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
