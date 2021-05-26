@@ -188,12 +188,7 @@ class MainActivity : AppCompatActivity() {
             if (notGrantedPermissions.isNotEmpty())
                 mainTextView.text =
                     getString(R.string.not_granted, notGrantedPermissions.joinToString())
-            else
-                mainTextView.text = getString(
-                    R.string.main_label_text,
-                    App.pref.getString("user.email", "(login again to see it)")
-                )
-        }
+            }
 
     private val overlayRequest =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -233,8 +228,6 @@ class MainActivity : AppCompatActivity() {
             }.toTypedArray()
         )
 
-        verifyToken()
-
         findViewById<TextView>(R.id.tvVersion).text = getString(
             R.string.version_template,
             getString(R.string.app_name),
@@ -261,8 +254,18 @@ class MainActivity : AppCompatActivity() {
 
         if (token.trim().isEmpty() or token.isBlank()) {
             startActivity(Intent(this, LoginActivity::class.java))
+        } else {
+            mainTextView.text = getString(
+                R.string.main_label_text,
+                App.pref.getString("user.email", "(login again to see it)")
+            )
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        verifyToken()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
