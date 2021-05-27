@@ -43,4 +43,5 @@
     <string name="notification_pref_title">Notification type</string>
     <string name="no_power_mangement_access">I haven\'t got access to go to settings. Please goto settings and manually disable battery optimization and allow background activity, please</string>
     <string name="autoclose_title">Auto-close \"Add new customer\" request</string>
+    <string name="settings_title">Settings</string>
 </resources>

@@ -3,6 +3,7 @@ package uz.muhammadyusuf.kurbonov.myclinic.core.view
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,25 +52,28 @@ fun OverlayCompose(state: State = State.Started) {
         mutableStateOf(true)
     }
 
+    val offset = animateDpAsState(targetValue = if (expanded) 0.dp else (-16).dp)
+
     OverlayTheme {
-        Row(verticalAlignment = Alignment.Bottom) {
+        Row(verticalAlignment = Alignment.Top) {
             Image(
-                    painter = painterResource(R.drawable.ic_launcher_foreground),
-                    contentDescription = "overlayViewImage",
-                    modifier = Modifier
-                            .width(48.dp)
-                            .height(48.dp)
-                            .shadow(10.dp, shape = CircleShape)
-                            .background(Color.White, shape = CircleShape)
-                            .clickable(
-                                    interactionSource = remember {
-                                        MutableInteractionSource()
-                                    },
-                                    indication = null
-                            ) {
-                                expanded = !expanded
-                            }
-                            .padding(8.dp),
+                painter = painterResource(R.drawable.ic_launcher_foreground),
+                contentDescription = "overlayViewImage",
+                modifier = Modifier
+                    .offset(offset.value, 0.dp)
+                    .width(48.dp)
+                    .height(48.dp)
+                    .shadow(10.dp, shape = CircleShape)
+                    .background(Color.White, shape = CircleShape)
+                    .clickable(
+                        interactionSource = remember {
+                            MutableInteractionSource()
+                        },
+                        indication = null
+                    ) {
+                        expanded = !expanded
+                    }
+                    .padding(8.dp),
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -80,17 +84,17 @@ fun OverlayCompose(state: State = State.Started) {
                 val scope = rememberCoroutineScope()
 
                 Box(
-                        modifier = Modifier
-                                .background(
-                                        MaterialTheme.colors.primary,
-                                        shape = RoundedCornerShape(
-                                                topStart = 8.dp,
-                                                topEnd = 8.dp,
-                                                bottomEnd = 8.dp,
-                                                bottomStart = 0.dp
-                                        )
-                                )
-                                .padding(4.dp)
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colors.primary,
+                            shape = RoundedCornerShape(
+                                topStart = 0.dp,
+                                topEnd = 8.dp,
+                                bottomEnd = 8.dp,
+                                bottomStart = 8.dp
+                            )
+                        )
+                        .padding(4.dp)
                 ) {
                     Content(Modifier.padding(4.dp), state, fadeToVisibility = {
                         expanded = it
@@ -108,14 +112,11 @@ fun OverlayCompose(state: State = State.Started) {
 
 @Composable
 private fun Content(
-        modifier: Modifier = Modifier,
-        state: State,
-        fadeToVisibility: (Boolean) -> Unit = {},
-        finish: () -> Unit = {}
+    modifier: Modifier = Modifier,
+    state: State,
+    fadeToVisibility: (Boolean) -> Unit = {},
+    finish: () -> Unit = {}
 ) = Box(modifier = modifier) {
-    LaunchedEffect(key1 = "started") {
-        fadeToVisibility(true)
-    }
     when (state) {
         is State.Started -> {
             Text(text = stringResource(id = R.string.searching_text))
@@ -124,19 +125,19 @@ private fun Content(
             Column {
                 val context = LocalContext.current
                 Text(
-                        text = stringResource(id = R.string.add_user_request, state.phone),
-                        modifier = Modifier.clickable {
-                            fadeToVisibility(false)
-                            context.startActivity(
-                                    Intent(
-                                            context,
-                                            NewCustomerActivity::class.java
-                                    ).apply {
-                                        putExtra("phone", state.phone)
-                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    })
-                            finish()
-                        }, textAlign = TextAlign.Center
+                    text = stringResource(id = R.string.add_user_request, state.phone),
+                    modifier = Modifier.clickable {
+                        fadeToVisibility(false)
+                        context.startActivity(
+                            Intent(
+                                context,
+                                NewCustomerActivity::class.java
+                            ).apply {
+                                putExtra("phone", state.phone)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            })
+                        finish()
+                    }, textAlign = TextAlign.Center
                 )
             }
         }
@@ -172,7 +173,7 @@ private fun Content(
             val context = LocalContext.current
             context.startActivity(Intent(context, NoteActivity::class.java).apply {
                 putExtra(
-                        "communicationId", state.communicationId
+                    "communicationId", state.communicationId
                 )
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             })
@@ -191,20 +192,24 @@ private fun Content(
 fun CustomerInfo(customer: Customer, callDirection: CallDirection) {
     Column {
         Row(
-                modifier = Modifier
-                        .fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                    modifier = Modifier.padding(4.dp),
-                    painter = painterResource(
-                            id = when (callDirection) {
-                                CallDirection.INCOME ->
-                                    R.drawable.ic_phone_in_24
-                                CallDirection.OUTGOING ->
-                                    R.drawable.ic_phone_outgoing
-                            }
-                    ), contentDescription = "Call direction icon",
-                    colorFilter = ColorFilter.tint(MaterialTheme.colors.onSurface)
+                modifier = Modifier
+                    .height(32.dp)
+                    .width(32.dp)
+                    .padding(4.dp),
+                painter = painterResource(
+                    id = when (callDirection) {
+                        CallDirection.INCOME ->
+                            R.drawable.ic_phone_in_24
+                        CallDirection.OUTGOING ->
+                            R.drawable.ic_phone_outgoing
+                    }
+                ), contentDescription = "Call direction icon",
+                colorFilter = ColorFilter.tint(MaterialTheme.colors.onSurface)
             )
             val nameAndPhone = buildAnnotatedString {
 
@@ -213,82 +218,82 @@ fun CustomerInfo(customer: Customer, callDirection: CallDirection) {
                 }
 
                 withStyle(
-                        SpanStyle(
-                                color = MaterialTheme.colors.onBackground
-                                        .copy(alpha = ContentAlpha.disabled)
-                        )
+                    SpanStyle(
+                        color = MaterialTheme.colors.onBackground
+                            .copy(alpha = ContentAlpha.disabled)
+                    )
                 ) {
                     append(customer.phoneNumber)
                 }
             }
             Text(
-                    modifier = Modifier
-                            .padding(4.dp),
-                    text = nameAndPhone,
-                    fontWeight = FontWeight.ExtraBold
+                modifier = Modifier
+                    .padding(4.dp),
+                text = nameAndPhone,
+                fontWeight = FontWeight.ExtraBold
             )
         }
         Text(
-                text = stringResource(id = R.string.balance, customer.balance),
-                modifier = Modifier.padding(4.dp),
-                style = MaterialTheme.typography.subtitle1
+            text = stringResource(id = R.string.balance, customer.balance),
+            modifier = Modifier.padding(4.dp),
+            style = MaterialTheme.typography.subtitle1
         )
         Spacer(modifier = Modifier.height(24.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(4f)) {
                 Text(
-                        text = stringResource(id = R.string.next_appointment),
-                        fontWeight = FontWeight.Bold
+                    text = stringResource(id = R.string.next_appointment),
+                    fontWeight = FontWeight.Bold
                 )
                 if (customer.nextAppointment != null) {
                     val nextAppointment = customer.nextAppointment!!
                     val lastAppointmentText =
-                            "${nextAppointment.date} - ${nextAppointment.doctor?.name ?: ""} - ${nextAppointment.diagnosys}"
+                        "${nextAppointment.date} - ${nextAppointment.doctor?.name ?: ""} - ${nextAppointment.diagnosys}"
                     Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
                 } else {
                     Text(
-                            text = "There isn't coming appointment yet",
-                            modifier = Modifier.padding(4.dp),
-                            style = MaterialTheme.typography.body2
+                        text = "There isn't coming appointment yet",
+                        modifier = Modifier.padding(4.dp),
+                        style = MaterialTheme.typography.body2
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                        text = stringResource(id = R.string.previous_appointment),
-                        fontWeight = FontWeight.Bold
+                    text = stringResource(id = R.string.previous_appointment),
+                    fontWeight = FontWeight.Bold
                 )
                 if (customer.lastAppointment != null) {
                     val lastAppointment = customer.lastAppointment!!
                     val lastAppointmentText =
-                            "${lastAppointment.date} - ${lastAppointment.doctor?.name ?: ""} - ${lastAppointment.diagnosys}"
+                        "${lastAppointment.date} - ${lastAppointment.doctor?.name ?: ""} - ${lastAppointment.diagnosys}"
                     Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
                 } else {
                     Text(
-                            text = "No previous appointment yet", modifier = Modifier.padding(4.dp),
-                            style = MaterialTheme.typography.body2
+                        text = "No previous appointment yet", modifier = Modifier.padding(4.dp),
+                        style = MaterialTheme.typography.body2
                     )
                 }
             }
             val painter = rememberCoilPainter(
-                    request = customer.avatarLink,
-                    fadeIn = true
+                request = customer.avatarLink,
+                fadeIn = true
             )
             when (painter.loadState) {
                 is ImageLoadState.Success -> {
                     Image(
-                            modifier = Modifier.weight(1f),
-                            painter = painter,
-                            contentDescription = "",
+                        modifier = Modifier.weight(1f),
+                        painter = painter,
+                        contentDescription = "",
                     )
                 }
 
                 else -> Image(
-                        modifier = Modifier.weight(1f),
-                        painter = painterResource(id = R.drawable.ic_action_avatar_placeholder),
-                        contentDescription = "",
-                        colorFilter = ColorFilter.tint(MaterialTheme.colors.onSurface)
+                    modifier = Modifier.weight(1f),
+                    painter = painterResource(id = R.drawable.ic_action_avatar_placeholder),
+                    contentDescription = "",
+                    colorFilter = ColorFilter.tint(MaterialTheme.colors.onSurface)
                 )
             }
         }

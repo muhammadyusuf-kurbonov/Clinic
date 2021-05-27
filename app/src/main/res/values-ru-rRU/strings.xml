@@ -42,4 +42,5 @@
     <string name="notification_pref_title">Тип уведомления</string>
     <string name="no_power_mangement_access">Нет доступа к настройкам. Пожалуйста, для корректной работы приложения зайдите в настройки и вручную отключите оптимизацию батареи и разрешите фоновую деятельность.</string>
     <string name="autoclose_title">Автозакрытие диалога \"Добавить нового клиента\"</string>
+    <string name="settings_title">Настройки</string>
 </resources>
