@@ -31,7 +31,7 @@ internal fun MockWebServer.enqueueResponse(fileName: String, code: Int) {
     )
 }
 
-internal fun checkNotificationWithText(uiDevice: UiDevice, text: String) {
+internal fun findText(uiDevice: UiDevice, text: String) {
     uiDevice.wait(Until.findObject(By.text(text)), 15000)
 
     val notification = uiDevice.findObject(By.text(text))

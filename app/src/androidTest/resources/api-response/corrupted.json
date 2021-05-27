@@ -1,0 +1,60 @@
+{
+  "total": 1,
+  "limit": 50,
+  "skip": 0,
+  "data": [
+    {
+      "_id": "5eff112313789959bfeaf79f",
+      "elementaryExam": {
+        "bite": null,
+        "OralHygieneIndex": null,
+        "OralMucosa": "OralMucosa",
+        "xRayAndLab": "xRayAndLab",
+        "map": [
+          {
+            "tooth": 17,
+            "diagnosis": "implant"
+          },
+          {
+            "tooth": 36,
+            "diagnosis": "missing"
+          },
+          {
+            "tooth": 37,
+            "diagnosis": "missing"
+          },
+          {
+            "tooth": 38,
+            "diagnosis": "missing"
+          },
+          {
+            "tooth": 48,
+            "diagnosis": "missing"
+          },
+          {
+            "tooth": 28,
+            "diagnosis": "missing"
+          },
+          {
+            "tooth": 21,
+            "diagnosis": "implant"
+          },
+          {
+            "tooth": 44,
+            "diagnosis": "implant"
+          }
+        ]
+      },
+      "userId": [
+        "5dc2beab0af9c9e30a0ea0f5",
+        "5dc3c93b9a76124f53746502",
+        "5de0f2ef62d8bb50876d833b",
+        "5dcf970025997c4d2789202e",
+        "5dc3c9d89a76124f53746503"
+      ],
+      "tags": [
+        "5e9c912501d0e9638d096591"
+      ],
+      "balance": 0,
+      "avatar_id": "5eb033d791320698c7b3dd8c",
+      "gender": "male",

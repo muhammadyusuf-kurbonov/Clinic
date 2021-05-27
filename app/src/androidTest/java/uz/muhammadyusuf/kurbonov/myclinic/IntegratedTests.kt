@@ -6,6 +6,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
@@ -72,7 +73,7 @@ class IntegratedTests {
 
 
 
-            checkNotificationWithText(uiDevice, context.getString(R.string.not_found))
+            findText(uiDevice, context.getString(R.string.not_found))
         }
     }
 
@@ -87,14 +88,36 @@ class IntegratedTests {
     }
 
     @Test
+    fun testCorrupted() {
+        runBlocking {
+            mockWebServer.enqueueResponse("corrupted.json", 200)
+            App.getAppViewModelInstance()
+                .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
+            findText(uiDevice, context.getString(R.string.unknown_error))
+        }
+    }
+
+    @Test
+    fun testPurposeRequest() {
+        runBlocking {
+            mockWebServer.enqueueResponse("found.json", 200)
+            App.getAppViewModelInstance()
+                .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
+            delay(2000)
+            App.getAppViewModelInstance()
+                .reduce(Action.EndCall(context, "+998994801416"))
+            findText(uiDevice, context.getString(R.string.purpose_msg, "+998994801416"))
+        }
+    }
+
+    @Test
     fun testAuthRequest() {
         runBlocking {
             mockWebServer.enqueueResponse("found.json", 401)
             App.getAppViewModelInstance()
                 .reduce(Action.Search("+998994801416", CallDirection.OUTGOING))
 
-
-            checkNotificationWithText(uiDevice, context.getString(R.string.auth_request))
+            findText(uiDevice, context.getString(R.string.auth_request))
         }
     }
 
@@ -106,7 +129,7 @@ class IntegratedTests {
 
             mockWebServer.shutdown()
 
-            checkNotificationWithText(uiDevice, context.getString(R.string.no_connection))
+            findText(uiDevice, context.getString(R.string.no_connection))
         }
     }
 
