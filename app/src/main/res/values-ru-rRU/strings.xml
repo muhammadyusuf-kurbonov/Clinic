@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_label_ask_permission">Предоставьте разрешения для нормальной работы</string>
+    <string name="main_label_ask_permission">Предоставьте разрешения для работы приложения</string>
     <string name="open_medical_card">Открыть карту</string>
     <string name="email_hint">Электронная почта</string>
     <string name="password">Пароль</string>
