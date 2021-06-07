@@ -9,9 +9,9 @@ import androidx.work.WorkerParameters
 import kotlinx.coroutines.*
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.android.works.views.NotificationView
+import uz.muhammadyusuf.kurbonov.myclinic.android.works.views.OverlayView
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.view.NotificationView
-import uz.muhammadyusuf.kurbonov.myclinic.core.view.OverlayView
 
 class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
     appContext,
@@ -28,19 +28,21 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
     override suspend fun doWork(): Result {
         try {
             CoroutineScope(Dispatchers.Default).launch {
-                when (App.pref.getString("interaction_type", "floatingButton")) {
-                    "notification" -> NotificationView(
+                val view =
+                    when (App.pref.getString("interaction_type", "floatingButton")) {
+                        "notification" -> NotificationView(
                             applicationContext,
                             App.getAppViewModelInstance().stateFlow,
                             this
-                    ).start()
-                    else ->
-                        OverlayView(
+                        )
+                        else ->
+                            OverlayView(
                                 applicationContext,
                                 App.getAppViewModelInstance().stateFlow,
                                 this
-                        ).start()
-                }
+                            )
+                    }
+                view.start()
                 awaitCancellation()
             }
             delay(5000)

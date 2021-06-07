@@ -7,6 +7,9 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -33,16 +36,19 @@ import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.imageloading.ImageLoadState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NewCustomerActivity
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NoteActivity
+import uz.muhammadyusuf.kurbonov.myclinic.android.works.views.compose.OverlayTheme
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
-import uz.muhammadyusuf.kurbonov.myclinic.core.view.compose.OverlayTheme
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
+import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_NOTIFICATIONS_VIEW
+import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -79,8 +85,6 @@ fun OverlayCompose(state: State = State.Started) {
             Spacer(modifier = Modifier.width(8.dp))
 
             AnimatedVisibility(visible = expanded) {
-
-
                 val scope = rememberCoroutineScope()
 
                 Box(

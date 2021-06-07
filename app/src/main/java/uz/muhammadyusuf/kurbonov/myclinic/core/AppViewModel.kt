@@ -24,10 +24,14 @@ import uz.muhammadyusuf.kurbonov.myclinic.api.toContact
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.di.DI
 import uz.muhammadyusuf.kurbonov.myclinic.utils.*
+import java.util.*
 
 class AppViewModel(private val apiService: APIService) {
     private val _state = MutableStateFlow<State>(State.None)
+    private val _position: MutableStateFlow<Pair<Float, Float>> = MutableStateFlow(Pair(0f, 0f))
+
     val stateFlow: StateFlow<State> = _state.asStateFlow()
+    val position: StateFlow<Pair<Float, Float>> = _position.asStateFlow()
 
     lateinit var callDirection: CallDirection
     lateinit var phone: String
@@ -116,6 +120,10 @@ class AppViewModel(private val apiService: APIService) {
                 Action.SetNoConnectionState -> {
                     if (_state.value is State.Searching)
                         _state.value = State.NoConnectionState
+                }
+                is Action.ChangePos -> {
+                    log("Change y pos to " + action.y)
+                    _position.value = _position.value.copy(second = action.y)
                 }
             }
             ensureActive()

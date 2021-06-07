@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.core.view
+package uz.muhammadyusuf.kurbonov.myclinic.android.works.views
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -17,15 +17,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppNotificationsView
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_NOTIFICATIONS_VIEW
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
+import kotlin.math.roundToInt
 
 class OverlayView(
-        val context: Context,
-        private val stateFlow: StateFlow<State>,
-        private val coroutineScope: CoroutineScope
-) : LifecycleOwner, SavedStateRegistryOwner {
+    val context: Context,
+    private val stateFlow: StateFlow<State>,
+    private val coroutineScope: CoroutineScope
+) : LifecycleOwner, SavedStateRegistryOwner, AppNotificationsView() {
 
     private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
@@ -39,7 +42,7 @@ class OverlayView(
     private lateinit var windowManager: WindowManager
 
     @SuppressLint("ClickableViewAccessibility")
-    suspend fun start() = withContext(Dispatchers.Main) {
+    override suspend fun start() = withContext(Dispatchers.Main) {
         lifecycleRegistry.currentState = Lifecycle.State.INITIALIZED
         savedStateRegistryController.performRestore(null)
         view = ComposeView(context)
@@ -67,10 +70,12 @@ class OverlayView(
         layoutParams.gravity = Gravity.CENTER_VERTICAL or Gravity.START
 
         with(App.pref) {
-            layoutParams.x = getInt(OVERLAY_X_PREF_KEY, 0)
-            layoutParams.y = getInt(OVERLAY_Y_PREF_KEY, 0)
+            App.getAppViewModelInstance().reduce(
+                Action.ChangePos(
+                    getFloat(OVERLAY_Y_PREF_KEY, 0f),
+                )
+            )
         }
-
         windowManager =
                 context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -91,8 +96,8 @@ class OverlayView(
     private fun onFinished() {
         val params = view.layoutParams as WindowManager.LayoutParams
         App.pref.edit()
-                .putInt(OVERLAY_X_PREF_KEY, params.x)
-                .putInt(OVERLAY_Y_PREF_KEY, params.y)
+            .putFloat(OVERLAY_X_PREF_KEY, params.x.toFloat())
+            .putFloat(OVERLAY_Y_PREF_KEY, params.y.toFloat())
                 .apply()
         coroutineScope.cancel()
         lifecycleScope.launch(Dispatchers.Main) {
