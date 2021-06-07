@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.core.view
+package uz.muhammadyusuf.kurbonov.myclinic.android.works.views
 
 import android.app.PendingIntent
 import android.content.Context
@@ -20,6 +20,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NewCustomerActivity
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppNotificationsView
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
@@ -31,7 +32,7 @@ class NotificationView(
     val context: Context,
     private val stateFlow: StateFlow<State>,
     private val coroutineScope: CoroutineScope
-) {
+) : AppNotificationsView() {
     private val primaryNotificationID = 100
     private val secondaryNotificationID = 101
 
@@ -47,7 +48,7 @@ class NotificationView(
     }
 
     private fun createAddCustomerNotification(phone: String) {
-        log("new user request")
+        printToLog("new user request")
         val notification =
             NotificationCompat.Builder(context, App.HEADUP_NOTIFICATION_CHANNEL_ID)
                 .apply {
@@ -98,7 +99,7 @@ class NotificationView(
     }
 
     private fun createCustomerInfoNotification(customer: Customer, callDirection: CallDirection) {
-        log(customer.toString())
+        printToLog(customer.toString())
         val view = RemoteViews(context.packageName, R.layout.customer_info)
         val notification =
             NotificationCompat.Builder(context, App.HEADUP_NOTIFICATION_CHANNEL_ID)
@@ -171,7 +172,7 @@ class NotificationView(
     }
 
     private fun createPurposeSelectionNotification(customer: Customer, communicationId: String) {
-        log("communicationId is $communicationId by creating notification")
+        printToLog("communicationId is $communicationId by creating notification")
 
         val activityIntent = Intent(context, NoteActivity::class.java).apply {
             putExtra(
@@ -203,10 +204,10 @@ class NotificationView(
             .notify(secondaryNotificationID, notification)
     }
 
-    suspend fun start() {
+    override suspend fun start() {
         delay(1000)
         stateFlow.collect { state ->
-            log("received state $state")
+            printToLog("received state $state")
             when (state) {
                 State.Started -> {
                     changeNotificationMessage("")
@@ -245,7 +246,7 @@ class NotificationView(
                     App.getAppViewModelInstance().reduce(Action.Finish)
                 }
                 State.None -> {
-                    log("Worker started")
+                    printToLog("Worker started")
                 }
             }
         }
@@ -280,7 +281,7 @@ class NotificationView(
                 setAutoCancel(true)
             }
 
-    private fun log(msg: String) {
+    private fun printToLog(msg: String) {
         initTimber()
         Timber.tag(TAG_NOTIFICATIONS_VIEW).d(msg)
     }

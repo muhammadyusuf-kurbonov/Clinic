@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.core.view.compose
+package uz.muhammadyusuf.kurbonov.myclinic.android.works.views.compose
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.LocalContentColor
