@@ -8,31 +8,20 @@ import android.view.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.*
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistryController
-import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppNotificationsView
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
+import uz.muhammadyusuf.kurbonov.myclinic.core.view.OverlayCompose
 import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_NOTIFICATIONS_VIEW
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
-import kotlin.math.roundToInt
 
 class OverlayView(
-    val context: Context,
-    private val stateFlow: StateFlow<State>,
-    private val coroutineScope: CoroutineScope
-) : LifecycleOwner, SavedStateRegistryOwner, AppNotificationsView() {
-
-    private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
-    private val savedStateRegistryController = SavedStateRegistryController.create(this)
-
+    val context: Context, viewModel: AppViewModel
+) : AppNotificationsView(viewModel) {
     companion object {
         const val OVERLAY_X_PREF_KEY = "overlay_x"
         const val OVERLAY_Y_PREF_KEY = "overlay_y"
@@ -42,9 +31,7 @@ class OverlayView(
     private lateinit var windowManager: WindowManager
 
     @SuppressLint("ClickableViewAccessibility")
-    override suspend fun start() = withContext(Dispatchers.Main) {
-        lifecycleRegistry.currentState = Lifecycle.State.INITIALIZED
-        savedStateRegistryController.performRestore(null)
+    override suspend fun onStart() = withContext(Dispatchers.Main) {
         view = ComposeView(context)
         view.setContent {
             val state by App.getAppViewModelInstance().stateFlow.collectAsState()
@@ -52,11 +39,9 @@ class OverlayView(
         }
         ViewTreeLifecycleOwner.set(view, this@OverlayView)
         ViewTreeSavedStateRegistryOwner.set(view, this@OverlayView)
-        lifecycleRegistry.currentState = Lifecycle.State.CREATED
-
         val layoutParams = WindowManager.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 } else {
@@ -70,39 +55,32 @@ class OverlayView(
         layoutParams.gravity = Gravity.CENTER_VERTICAL or Gravity.START
 
         with(App.pref) {
-            App.getAppViewModelInstance().reduce(
-                Action.ChangePos(
-                    getFloat(OVERLAY_Y_PREF_KEY, 0f),
-                )
-            )
+//            viewModel.reduce(
+//                Action.ChangePos(
+//                    getFloat(OVERLAY_Y_PREF_KEY, 0f),
+//                )
+//            )
         }
         windowManager =
-                context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-        lifecycleRegistry.currentState = Lifecycle.State.STARTED
         windowManager.addView(view, layoutParams)
-        observeState()
-        lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+
     }
 
-    private suspend fun observeState() {
-        stateFlow.collect { state ->
-            printToLog("received state $state")
-            if (state is State.Finished)
-                onFinished()
-        }
+    override suspend fun onStateChange(state: State) {
+        printToLog("received state $state")
     }
 
-    private fun onFinished() {
+    override fun onFinished() {
         val params = view.layoutParams as WindowManager.LayoutParams
         App.pref.edit()
             .putFloat(OVERLAY_X_PREF_KEY, params.x.toFloat())
             .putFloat(OVERLAY_Y_PREF_KEY, params.y.toFloat())
-                .apply()
-        coroutineScope.cancel()
+            .apply()
+        viewModel.coroutineScope.cancel()
         lifecycleScope.launch(Dispatchers.Main) {
             windowManager.removeView(view)
-            lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         }
     }
 
@@ -112,8 +90,4 @@ class OverlayView(
         initTimber()
         Timber.tag(TAG_NOTIFICATIONS_VIEW).d(msg)
     }
-
-    override fun getLifecycle(): Lifecycle = lifecycleRegistry
-    override fun getSavedStateRegistry(): SavedStateRegistry =
-            savedStateRegistryController.savedStateRegistry
 }

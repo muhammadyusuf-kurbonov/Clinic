@@ -32,14 +32,12 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
                     when (App.pref.getString("interaction_type", "floatingButton")) {
                         "notification" -> NotificationView(
                             applicationContext,
-                            App.getAppViewModelInstance().stateFlow,
-                            this
+                            App.getAppViewModelInstance()
                         )
                         else ->
                             OverlayView(
                                 applicationContext,
-                                App.getAppViewModelInstance().stateFlow,
-                                this
+                                App.getAppViewModelInstance()
                             )
                     }
                 view.start()

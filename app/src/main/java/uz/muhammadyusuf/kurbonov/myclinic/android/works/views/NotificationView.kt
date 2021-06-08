@@ -8,11 +8,8 @@ import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
@@ -21,6 +18,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NewCustomerActivity
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppNotificationsView
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
@@ -29,10 +27,8 @@ import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import kotlin.random.Random
 
 class NotificationView(
-    val context: Context,
-    private val stateFlow: StateFlow<State>,
-    private val coroutineScope: CoroutineScope
-) : AppNotificationsView() {
+    val context: Context, viewModel: AppViewModel
+) : AppNotificationsView(viewModel) {
     private val primaryNotificationID = 100
     private val secondaryNotificationID = 101
 
@@ -204,53 +200,56 @@ class NotificationView(
             .notify(secondaryNotificationID, notification)
     }
 
-    override suspend fun start() {
+    override suspend fun onStart() {
         delay(1000)
-        stateFlow.collect { state ->
-            printToLog("received state $state")
-            when (state) {
-                State.Started -> {
-                    changeNotificationMessage("")
-                }
-                State.Finished -> {
-                    onFinished()
-                    coroutineScope.cancel()
-                }
+    }
 
-                State.Searching -> changeNotificationMessage(R.string.searching_text)
-                is State.AuthRequest -> createAuthRequestNotification(state.phone)
-                is State.AddNewCustomerRequest -> {
-                    createAddCustomerNotification(state.phone)
-                    App.getAppViewModelInstance().reduce(Action.Finish)
-                }
+    override suspend fun onStateChange(state: State) {
+        printToLog("received state $state")
+        when (state) {
+            State.Started -> {
+                changeNotificationMessage("")
+            }
+            State.Finished -> {
+                onFinished()
+                viewModel.coroutineScope.cancel()
+            }
 
-                State.NoConnectionState -> changeNotificationMessage(R.string.no_connection)
-                State.TooSlowConnectionError -> changeNotificationMessage(R.string.read_timeout)
+            State.Searching -> changeNotificationMessage(R.string.searching_text)
+            is State.AuthRequest -> createAuthRequestNotification(state.phone)
+            is State.AddNewCustomerRequest -> {
+                createAddCustomerNotification(state.phone)
+                App.getAppViewModelInstance().reduce(Action.Finish)
+            }
 
-                is State.Error -> {
-                    Timber.e(state.exception)
-                    changeNotificationMessage(R.string.unknown_error)
-                }
+            State.NoConnectionState -> changeNotificationMessage(R.string.no_connection)
+            State.TooSlowConnectionError -> changeNotificationMessage(R.string.read_timeout)
 
-                State.NotFound -> changeNotificationMessage(R.string.not_found)
-                is State.Found -> createCustomerInfoNotification(
+            is State.Error -> {
+                Timber.e(state.exception)
+                changeNotificationMessage(R.string.unknown_error)
+            }
+
+            State.NotFound -> changeNotificationMessage(R.string.not_found)
+            is State.Found -> createCustomerInfoNotification(
+                state.customer,
+                state.callDirection
+            )
+            is State.PurposeRequest -> {
+                createPurposeSelectionNotification(
                     state.customer,
-                    state.callDirection
+                    state.communicationId
                 )
-                is State.PurposeRequest -> {
-                    createPurposeSelectionNotification(
-                        state.customer,
-                        state.communicationId
-                    )
-                    onFinished()
-                    App.getAppViewModelInstance().reduce(Action.Finish)
-                }
-                State.None -> {
-                    printToLog("Worker started")
-                }
+                onFinished()
+                App.getAppViewModelInstance().reduce(Action.Finish)
+            }
+            State.None -> {
+                printToLog("Worker started")
             }
         }
+    }
 
+    override fun onFinished() {
     }
 
     private fun getAuthActivityIntent(phone: String) = PendingIntent.getActivity(
@@ -285,6 +284,4 @@ class NotificationView(
         initTimber()
         Timber.tag(TAG_NOTIFICATIONS_VIEW).d(msg)
     }
-
-    var onFinished: () -> Unit = {}
 }

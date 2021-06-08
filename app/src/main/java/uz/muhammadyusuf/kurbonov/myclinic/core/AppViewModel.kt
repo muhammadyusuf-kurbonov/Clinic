@@ -28,10 +28,7 @@ import java.util.*
 
 class AppViewModel(private val apiService: APIService) {
     private val _state = MutableStateFlow<State>(State.None)
-    private val _position: MutableStateFlow<Pair<Float, Float>> = MutableStateFlow(Pair(0f, 0f))
-
     val stateFlow: StateFlow<State> = _state.asStateFlow()
-    val position: StateFlow<Pair<Float, Float>> = _position.asStateFlow()
 
     lateinit var callDirection: CallDirection
     lateinit var phone: String
@@ -43,20 +40,24 @@ class AppViewModel(private val apiService: APIService) {
     private var networkTrackerScope = CoroutineScope(Dispatchers.Default + job)
     private var mainScope = CoroutineScope(Dispatchers.Default + job)
 
+    // scope for views
+    val coroutineScope = mainScope
+
     fun reduce(action: Action) {
         if (action is Action.Start) {
             job = Job()
             networkTrackerScope = CoroutineScope(Dispatchers.Default + job)
             mainScope = CoroutineScope(Dispatchers.Default + job)
         }
+
         mainScope.launch {
-            log("reducing $action in state ${stateFlow.value}")
+            printToLog("reducing $action in state ${stateFlow.value}")
 
             when (action) {
                 is Action.Search -> {
                     this@AppViewModel.callDirection = action.direction
                     _state.value = State.Searching
-                    log("Searching ${action.phoneNumber}")
+                    printToLog("Searching ${action.phoneNumber}")
                     try {
                         withTimeout(12000) {
                             val response = withContext(Dispatchers.IO) {
@@ -88,7 +89,7 @@ class AppViewModel(private val apiService: APIService) {
                         is State.NotFound -> {
                             mainScope.launch {
                                 val delay =
-                                        App.pref.getString("autocancel_delay", "-1")?.toLong() ?: -1
+                                    App.pref.getString("autocancel_delay", "-1")?.toLong() ?: -1
                                 if (delay != -1L) {
                                     _state.value = State.AddNewCustomerRequest(action.phone)
                                     delay(delay)
@@ -117,13 +118,10 @@ class AppViewModel(private val apiService: APIService) {
                         )
                     )
                 }
+
                 Action.SetNoConnectionState -> {
                     if (_state.value is State.Searching)
                         _state.value = State.NoConnectionState
-                }
-                is Action.ChangePos -> {
-                    log("Change y pos to " + action.y)
-                    _position.value = _position.value.copy(second = action.y)
                 }
             }
             ensureActive()
@@ -220,20 +218,20 @@ class AppViewModel(private val apiService: APIService) {
                     State.NotFound
                 }
             else -> {
-                log("=================Response==============")
-                log("code: ${response.code()}")
-                log("-----------------message---------------")
-                log(response.raw().message())
-                log("--------------end message--------------")
-                log("-----------------body---------------")
-                log(response.raw().body().toString())
-                log("--------------end body--------------")
-                log("-----------------header---------------")
+                printToLog("=================Response==============")
+                printToLog("code: ${response.code()}")
+                printToLog("-----------------message---------------")
+                printToLog(response.raw().message())
+                printToLog("--------------end message--------------")
+                printToLog("-----------------body---------------")
+                printToLog(response.raw().body().toString())
+                printToLog("--------------end body--------------")
+                printToLog("-----------------header---------------")
                 val headersMap = response.raw().headers().toMultimap()
                 headersMap.keys.forEach { key ->
-                    log("$key: ${headersMap[key]}")
+                    printToLog("$key: ${headersMap[key]}")
                 }
-                log("--------------end header--------------")
+                printToLog("--------------end header--------------")
 
                 throw IllegalStateException("Invalid response. See log for more details")
             }
@@ -245,7 +243,7 @@ class AppViewModel(private val apiService: APIService) {
         mainScope.cancel()
     }
 
-    private fun log(message: String) {
+    private fun printToLog(message: String) {
         Timber.tag(TAG_APP_VIEW_MODEL).d(message)
     }
 
