@@ -6,10 +6,10 @@ import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
-import uz.muhammadyusuf.kurbonov.myclinic.core.model.CommunicationDataHolder
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.CommunicationDataHolder
 import java.io.IOException
 
-inline fun <reified T> retries(count: Int, block: () -> T): T {
+inline fun <reified T> attempts(count: Int, onError: (Throwable) -> Unit = {}, block: () -> T): T {
     var result: T? = null
     var e: Throwable? = null
     var currentIteration = 0
@@ -22,6 +22,7 @@ inline fun <reified T> retries(count: Int, block: () -> T): T {
             break
         } catch (error: Throwable) {
             Timber.tag("retries").d("Try #$currentIteration: error: $error")
+            onError(error)
             e = error
         } finally {
             currentIteration++
@@ -29,14 +30,10 @@ inline fun <reified T> retries(count: Int, block: () -> T): T {
     }
     if (e != null)
         throw e
-    return result ?: throw RetriesExpiredException(count)
+    return result!!
 }
 
 class NetworkIOException(e: IOException) : Exception("Error occurred $e", e)
-
-class RetriesExpiredException(retriesCount: Int) :
-    Exception("All retries ($retriesCount) are failed")
-
 
 fun getCallDetails(context: Context): CommunicationDataHolder {
     val contacts = CallLog.Calls.CONTENT_URI

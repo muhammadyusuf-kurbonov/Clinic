@@ -7,13 +7,12 @@ import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.api.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.utils.NetworkIOException
-import uz.muhammadyusuf.kurbonov.myclinic.utils.RetriesExpiredException
-import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
-import java.io.IOException
+import uz.muhammadyusuf.kurbonov.myclinic.utils.attempts
+import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 
 @Suppress("MemberVisibilityCanBePrivate")
-class DI {
+class API {
     companion object {
 
         private val service by lazy {
@@ -43,24 +42,22 @@ class DI {
                     .build()
 
                 try {
-                    retries(10) {
+                    attempts(15) {
                         it.proceed(newRequest)
                     }
-                } catch (e: IOException) {
+                } catch (e: SocketTimeoutException) {
                     Timber.e(NetworkIOException(e))
-                    errorResponse(newRequest, e)
-                } catch (e: RetriesExpiredException) {
                     errorResponse(newRequest, e, 408)
                 } catch (e: Exception) {
                     Timber.e(e)
-                    errorResponse(newRequest, e, 409)
+                    errorResponse(newRequest, e, 417)
                 }
             }
             .callTimeout(15, TimeUnit.SECONDS)
             .build()
 
 
-        private fun errorResponse(request: Request, e: Exception, code: Int = 407): Response =
+        private fun errorResponse(request: Request, e: Exception, code: Int = 417): Response =
             Response.Builder()
                 .request(request)
                 .body(

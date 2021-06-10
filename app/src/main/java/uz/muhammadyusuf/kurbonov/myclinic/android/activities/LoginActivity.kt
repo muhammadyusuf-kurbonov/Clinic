@@ -15,7 +15,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.api.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityAuthBinding
-import uz.muhammadyusuf.kurbonov.myclinic.di.DI
+import uz.muhammadyusuf.kurbonov.myclinic.di.API
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import java.net.InetAddress
 import kotlin.coroutines.resume
@@ -41,7 +41,7 @@ class LoginActivity : AppCompatActivity() {
             .setOnClickListener {
                 setStatus(AuthResult.STARTED)
 
-                val authService = DI.getAPIService()
+                val authService = API.getAPIService()
                 lifecycleScope.launch {
 
                     if (!checkInternetConnection()) {

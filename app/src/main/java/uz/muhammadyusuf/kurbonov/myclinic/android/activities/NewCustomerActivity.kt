@@ -13,8 +13,8 @@ import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.api.customers.CustomerAddRequestBody
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityNewCustomerBinding
-import uz.muhammadyusuf.kurbonov.myclinic.di.DI
-import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
+import uz.muhammadyusuf.kurbonov.myclinic.di.API
+import uz.muhammadyusuf.kurbonov.myclinic.utils.attempts
 import java.util.*
 
 class NewCustomerActivity : AppCompatActivity() {
@@ -77,9 +77,9 @@ class NewCustomerActivity : AppCompatActivity() {
             binding.btnOk.isEnabled = false
 
             lifecycleScope.launch {
-                val api = DI.getAPIService()
+                val api = API.getAPIService()
 
-                val response = retries(10) {
+                val response = attempts(10) {
                     api.addCustomer(
                         CustomerAddRequestBody(
                             first_name = binding.edFirstName.text.toString(),

@@ -28,7 +28,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker
 import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker.Companion.AUTO_START_PREF_KEY
-import uz.muhammadyusuf.kurbonov.myclinic.di.DI
+import uz.muhammadyusuf.kurbonov.myclinic.di.API
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
@@ -250,7 +250,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun verifyToken() {
-        val token = DI.getToken()
+        val token = API.getToken()
 
         if (token.trim().isEmpty() or token.isBlank()) {
             startActivity(Intent(this, LoginActivity::class.java))

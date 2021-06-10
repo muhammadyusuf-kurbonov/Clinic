@@ -12,7 +12,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.api.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.api.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.api.communications.CommunicationInfo
 import uz.muhammadyusuf.kurbonov.myclinic.utils.RetriesExpiredException
-import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
+import uz.muhammadyusuf.kurbonov.myclinic.utils.attempts
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -35,7 +35,7 @@ class NetworkTests {
                     .addHeader("Authorization", "Bearer $token")
                     .build()
                 try {
-                    retries(3) {
+                    attempts(3) {
                         it.proceed(newRequest)
                     }
                 } catch (e: RetriesExpiredException) {

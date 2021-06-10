@@ -1,9 +1,9 @@
 package uz.muhammadyusuf.kurbonov.myclinic.api
 
 import uz.muhammadyusuf.kurbonov.myclinic.api.customer_search.CustomerDTO
-import uz.muhammadyusuf.kurbonov.myclinic.core.model.Appointment
-import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
-import uz.muhammadyusuf.kurbonov.myclinic.core.model.Doctor
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.Appointment
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.Doctor
 import uz.muhammadyusuf.kurbonov.myclinic.utils.reformatDate
 import java.util.*
 

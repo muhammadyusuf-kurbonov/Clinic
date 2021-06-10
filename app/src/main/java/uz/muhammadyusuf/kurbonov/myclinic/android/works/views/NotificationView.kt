@@ -17,10 +17,10 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.activities.LoginActivity
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NewCustomerActivity
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.NoteActivity
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppNotificationsView
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppView
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
-import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_NOTIFICATIONS_VIEW
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
@@ -28,7 +28,7 @@ import kotlin.random.Random
 
 class NotificationView(
     val context: Context, viewModel: AppViewModel
-) : AppNotificationsView(viewModel) {
+) : AppView(viewModel) {
     private val primaryNotificationID = 100
     private val secondaryNotificationID = 101
 
@@ -223,7 +223,7 @@ class NotificationView(
             }
 
             State.NoConnectionState -> changeNotificationMessage(R.string.no_connection)
-            State.TooSlowConnectionError -> changeNotificationMessage(R.string.read_timeout)
+            State.ConnectionTimeoutState -> changeNotificationMessage(R.string.read_timeout)
 
             is State.Error -> {
                 Timber.e(state.exception)

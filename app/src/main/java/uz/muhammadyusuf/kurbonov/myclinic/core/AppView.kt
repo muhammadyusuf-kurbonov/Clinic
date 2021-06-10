@@ -6,9 +6,12 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-abstract class AppNotificationsView(val viewModel: AppViewModel) : LifecycleOwner,
+abstract class AppView(val viewModel: AppViewModel) : LifecycleOwner,
     SavedStateRegistryOwner {
 
     private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
@@ -16,15 +19,17 @@ abstract class AppNotificationsView(val viewModel: AppViewModel) : LifecycleOwne
 
     abstract suspend fun onStart()
 
-    suspend fun start() {
+    suspend fun start() = withContext(Dispatchers.Main) {
         lifecycleRegistry.currentState = Lifecycle.State.INITIALIZED
         savedStateRegistryController.performRestore(null)
         onStart()
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
-        viewModel.stateFlow.collect {
-            onStateChange(it)
-            if (it is State.Finished)
-                finish()
+        viewModel.coroutineScope.launch {
+            viewModel.stateFlow.collect {
+                if (it is State.Finished)
+                    finish()
+                onStateChange(it)
+            }
         }
         lifecycleRegistry.currentState = Lifecycle.State.STARTED
         lifecycleRegistry.currentState = Lifecycle.State.RESUMED
@@ -38,7 +43,9 @@ abstract class AppNotificationsView(val viewModel: AppViewModel) : LifecycleOwne
 
     fun finish() {
         onFinished()
-        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        viewModel.coroutineScope.launch(Dispatchers.Main) {
+            lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        }
     }
 
     abstract fun onFinished()

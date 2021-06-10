@@ -1,6 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic.core
 
-import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
 
 sealed class State {
@@ -18,5 +18,5 @@ sealed class State {
 
     data class Error(val exception: Exception) : State()
     object NoConnectionState : State()
-    object TooSlowConnectionError : State()
+    object ConnectionTimeoutState : State()
 }

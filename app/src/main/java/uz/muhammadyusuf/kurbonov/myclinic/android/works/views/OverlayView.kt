@@ -12,7 +12,8 @@ import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import kotlinx.coroutines.*
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppNotificationsView
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppView
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.core.view.OverlayCompose
@@ -21,7 +22,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 
 class OverlayView(
     val context: Context, viewModel: AppViewModel
-) : AppNotificationsView(viewModel) {
+) : AppView(viewModel) {
     companion object {
         const val OVERLAY_X_PREF_KEY = "overlay_x"
         const val OVERLAY_Y_PREF_KEY = "overlay_y"
@@ -34,8 +35,11 @@ class OverlayView(
     override suspend fun onStart() = withContext(Dispatchers.Main) {
         view = ComposeView(context)
         view.setContent {
-            val state by App.getAppViewModelInstance().stateFlow.collectAsState()
-            OverlayCompose(state = state)
+            val state = viewModel.stateFlow.collectAsState()
+            printToLog("composable: received ${state.value}")
+            OverlayCompose(state = state.value, onFinished = {
+                viewModel.reduce(Action.Finish)
+            })
         }
         ViewTreeLifecycleOwner.set(view, this@OverlayView)
         ViewTreeSavedStateRegistryOwner.set(view, this@OverlayView)
@@ -54,13 +58,13 @@ class OverlayView(
         )
         layoutParams.gravity = Gravity.CENTER_VERTICAL or Gravity.START
 
-        with(App.pref) {
+//        with(App.pref) {
 //            viewModel.reduce(
 //                Action.ChangePos(
 //                    getFloat(OVERLAY_Y_PREF_KEY, 0f),
 //                )
 //            )
-        }
+//        }
         windowManager =
             context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -70,6 +74,7 @@ class OverlayView(
 
     override suspend fun onStateChange(state: State) {
         printToLog("received state $state")
+        // Composable is handling state itself
     }
 
     override fun onFinished() {

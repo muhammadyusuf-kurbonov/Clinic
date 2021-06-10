@@ -12,21 +12,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
-import retrofit2.Response
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.android.works.MainWorker
-import uz.muhammadyusuf.kurbonov.myclinic.api.APIService
-import uz.muhammadyusuf.kurbonov.myclinic.api.communications.CommunicationInfo
-import uz.muhammadyusuf.kurbonov.myclinic.api.customer_search.CustomerDTO
-import uz.muhammadyusuf.kurbonov.myclinic.api.toContact
-import uz.muhammadyusuf.kurbonov.myclinic.core.model.Customer
-import uz.muhammadyusuf.kurbonov.myclinic.di.DI
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.resultmodels.SearchResult
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.resultmodels.SendConnectionResult
 import uz.muhammadyusuf.kurbonov.myclinic.utils.*
 import java.util.*
 
-class AppViewModel(private val apiService: APIService) {
+class AppViewModel(private val appRepository: AppRepository) {
     private val _state = MutableStateFlow<State>(State.None)
     val stateFlow: StateFlow<State> = _state.asStateFlow()
 
@@ -55,24 +51,16 @@ class AppViewModel(private val apiService: APIService) {
 
             when (action) {
                 is Action.Search -> {
-                    this@AppViewModel.callDirection = action.direction
+                    callDirection = action.direction
                     _state.value = State.Searching
-                    printToLog("Searching ${action.phoneNumber}")
                     try {
                         withTimeout(12000) {
-                            val response = withContext(Dispatchers.IO) {
-                                apiService.searchCustomer(action.phoneNumber, withAppointments = 0)
-                            }
-
                             phone = action.phoneNumber
-
-                            _state.value = getStateOfResponse(response)
+                            val response = appRepository.search(action.phoneNumber)
+                            handleSearchResult(response)
                         }
                     } catch (e: TimeoutCancellationException) {
-                        _state.value = State.TooSlowConnectionError
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        _state.value = State.Error(e)
+                        _state.value = State.ConnectionTimeoutState
                     }
                 }
 
@@ -87,17 +75,7 @@ class AppViewModel(private val apiService: APIService) {
                             sendCallInfo(action.context, (stateFlow.value as State.Found).customer)
                         }
                         is State.NotFound -> {
-                            mainScope.launch {
-                                val delay =
-                                    App.pref.getString("autocancel_delay", "-1")?.toLong() ?: -1
-                                if (delay != -1L) {
-                                    _state.value = State.AddNewCustomerRequest(action.phone)
-                                    delay(delay)
-                                    reduce(Action.Finish)
-                                } else {
-                                    reduce(Action.Finish)
-                                }
-                            }
+                            addNewCustomerRequest()
                         }
                         else -> {
                             reduce(Action.Finish)
@@ -124,7 +102,25 @@ class AppViewModel(private val apiService: APIService) {
                         _state.value = State.NoConnectionState
                 }
             }
-            ensureActive()
+            if (!isActive) {
+                reduce(Action.Finish)
+                cancel()
+            }
+        }
+    }
+
+    private fun addNewCustomerRequest() {
+        mainScope.launch {
+            @Suppress("SpellCheckingInspection")
+            val delay =
+                App.pref.getString("autocancel_delay", "-1")?.toLong() ?: -1
+            if (delay != -1L) {
+                _state.value = State.AddNewCustomerRequest(phone)
+                delay(delay)
+                reduce(Action.Finish)
+            } else {
+                reduce(Action.Finish)
+            }
         }
     }
 
@@ -136,38 +132,16 @@ class AppViewModel(private val apiService: APIService) {
             val status = callDetails.status
             val duration = callDetails.duration
 
-            val apiService = DI.getAPIService()
-            val communications =
-                retries(10) {
-                    apiService.communications(
-                        CommunicationInfo(
-                            customer.id,
-                            status,
-                            duration,
-                            callDirection.getAsString(),
-                            body = ""
-                        )
-                    )
-                }
+            val result = appRepository.sendCommunicationInfo(
+                customer.id,
+                status,
+                duration,
+                callDirection.getAsString()
+            )
 
-            if (communications.isSuccessful) {
-                if (duration > 0) {
-                    _state.value = State.PurposeRequest(
-                        customer, communications.body()?._id
-                            ?: throw IllegalStateException("communicationId is null")
-                    )
-                } else
-                    reduce(Action.Finish)
-            } else {
-                if (communications.code() == 407)
-                    _state.value = State.NoConnectionState
-                else
-                    _state.value = State.Error(
-                        IllegalStateException(communications.raw().toString())
-                    )
-                delay(2500)
-                reduce(Action.Finish)
-            }
+            handleSendCommunicationResult(customer, result)
+            delay(2500)
+            reduce(Action.Finish)
         }
 
     }
@@ -200,40 +174,29 @@ class AppViewModel(private val apiService: APIService) {
         }
     }
 
-    private fun getStateOfResponse(response: Response<CustomerDTO>): State {
-        return when {
-            response.code() == 404 -> State.NotFound
-            response.code() == 401 -> State.AuthRequest(phone)
-            response.code() == 407 -> State.NoConnectionState
-            response.code() == 408 -> State.NoConnectionState
-            response.code() == 409 -> State.Error(
-                IllegalStateException(
-                    response.raw().toString()
-                )
-            )
-            response.code() == 200 ->
-                if (response.body()!!.data.isNotEmpty()) {
-                    State.Found(response.body()!!.toContact(), callDirection)
-                } else {
-                    State.NotFound
-                }
-            else -> {
-                printToLog("=================Response==============")
-                printToLog("code: ${response.code()}")
-                printToLog("-----------------message---------------")
-                printToLog(response.raw().message())
-                printToLog("--------------end message--------------")
-                printToLog("-----------------body---------------")
-                printToLog(response.raw().body().toString())
-                printToLog("--------------end body--------------")
-                printToLog("-----------------header---------------")
-                val headersMap = response.raw().headers().toMultimap()
-                headersMap.keys.forEach { key ->
-                    printToLog("$key: ${headersMap[key]}")
-                }
-                printToLog("--------------end header--------------")
+    private fun handleSearchResult(result: SearchResult) {
+        _state.value = when (result) {
+            SearchResult.AuthRequested -> State.AuthRequest(phone)
+            is SearchResult.Found -> State.Found(result.customer, callDirection)
+            SearchResult.NoConnection -> State.NoConnectionState
+            SearchResult.NotFound -> State.NotFound
+            SearchResult.UnknownError -> State.Error(IllegalStateException("Error occurred. See logs for details"))
+        }
+    }
 
-                throw IllegalStateException("Invalid response. See log for more details")
+    private fun handleSendCommunicationResult(customer: Customer, result: SendConnectionResult) {
+        _state.value = when (result) {
+            is SendConnectionResult.Failed -> State.Error(result.exception)
+            SendConnectionResult.NotConnected -> State.NoConnectionState
+            is SendConnectionResult.PurposeRequest -> {
+                State.PurposeRequest(
+                    customer,
+                    result.communicationId
+                )
+            }
+            SendConnectionResult.Success -> {
+                reduce(Action.Finish)
+                State.Finished
             }
         }
     }

@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.core.model
+package uz.muhammadyusuf.kurbonov.myclinic.core.models
 
 import androidx.annotation.Keep
 

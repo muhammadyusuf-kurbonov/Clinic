@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.myclinic.core.model
+package uz.muhammadyusuf.kurbonov.myclinic.core.models
 
 data class Permission(
     val permissionId: String,

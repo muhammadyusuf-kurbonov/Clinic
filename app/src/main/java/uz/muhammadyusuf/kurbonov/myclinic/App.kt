@@ -5,9 +5,10 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import androidx.work.WorkManager
 import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.android.works.AppRepositoryImpl
 import uz.muhammadyusuf.kurbonov.myclinic.android.works.MainWorker
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.di.DI
+import uz.muhammadyusuf.kurbonov.myclinic.di.API
 import uz.muhammadyusuf.kurbonov.myclinic.utils.TAG_APP_LIFECYCLE
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 
@@ -23,10 +24,12 @@ class App : Application() {
         fun getAppViewModelInstance(): AppViewModel {
             if (!this::appViewModel.isInitialized) {
                 val apiService by lazy {
-                    DI.getAPIService()
+                    API.getAPIService()
                 }
 
-                appViewModel = AppViewModel(apiService)
+                val appRepository = AppRepositoryImpl(apiService)
+
+                appViewModel = AppViewModel(appRepository)
             }
             return appViewModel
         }

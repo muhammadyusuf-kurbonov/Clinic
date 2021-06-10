@@ -8,8 +8,8 @@ import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.di.DI
-import uz.muhammadyusuf.kurbonov.myclinic.utils.retries
+import uz.muhammadyusuf.kurbonov.myclinic.di.API
+import uz.muhammadyusuf.kurbonov.myclinic.utils.attempts
 
 class NoteInsertWork(context: Context, private val workerParams: WorkerParameters) : Worker(
     context,
@@ -20,10 +20,10 @@ class NoteInsertWork(context: Context, private val workerParams: WorkerParameter
             ?: throw IllegalArgumentException("Id wasn't sent")
         val body = workerParams.inputData.getString("body")
             ?: throw IllegalArgumentException("Body wasn't sent")
-        val apiService = DI.getAPIService()
+        val apiService = API.getAPIService()
 
         return runBlocking {
-            val response = retries(10) {
+            val response = attempts(10) {
                 apiService.updateCommunicationBody(id, body)
             }
             App.getAppViewModelInstance().reduce(Action.Finish)

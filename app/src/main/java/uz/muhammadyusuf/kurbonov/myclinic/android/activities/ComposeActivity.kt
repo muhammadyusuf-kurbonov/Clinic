@@ -45,7 +45,7 @@ class ComposeActivity : AppCompatActivity() {
                         State.NotFound,
                         State.None,
                         State.Searching,
-                        State.TooSlowConnectionError,
+                        State.ConnectionTimeoutState,
                         State.AddNewCustomerRequest("+998913975538"),
                         State.AuthRequest("+998913975538"),
                         State.Error(NetworkIOException(IOException())),

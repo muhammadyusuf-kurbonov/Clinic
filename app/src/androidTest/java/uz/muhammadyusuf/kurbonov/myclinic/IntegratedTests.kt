@@ -18,7 +18,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import uz.muhammadyusuf.kurbonov.myclinic.api.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.di.DI
+import uz.muhammadyusuf.kurbonov.myclinic.di.API
 import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
 
 @RunWith(AndroidJUnit4::class)
@@ -47,7 +47,7 @@ class IntegratedTests {
         val api = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(mockWebServer.url("/"))
-            .client(DI.getOkHTTPClient())
+            .client(API.getOkHTTPClient())
             .build()
             .create(APIService::class.java)
         App.appViewModel = AppViewModel(api)
