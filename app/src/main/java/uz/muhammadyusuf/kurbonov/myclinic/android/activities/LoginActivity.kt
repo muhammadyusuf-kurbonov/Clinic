@@ -134,6 +134,7 @@ class LoginActivity : AppCompatActivity() {
                     //You can replace it with your name
                     it.resume(!ipAddress.equals(""))
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     it.resume(false)
                     Timber.e(e)
                 }

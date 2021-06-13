@@ -29,6 +29,7 @@ class AppRepositoryImpl(private val apiService: APIService) : AppRepository {
                 try {
                     SearchResult.Found(response.body()!!.toContact())
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     printError(response)
                     SearchResult.UnknownError
                 }

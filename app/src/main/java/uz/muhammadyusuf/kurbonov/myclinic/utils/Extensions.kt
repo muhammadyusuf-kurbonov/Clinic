@@ -1,13 +1,17 @@
 package uz.muhammadyusuf.kurbonov.myclinic.utils
 
 import android.content.Context
+import android.os.Environment
 import android.provider.CallLog
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.CommunicationDataHolder
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+
 
 inline fun <reified T> attempts(count: Int, onError: (Throwable) -> Unit = {}, block: () -> T): T {
     var result: T? = null
@@ -21,6 +25,7 @@ inline fun <reified T> attempts(count: Int, onError: (Throwable) -> Unit = {}, b
             Timber.tag("retries").d("Try #$currentIteration: success")
             break
         } catch (error: Throwable) {
+            error.printStackTrace()
             Timber.tag("retries").d("Try #$currentIteration: error: $error")
             onError(error)
             e = error
@@ -67,7 +72,7 @@ fun getCallDetails(context: Context): CommunicationDataHolder {
         ?: throw IllegalStateException("This call isn't registered by system")
 }
 
-class FirebaseTree : Timber.DebugTree() {
+class FileDebugTree : Timber.DebugTree() {
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         super.log(priority, tag, message, t)
         val priorityString: String = when (priority) {
@@ -79,17 +84,47 @@ class FirebaseTree : Timber.DebugTree() {
             Log.WARN -> "WARNING"
             else -> "INFO"
         }
+        // Crashlitics logging
         if (t != null)
             FirebaseCrashlytics.getInstance().recordException(t)
         else
             FirebaseCrashlytics.getInstance().log(
                 "$priorityString::$tag::$message"
             )
-    }
 
+        try {
+            val directory =
+                Environment.getExternalStoragePublicDirectory("${Environment.DIRECTORY_DOCUMENTS}/logs")
+
+            if (!directory.exists())
+                directory.mkdirs()
+
+            val fileName = "myLog.txt"
+
+            val file = File("${directory.absolutePath}${File.separator}$fileName")
+
+            if (file.length() >= 2 * 1024 * 1024) {
+                file.delete()
+            }
+
+            file.createNewFile()
+
+            if (file.exists()) {
+                val fos = FileOutputStream(file, true)
+
+                val dateTime = System.currentTimeMillis().formatAsDate("yyyy-MM-dd HH:mm:ss")
+
+                fos.write("$dateTime $message\n".toByteArray(Charsets.UTF_8))
+                fos.close()
+            }
+
+        } catch (e: IOException) {
+            Log.println(Log.ERROR, "FileLogTree", "Error while logging into file: $e")
+        }
+    }
 }
 
 fun initTimber() {
     if (BuildConfig.DEBUG && Timber.treeCount() == 0)
-        Timber.plant(FirebaseTree())
+        Timber.plant(FileDebugTree())
 }

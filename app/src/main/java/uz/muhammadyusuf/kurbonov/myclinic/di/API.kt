@@ -46,9 +46,11 @@ class API {
                         it.proceed(newRequest)
                     }
                 } catch (e: SocketTimeoutException) {
+                    e.printStackTrace()
                     Timber.e(NetworkIOException(e))
                     errorResponse(newRequest, e, 408)
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     Timber.e(e)
                     errorResponse(newRequest, e, 417)
                 }

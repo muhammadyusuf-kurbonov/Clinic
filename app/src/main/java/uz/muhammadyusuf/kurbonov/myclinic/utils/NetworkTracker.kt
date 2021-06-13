@@ -74,7 +74,7 @@ class NetworkTracker(context: Context) {
             Timber.tag(TAG_NETWORK_TRACKER).d("PING success.")
             true
         } catch (e: IOException) {
-
+            e.printStackTrace()
             Timber.tag(TAG_NETWORK_TRACKER).e("No internet connection. $e")
             false
         }

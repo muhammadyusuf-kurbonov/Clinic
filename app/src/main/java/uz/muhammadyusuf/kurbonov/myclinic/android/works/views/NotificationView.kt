@@ -140,6 +140,7 @@ class NotificationView(
             try {
                 setImageViewBitmap(R.id.imgAvatar, Picasso.get().load(customer.avatarLink).get())
             } catch (e: Exception) {
+                e.printStackTrace()
                 Timber.e(e)
             }
 

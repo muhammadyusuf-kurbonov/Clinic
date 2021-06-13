@@ -11,7 +11,6 @@ import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.api.APIService
 import uz.muhammadyusuf.kurbonov.myclinic.api.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.api.communications.CommunicationInfo
-import uz.muhammadyusuf.kurbonov.myclinic.utils.RetriesExpiredException
 import uz.muhammadyusuf.kurbonov.myclinic.utils.attempts
 
 /**
@@ -38,7 +37,8 @@ class NetworkTests {
                     attempts(3) {
                         it.proceed(newRequest)
                     }
-                } catch (e: RetriesExpiredException) {
+                } catch (e: Exception) {
+                    e.printStackTrace()
                     Timber.d(e)
                     Response.Builder()
                         .request(newRequest)
