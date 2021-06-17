@@ -4,7 +4,7 @@ import android.content.Context
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import java.util.*
@@ -34,7 +34,7 @@ class CallReceiver : PhoneCallReceiver() {
         if (number.isNullOrEmpty()) {
             return
         }
-        startRecognition(ctx, number, "incoming")
+        startRecognition(number, "incoming")
     }
 
     override fun onIncomingCallAnswered(ctx: Context, number: String?, start: Date) {
@@ -49,7 +49,7 @@ class CallReceiver : PhoneCallReceiver() {
         else setFlag(true)
 
         endCall(
-            ctx, number
+            number
         )
     }
 
@@ -58,7 +58,7 @@ class CallReceiver : PhoneCallReceiver() {
 
         if (number.isNullOrEmpty())
             return
-        startRecognition(ctx, number, "outgoing")
+        startRecognition(number, "outgoing")
     }
 
     override fun onOutgoingCallEnded(ctx: Context, number: String?, start: Date, end: Date) {
@@ -67,7 +67,7 @@ class CallReceiver : PhoneCallReceiver() {
         else setFlag(true)
 
         endCall(
-            ctx, number
+            number
         )
     }
 
@@ -75,33 +75,25 @@ class CallReceiver : PhoneCallReceiver() {
         if (isSent)
             return
         else setFlag(true)
-        endCall(ctx, number)
+        endCall(number)
     }
 
     private fun endCall(
-        context: Context,
         number: String?
     ) {
-//        WorkManager.getInstance(context).enqueueUniqueWork(
-//            "reporter",
-//            ExistingWorkPolicy.REPLACE,
-//            OneTimeWorkRequestBuilder<ReporterWork>().build()
-//        )
-        App.getAppViewModelInstance().reduce(
-            Action.EndCall(
-                context,
-                number ?: throw IllegalArgumentException("null number")
-            )
+        App.actionBus.value = Action.EndCall(
+            number ?: throw IllegalArgumentException("null number")
         )
+
     }
 
-    private fun startRecognition(ctx: Context, number: String?, type: String) {
-        App.getAppViewModelInstance().reduce(Action.Start(ctx))
-        App.getAppViewModelInstance().reduce(
+    private fun startRecognition(number: String?, type: String) {
+        App.actionBus.value = Action.Start
+        App.actionBus.value =
             Action.Search(
                 number ?: throw IllegalStateException("No number yet?"),
                 CallDirection.parseString(type)
             )
-        )
+
     }
 }

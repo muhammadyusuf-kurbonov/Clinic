@@ -6,11 +6,8 @@ import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isVisible
-import androidx.work.*
-import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.android.works.NoteInsertWork
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityExplainBinding
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
@@ -30,8 +27,6 @@ class NoteActivity : AppCompatActivity() {
 
         initTimber()
 
-        Timber.d("${intent.extras}")
-
         communicationId = intent.extras?.getString("communicationId")
             ?: throw IllegalStateException("No id specified ${intent.extras}")
 
@@ -39,7 +34,7 @@ class NoteActivity : AppCompatActivity() {
             binding.edOther.isVisible = checkedId == R.id.rbOther
         }
 
-        App.getAppViewModelInstance().reduce(Action.Finish)
+        App.actionBus.value = Action.Finish
         NotificationManagerCompat.from(applicationContext)
             .cancelAll()
 
@@ -55,23 +50,6 @@ class NoteActivity : AppCompatActivity() {
             }
 
             isSent = true
-
-
-            val constraint = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
-
-            WorkManager.getInstance(this).enqueue(
-                OneTimeWorkRequestBuilder<NoteInsertWork>()
-                    .setInputData(
-                        workDataOf(
-                            "id" to communicationId,
-                            "body" to note
-                        )
-                    )
-                    .setConstraints(constraint)
-                    .build()
-            )
 
             finish()
         }

@@ -24,8 +24,7 @@
         tools:targetApi="m">
         <activity
             android:name=".android.activities.PermissionsActivity"
-            android:exported="true"
-            android:theme="@style/Theme.MyClinic.NoActionBar" />
+            android:exported="true" />
         <activity
             android:name=".android.activities.ComposeActivity"
             android:exported="true" />

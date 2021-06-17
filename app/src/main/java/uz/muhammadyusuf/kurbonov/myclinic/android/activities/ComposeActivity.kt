@@ -15,12 +15,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.launch
-import uz.muhammadyusuf.kurbonov.myclinic.api.customer_search.CustomerDTO
-import uz.muhammadyusuf.kurbonov.myclinic.api.toContact
+import uz.muhammadyusuf.kurbonov.myclinic.android.views.overlay.OverlayCompose
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
-import uz.muhammadyusuf.kurbonov.myclinic.core.view.OverlayCompose
-import uz.muhammadyusuf.kurbonov.myclinic.utils.CallDirection
-import uz.muhammadyusuf.kurbonov.myclinic.utils.NetworkIOException
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.CallDirection
+import uz.muhammadyusuf.kurbonov.myclinic.core.utils.toContact
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 import java.io.IOException
 
 // This is for test
@@ -48,7 +47,7 @@ class ComposeActivity : AppCompatActivity() {
                         State.ConnectionTimeoutState,
                         State.AddNewCustomerRequest("+998913975538"),
                         State.AuthRequest("+998913975538"),
-                        State.Error(NetworkIOException(IOException())),
+                        State.Error(IOException()),
                         State.PurposeRequest(customer, "1158498494984"),
                     )
                     LazyRow {

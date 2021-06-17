@@ -6,16 +6,16 @@ import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.api.authentification.AuthRequest
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityAuthBinding
-import uz.muhammadyusuf.kurbonov.myclinic.di.API
+import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
+import uz.muhammadyusuf.kurbonov.myclinic.network.resultmodels.AuthResult.ConnectionFailed
+import uz.muhammadyusuf.kurbonov.myclinic.network.resultmodels.AuthResult.Success
 import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import java.net.InetAddress
 import kotlin.coroutines.resume
@@ -41,7 +41,7 @@ class LoginActivity : AppCompatActivity() {
             .setOnClickListener {
                 setStatus(AuthResult.STARTED)
 
-                val authService = API.getAPIService()
+                val authService = AppRepository(App.pref.getString("token", "") ?: "")
                 lifecycleScope.launch {
 
                     if (!checkInternetConnection()) {
@@ -49,21 +49,32 @@ class LoginActivity : AppCompatActivity() {
                         return@launch
                     }
 
+
                     val response = authService.authenticate(
-                        AuthRequest(
-                            email = binding.inputEmail.text.toString(),
-                            password = binding.inputPassword.text.toString()
-                        )
+                        binding.inputEmail.text.toString(),
+                        binding.inputPassword.text.toString()
                     )
 
                     Timber.d("$response")
 
-                    if (response.isSuccessful) {
+                    if (response is Success) {
                         App.pref.edit()
-                            .putString("token", response.body()?.accessToken)
+                            .putString("token", response.token)
                             .putString("user.email", binding.inputEmail.text.toString())
                             .apply()
                         setStatus(AuthResult.SUCCESS)
+
+                        if (intent.extras?.containsKey(EXTRA_PHONE) == true) {
+                            App.actionBus.value =
+                                Action.Search(
+                                    intent.extras!!.getString(
+                                        "uz.muhammadyusuf.kurbonov.myclinic.phone",
+                                        ""
+                                    ), App.callDirection
+                                )
+                        }
+
+
                     } else {
                         App.pref.edit()
                             .putString("token", "")
@@ -72,23 +83,8 @@ class LoginActivity : AppCompatActivity() {
                         setStatus(AuthResult.FAILED)
                     }
 
-                    if (response.code() == 407)
+                    if (response is ConnectionFailed)
                         setStatus(AuthResult.NO_CONNECTION)
-
-                    if (response.isSuccessful) {
-                        if (intent.extras?.containsKey(EXTRA_PHONE) == true) {
-                            App.getAppViewModelInstance().reduce(
-                                Action.Search(
-                                    intent.extras!!.getString(
-                                        "uz.muhammadyusuf.kurbonov.myclinic.phone",
-                                        ""
-                                    ), App.getAppViewModelInstance().callDirection
-                                )
-                            )
-                        }
-                        delay(1500)
-                        finish()
-                    }
                 }
             }
     }

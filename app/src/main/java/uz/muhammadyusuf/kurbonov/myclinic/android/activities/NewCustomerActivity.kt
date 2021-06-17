@@ -10,11 +10,10 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.api.customers.CustomerAddRequestBody
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityNewCustomerBinding
-import uz.muhammadyusuf.kurbonov.myclinic.di.API
-import uz.muhammadyusuf.kurbonov.myclinic.utils.attempts
+import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
+import uz.muhammadyusuf.kurbonov.myclinic.network.resultmodels.NewCustomerRequestResult
 import java.util.*
 
 class NewCustomerActivity : AppCompatActivity() {
@@ -28,7 +27,7 @@ class NewCustomerActivity : AppCompatActivity() {
         binding = ActivityNewCustomerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        App.getAppViewModelInstance().reduce(Action.Finish)
+        App.actionBus.value = Action.Finish
 
         if (intent.extras?.containsKey("phone") == true) {
             binding.edPhone.setText(intent.extras?.getString("phone") ?: "")
@@ -54,6 +53,7 @@ class NewCustomerActivity : AppCompatActivity() {
 
 
         binding.btnCancel.setOnClickListener {
+            App.actionBus.value = Action.Finish
             finish()
         }
 
@@ -77,29 +77,28 @@ class NewCustomerActivity : AppCompatActivity() {
             binding.btnOk.isEnabled = false
 
             lifecycleScope.launch {
-                val api = API.getAPIService()
+                val repository = AppRepository(
+                    App.pref.getString("token", null)
+                        ?: throw IllegalStateException("How to add new customer with expired token?")
+                )
 
-                val response = attempts(10) {
-                    api.addCustomer(
-                        CustomerAddRequestBody(
-                            first_name = binding.edFirstName.text.toString(),
-                            last_name = binding.edLastName.text.toString(),
-                            phone = binding.edPhone.text.toString()
-                        )
+                val response =
+                    repository.addNewCustomer(
+                        binding.edFirstName.text.toString(),
+                        binding.edLastName.text.toString(),
+                        binding.edPhone.text.toString()
                     )
-
-                }
-                if (response.isSuccessful) {
+                if (response == NewCustomerRequestResult.Success) {
                     Timber.d("Successful added user")
                     Toast.makeText(
                         applicationContext,
                         getString(R.string.new_customer_toast, binding.edFirstName.text.toString()),
                         Toast.LENGTH_SHORT
                     ).show()
-                    App.getAppViewModelInstance().reduce(Action.Finish)
+                    App.actionBus.value = Action.Finish
                     finish()
-                } else {
-                    Timber.e(IllegalStateException(response.errorBody()?.charStream()?.readText()))
+                } else if (response is NewCustomerRequestResult.Failed) {
+                    Timber.e(response.exception)
                     binding.btnOk.isEnabled = true
                     binding.btnOk.text = getString(android.R.string.ok)
                 }

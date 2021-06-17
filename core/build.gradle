@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+    id 'kotlin'
+    id 'kotlin-parcelize'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+}
+
+dependencies {
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    api project(path: ':network')
+    api project(path: ':shared')
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:3.2.0'
+    testImplementation 'com.google.code.gson:gson:2.8.7'
+
+}

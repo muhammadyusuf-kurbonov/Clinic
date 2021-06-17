@@ -10,7 +10,7 @@ import android.net.NetworkRequest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
-import timber.log.Timber
+import uz.muhammadyusuf.kurbonov.myclinic.shared.printToConsole
 import java.io.IOException
 import java.net.InetSocketAddress
 import javax.net.SocketFactory
@@ -47,7 +47,7 @@ class NetworkTracker(context: Context) {
             }
 
             fun commit() {
-                Timber.tag(TAG_NETWORK_TRACKER).d("Network state is ${validNetworks.isNotEmpty()}")
+                printToConsole("Network state is ${validNetworks.isNotEmpty()}")
                 offer(validNetworks.isNotEmpty())
             }
         }
@@ -64,18 +64,18 @@ class NetworkTracker(context: Context) {
 
     private fun ping(): Boolean {
         return try {
-            Timber.tag(TAG_NETWORK_TRACKER).d("PINGING google.")
+            printToConsole("PINGING google.")
 
             val socket =
                 SocketFactory.getDefault().createSocket() ?: throw IOException("Socket is null.")
             socket.connect(InetSocketAddress("8.8.8.8", 53), 1500)
             socket.close()
 
-            Timber.tag(TAG_NETWORK_TRACKER).d("PING success.")
+            printToConsole("PING success.")
             true
         } catch (e: IOException) {
             e.printStackTrace()
-            Timber.tag(TAG_NETWORK_TRACKER).e("No internet connection. $e")
+            printToConsole("No internet connection. $e")
             false
         }
     }

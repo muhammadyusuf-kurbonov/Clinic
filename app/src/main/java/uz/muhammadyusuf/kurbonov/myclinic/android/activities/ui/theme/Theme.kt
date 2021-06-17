@@ -5,7 +5,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import uz.muhammadyusuf.kurbonov.myclinic.android.works.views.compose.*
+import uz.muhammadyusuf.kurbonov.myclinic.android.views.overlay.*
 
 private val DarkColorPalette = darkColors(
     primary = PRIMARY_DARK_COLOR,
