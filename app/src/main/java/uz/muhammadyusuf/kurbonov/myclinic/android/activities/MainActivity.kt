@@ -28,7 +28,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker
 import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker.Companion.AUTO_START_PREF_KEY
-import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -207,8 +206,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        initTimber()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel()

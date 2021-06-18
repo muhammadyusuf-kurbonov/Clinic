@@ -4,7 +4,6 @@ import android.os.Environment
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
-import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.shared.formatAsDate
 import java.io.File
 import java.io.FileOutputStream
@@ -63,7 +62,3 @@ class FileDebugTree : Timber.DebugTree() {
     }
 }
 
-fun initTimber() {
-    if (BuildConfig.DEBUG && Timber.treeCount() == 0)
-        Timber.plant(FileDebugTree())
-}

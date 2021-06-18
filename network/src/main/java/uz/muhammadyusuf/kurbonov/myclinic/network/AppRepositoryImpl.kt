@@ -39,7 +39,9 @@ internal class AppRepositoryImpl(val token: String, baseUrl: String) : AppReposi
                 .build()
 
             try {
-                it.proceed(newRequest)
+                val response = it.proceed(newRequest)
+                printToConsole("Response of $url is ${response.code()} - ${response.message()}")
+                response
             } catch (e: SocketTimeoutException) {
                 e.printStackTrace()
                 recordException(e)
@@ -175,14 +177,17 @@ internal class AppRepositoryImpl(val token: String, baseUrl: String) : AppReposi
             response.code() == 417 -> SearchResult.UnknownError
             response.code() == 200 ->
                 try {
-                    SearchResult.Found(response.body()!!)
+                    if (response.body()!!.total > 1)
+                        SearchResult.Found(response.body()!!)
+                    else
+                        SearchResult.NotFound
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    printError(response)
+                    recordException(e)
                     SearchResult.UnknownError
                 }
             else -> {
-                printError(response)
+                recordException(IllegalArgumentException(response.raw().toString()))
                 SearchResult.UnknownError
             }
         }

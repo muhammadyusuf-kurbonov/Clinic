@@ -10,7 +10,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityExplainBinding
-import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 
 class NoteActivity : AppCompatActivity() {
 
@@ -24,8 +23,6 @@ class NoteActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityExplainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        initTimber()
 
         communicationId = intent.extras?.getString("communicationId")
             ?: throw IllegalStateException("No id specified ${intent.extras}")

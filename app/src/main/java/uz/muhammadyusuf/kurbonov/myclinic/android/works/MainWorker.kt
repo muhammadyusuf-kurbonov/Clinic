@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.android.views.BaseView
 import uz.muhammadyusuf.kurbonov.myclinic.android.views.notification.NotificationView
 import uz.muhammadyusuf.kurbonov.myclinic.android.views.overlay.OverlayView
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
@@ -19,28 +20,39 @@ import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.SettingsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.State
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.CallInfo
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.LifecycleEvents
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
+import uz.muhammadyusuf.kurbonov.myclinic.shared.printToConsole
 import uz.muhammadyusuf.kurbonov.myclinic.utils.NetworkTracker
 
 class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
     appContext,
     params
 ), SettingsProvider {
-    override suspend fun doWork(): Result {
-        coroutineScope {
-            val appViewModel = AppViewModel(
-                AppRepository(getToken()),
-                this@MainWorker
-            )
+    private lateinit var view: BaseView
+    override suspend fun doWork(): Result = withContext(Dispatchers.Default) {
+
+        val appViewModel = AppViewModel(
+            AppRepository(getToken()),
+            this@MainWorker,
+            coroutineContext
+        )
+
+
+        val mainJob = CoroutineScope(Dispatchers.Default).async {
 
             launch {
-                when (getViewType()) {
+                view = when (getViewType()) {
                     Action.ViewType.NOTIFICATION -> NotificationView(
                         applicationContext,
                         appViewModel
                     )
-                    Action.ViewType.OVERLAY -> OverlayView(applicationContext, appViewModel)
+                    Action.ViewType.OVERLAY -> OverlayView(
+                        applicationContext,
+                        appViewModel
+                    )
                 }
+                view.start()
             }
 
             launch {
@@ -52,7 +64,7 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
             launch {
                 NetworkTracker(applicationContext).connectedToInternet.distinctUntilChanged()
                     .collect { connected ->
-                        if (connected && appViewModel.stateFlow.value is State.NoConnectionState) {
+                        if (connected && (appViewModel.stateFlow.value is State.NoConnectionState)) {
                             appViewModel.reduce(
                                 Action.Restart
                             )
@@ -60,20 +72,24 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
                     }
             }
 
-            launch(Dispatchers.Main) {
-                when (getViewType()) {
-                    Action.ViewType.NOTIFICATION -> NotificationView(
-                        applicationContext,
-                        appViewModel
-                    ).start()
-                    Action.ViewType.OVERLAY -> OverlayView(applicationContext, appViewModel).start()
-                }
-            }
-
             appViewModel.reduce(Action.Start)
 
         }
-        return Result.success()
+
+        appViewModel.lifecycleObserver = {
+            when (it) {
+                LifecycleEvents.Finished -> {
+                    printToConsole("Finished")
+                    mainJob.cancel()
+                }
+                LifecycleEvents.Initialized -> printToConsole("Initialized")
+                LifecycleEvents.Started -> printToConsole("Started")
+            }
+        }
+
+
+        awaitAll(mainJob)
+        Result.success()
     }
 
     override fun getToken(): String {
@@ -112,7 +128,7 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
         }
         managedCursor.close()
         return communicationDataHolder
-            ?: throw IllegalStateException("This call isn't registered by system")
+            ?: throw IllegalStateException("This call isn't registered in calls log")
     }
 
     override fun getViewType(): Action.ViewType {
@@ -136,8 +152,6 @@ class MainWorker(appContext: Context, params: WorkerParameters) : CoroutineWorke
 
                     setSmallIcon(R.drawable.ic_launcher_foreground)
                 }.build()
-        ).also {
-            App.actionBus.value = Action.Restart
-        }
+        )
     }
 }

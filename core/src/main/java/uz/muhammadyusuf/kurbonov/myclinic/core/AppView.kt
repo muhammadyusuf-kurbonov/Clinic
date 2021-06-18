@@ -10,7 +10,7 @@ abstract class AppView(protected val viewModel: AppViewModel) {
 
     suspend fun start() = withContext(Dispatchers.Main) {
         onCreate()
-        viewModel.coroutineScope.launch {
+        viewModel.launch {
             viewModel.stateFlow.collect {
                 if (it is State.Finished)
                     finish()

@@ -15,93 +15,85 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.resultmodels.SendConnectionRes
 import uz.muhammadyusuf.kurbonov.myclinic.shared.printToConsole
 import uz.muhammadyusuf.kurbonov.myclinic.shared.recordException
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
 class AppViewModel(
     private val appRepository: AppRepository,
-    private val settingsProvider: SettingsProvider
-) {
+    private val settingsProvider: SettingsProvider,
+    context: CoroutineContext
+) : CoroutineScope {
     private val _state = MutableStateFlow<State>(State.None)
     val stateFlow: StateFlow<State> = _state.asStateFlow()
 
     lateinit var callDirection: CallDirection
     lateinit var phone: String
 
-    private var job = Job()
-
     private val handler = CoroutineExceptionHandler { _, throwable ->
         recordException(throwable)
     }
-    private var mainScope = CoroutineScope(Dispatchers.Default + job)
-
-    // scope for views
-    val coroutineScope = mainScope
 
     var lifecycleObserver: (LifecycleEvents) -> Unit = {}
 
     fun reduce(action: Action) {
-        if (action is Action.Start) {
-            job = Job()
-            mainScope = CoroutineScope(Dispatchers.Default + job)
-        }
+        printToConsole("reducing $action in state ${stateFlow.value}")
 
-        mainScope.launch(handler) {
-            printToConsole("reducing $action in state ${stateFlow.value}")
+        when (action) {
+            is Action.Search -> {
+                callDirection = action.direction
+                _state.value = State.Searching
+                try {
+                    phone = action.phoneNumber
+                    launch {
+                        val response = appRepository.search(action.phoneNumber)
+                        handleSearchResult(response)
+                    }
+                } catch (e: TimeoutCancellationException) {
+                    _state.value = State.ConnectionTimeoutState
+                }
+            }
 
-            when (action) {
-                is Action.Search -> {
-                    callDirection = action.direction
-                    _state.value = State.Searching
-                    try {
-                        withTimeout(12000) {
-                            phone = action.phoneNumber
-                            val response = appRepository.search(action.phoneNumber)
-                            handleSearchResult(response)
-                        }
-                    } catch (e: TimeoutCancellationException) {
-                        _state.value = State.ConnectionTimeoutState
+            is Action.Finish -> {
+                _state.value = State.Finished
+                onFinished()
+            }
+
+            is Action.EndCall -> {
+                when (stateFlow.value) {
+                    is State.Found -> {
+                        sendCallInfo((stateFlow.value as State.Found).customer)
+                    }
+                    is State.NotFound -> {
+                        addNewCustomerRequest()
+                    }
+                    else -> {
+                        reduce(Action.Finish)
                     }
                 }
+            }
 
-                is Action.Finish -> {
-                    _state.value = State.Finished
-                    onFinished()
-                }
+            is Action.Start -> {
+                initialize()
+                _state.value = State.Started
+                lifecycleObserver(LifecycleEvents.Started)
+            }
 
-                is Action.EndCall -> {
-                    when (stateFlow.value) {
-                        is State.Found -> {
-                            sendCallInfo((stateFlow.value as State.Found).customer)
-                        }
-                        is State.NotFound -> {
-                            addNewCustomerRequest()
-                        }
-                        else -> {
-                            reduce(Action.Finish)
-                        }
-                    }
-                }
-
-                is Action.Start -> {
-                    initialize()
-                    _state.value = State.Started
-                }
-
-                Action.Restart -> if (this@AppViewModel::phone.isInitialized) {
-                    reduce(
-                        Action.Search(
-                            phone,
-                            callDirection
-                        )
+            Action.Restart -> if (this@AppViewModel::phone.isInitialized) {
+                reduce(
+                    Action.Search(
+                        phone,
+                        callDirection
                     )
-                }
+                )
+            }
 
-                Action.SetNoConnectionState -> {
-                    if (_state.value is State.Searching)
-                        _state.value = State.NoConnectionState
-                }
-                Action.None -> {
-                }
-                is Action.SendCommunicationNote -> {
+            Action.SetNoConnectionState -> {
+                if (_state.value is State.Searching)
+                    _state.value = State.NoConnectionState
+            }
+            Action.None -> {
+            }
+            is Action.SendCommunicationNote -> {
+                launch {
                     val result = appRepository.sendCommunicationNote(
                         action.communicationId,
                         action.body
@@ -111,14 +103,11 @@ class AppViewModel(
                     reduce(Action.Finish)
                 }
             }
-            if (!isActive) {
-                reduce(Action.Finish)
-            }
         }
     }
 
     private fun addNewCustomerRequest() {
-        mainScope.launch {
+        launch {
             @Suppress("SpellCheckingInspection")
             val delay = settingsProvider.getAutoCancelDelay()
             if (delay != -1L) {
@@ -132,7 +121,7 @@ class AppViewModel(
     }
 
     private fun sendCallInfo(customer: Customer) {
-        mainScope.launch {
+        launch {
             delay(2000)
             val callDetails = settingsProvider.getLastCallInfo()
 
@@ -184,6 +173,8 @@ class AppViewModel(
 
     private fun onFinished() {
         lifecycleObserver(LifecycleEvents.Finished)
-        mainScope.cancel()
+        cancel()
     }
+
+    override val coroutineContext: CoroutineContext = context + SupervisorJob() + handler
 }

@@ -6,15 +6,10 @@ import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.utils.PhoneCallReceiver
-import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import java.util.*
 
 
 class CallReceiver : PhoneCallReceiver() {
-
-    init {
-        initTimber()
-    }
 
     companion object {
         @JvmField

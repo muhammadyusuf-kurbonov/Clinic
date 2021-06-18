@@ -18,9 +18,15 @@ abstract class BaseView(viewModel: AppViewModel) :
         lifecycleRegistry.currentState = Lifecycle.State.INITIALIZED
         savedStateRegistryController.performRestore(null)
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
+        onStart()
         lifecycleRegistry.currentState = Lifecycle.State.STARTED
+        onResume()
         lifecycleRegistry.currentState = Lifecycle.State.RESUMED
     }
+
+    open suspend fun onResume() {}
+
+    open suspend fun onStart() {}
 
     override fun getLifecycle(): Lifecycle = lifecycleRegistry
     override fun getSavedStateRegistry(): SavedStateRegistry =

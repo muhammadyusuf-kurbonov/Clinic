@@ -16,7 +16,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.databinding.ActivityAuthBinding
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 import uz.muhammadyusuf.kurbonov.myclinic.network.resultmodels.AuthResult.ConnectionFailed
 import uz.muhammadyusuf.kurbonov.myclinic.network.resultmodels.AuthResult.Success
-import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
 import java.net.InetAddress
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -34,8 +33,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        initTimber()
 
         binding.btnLogin
             .setOnClickListener {
