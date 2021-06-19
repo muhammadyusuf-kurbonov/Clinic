@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import uz.muhammadyusuf.kurbonov.myclinic.network.APIException
 import uz.muhammadyusuf.kurbonov.myclinic.network.AuthRequestException
 import uz.muhammadyusuf.kurbonov.myclinic.network.NotConnectedException
 import kotlin.test.assertEquals
@@ -30,6 +31,16 @@ class AuthTests : BaseTestClass() {
         runBlocking {
             mockWebServer.enqueueResponse("authentication-failed.json", 401)
             assertFailsWith<AuthRequestException> {
+                appRepository.authenticate("demo1@32desk.com", "demo")
+            }
+        }
+    }
+
+    @Test
+    fun `auth - empty password`() {
+        runBlocking {
+            mockWebServer.enqueueResponse("authentication-no-password.json", 400)
+            assertFailsWith<APIException> {
                 appRepository.authenticate("demo1@32desk.com", "demo")
             }
         }

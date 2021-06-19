@@ -21,6 +21,17 @@ interface AppRepository {
         note: String
     )
 
+    /**
+     *  This method is for authentication
+     *
+     *  @param username must not be empty
+     *  @param password must not be empty
+     *
+     *  @return token if call was successful
+     *  @throws AuthRequestException - when username or password are incorrect
+     *  @throws NotConnectedException - if there were problems with network
+     *  @throws APIException - if username or password are empty
+     */
     suspend fun authenticate(username: String, password: String): AuthToken
 
     suspend fun addNewCustomer(
