@@ -8,6 +8,7 @@ import org.junit.runners.Suite
     AuthTests::class,
     SearchTests::class,
     CommunicationsTests::class,
-    UpdateCommunicationTests::class
+    UpdateCommunicationTests::class,
+    AddCustomerTests::class
 )
 class NetworkTests

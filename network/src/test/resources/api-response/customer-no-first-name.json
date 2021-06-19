@@ -1,0 +1,19 @@
+{
+  "name": "BadRequest",
+  "message": "customers validation failed: first_name: Path `first_name` is required.",
+  "code": 400,
+  "className": "bad-request",
+  "errors": {
+    "first_name": {
+      "name": "ValidatorError",
+      "message": "Path `first_name` is required.",
+      "properties": {
+        "message": "Path `first_name` is required.",
+        "type": "required",
+        "path": "first_name"
+      },
+      "kind": "required",
+      "path": "first_name"
+    }
+  }
+}

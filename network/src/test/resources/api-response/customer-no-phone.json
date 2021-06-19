@@ -1,0 +1,19 @@
+{
+  "name": "BadRequest",
+  "message": "customers validation failed: phone: Path `phone` is required.",
+  "code": 400,
+  "className": "bad-request",
+  "errors": {
+    "phone": {
+      "name": "ValidatorError",
+      "message": "Path `phone` is required.",
+      "properties": {
+        "message": "Path `phone` is required.",
+        "type": "required",
+        "path": "phone"
+      },
+      "kind": "required",
+      "path": "phone"
+    }
+  }
+}
