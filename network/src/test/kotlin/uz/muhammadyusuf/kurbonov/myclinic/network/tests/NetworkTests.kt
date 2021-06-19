@@ -7,6 +7,7 @@ import org.junit.runners.Suite
 @Suite.SuiteClasses(
     AuthTests::class,
     SearchTests::class,
-    CommunicationsTests::class
+    CommunicationsTests::class,
+    UpdateCommunicationTests::class
 )
 class NetworkTests
