@@ -18,6 +18,7 @@ dependencies {
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:3.2.0'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit:1.5.20-RC'
     testImplementation 'com.google.code.gson:gson:2.8.7'
 
 }
