@@ -1,29 +1,33 @@
 package uz.muhammadyusuf.kurbonov.myclinic.network
 
-import uz.muhammadyusuf.kurbonov.myclinic.network.resultmodels.*
+import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
+import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationId
+import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationStatus
+import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationType
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 
 interface AppRepository {
-    suspend fun search(phone: String): SearchResult
+    suspend fun search(phone: String): CustomerDTO
 
     suspend fun sendCommunicationInfo(
         customerId: String,
-        status: String,
+        status: CommunicationStatus,
         duration: Long,
-        callDirection: String
-    ): SendConnectionResult
+        type: CommunicationType // call direction
+    ): CommunicationId
 
-    suspend fun sendCommunicationNote(
+    suspend fun updateCommunicationNote(
         communicationId: String,
-        body: String
-    ): PatchConnectionResult
+        note: String
+    )
 
-    suspend fun authenticate(username: String, password: String): AuthResult
+    suspend fun authenticate(username: String, password: String): AuthToken
 
     suspend fun addNewCustomer(
         firstName: String,
         lastName: String,
         phone: String
-    ): NewCustomerRequestResult
+    )
 
     companion object {
         operator fun invoke(

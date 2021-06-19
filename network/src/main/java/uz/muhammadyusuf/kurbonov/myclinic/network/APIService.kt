@@ -19,12 +19,12 @@ interface APIService {
         @Query("phone") phone: String,
         @Query("withAppointments") withAppointments: Int = 1,
         @Query("noMeta") noMeta: Int = 1
-    ): Response<CustomerDTO>
+    ): CustomerDTO
 
     @POST("/communications")
-    suspend fun communications(
+    suspend fun registerCommunication(
         @Body communicationInfo: CommunicationInfo
-    ): Response<CommunicationResponse>
+    ): CommunicationResponse
 
     @PATCH("/communications/{id}")
     @FormUrlEncoded

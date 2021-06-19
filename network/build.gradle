@@ -8,14 +8,18 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_7
 }
 
+test{
+    maxParallelForks 4
+}
+
 dependencies {
     implementation project(path: ':shared')
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.2.1'
     implementation 'androidx.annotation:annotation:1.2.0'
 
-    //noinspection GradleDependency
-    testImplementation("com.squareup.okhttp3:mockwebserver:3.14.9")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.2.1")
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit:1.5.20-RC'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:3.2.0'
