@@ -1,0 +1,25 @@
+{
+  "name": "BadRequest",
+  "message": "communications validation failed: type: `incomig` is not a valid enum value for path `type`.",
+  "code": 400,
+  "className": "bad-request",
+  "errors": {
+    "type": {
+      "name": "ValidatorError",
+      "message": "`incomig` is not a valid enum value for path `type`.",
+      "properties": {
+        "message": "`incomig` is not a valid enum value for path `type`.",
+        "type": "enum",
+        "enumValues": [
+          "incoming",
+          "outgoing"
+        ],
+        "path": "type",
+        "value": "incomig"
+      },
+      "kind": "enum",
+      "path": "type",
+      "value": "incomig"
+    }
+  }
+}
