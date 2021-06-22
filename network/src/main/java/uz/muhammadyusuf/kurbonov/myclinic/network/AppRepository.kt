@@ -7,6 +7,16 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationType
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 
 interface AppRepository {
+    /**
+     * This method is for searching customer by phone-number
+     *
+     * @throws CustomerNotFoundException if nobody found !must be catch!
+     * @throws AuthRequestException if token is expired
+     * @throws NotConnectedException if no internet connection
+     * @throws APIException if error with API occurred
+     *
+     * @return found customer
+     */
     suspend fun search(phone: String): CustomerDTO
 
     suspend fun sendCommunicationInfo(
