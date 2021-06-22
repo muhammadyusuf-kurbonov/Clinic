@@ -9,10 +9,10 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
-import uz.muhammadyusuf.kurbonov.myclinic.core.login.LoginActions
-import uz.muhammadyusuf.kurbonov.myclinic.core.login.LoginStates
-import uz.muhammadyusuf.kurbonov.myclinic.core.login.LoginViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIException
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 import uz.muhammadyusuf.kurbonov.myclinic.network.AuthRequestException
@@ -37,10 +37,10 @@ class LoginViewModelTests {
         }
 
         runBlocking {
-            val loginViewModel = LoginViewModel(this.coroutineContext, provider, repository)
-            loginViewModel.handle(LoginActions.Login("demo@32desk.com", "demo"))
-            loginViewModel.state.assertEmitted {
-                LoginStates.AuthSuccess == it
+            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            loginViewModel.handle(Action.Login("demo@32desk.com", "demo"))
+            loginViewModel.authState.assertEmitted {
+                AuthState.AuthSuccess == it
             }
             verify(provider).writePreference("token", "dummy")
         }
@@ -63,10 +63,10 @@ class LoginViewModelTests {
         }
 
         runBlocking {
-            val loginViewModel = LoginViewModel(this.coroutineContext, provider, repository)
-            loginViewModel.handle(LoginActions.Login("demo@32desk.com", "demo123"))
-            loginViewModel.state.assertEmitted {
-                LoginStates.AuthFailed == it
+            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            loginViewModel.handle(Action.Login("demo@32desk.com", "demo123"))
+            loginViewModel.authState.assertEmitted {
+                AuthState.AuthFailed == it
             }
             verify(provider).writePreference("token", "")
         }
@@ -89,10 +89,10 @@ class LoginViewModelTests {
         }
 
         runBlocking {
-            val loginViewModel = LoginViewModel(this.coroutineContext, provider, repository)
-            loginViewModel.handle(LoginActions.Login("demo@32desk.com", "demo123"))
-            loginViewModel.state.assertEmitted {
-                LoginStates.ConnectionFailed == it
+            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            loginViewModel.handle(Action.Login("demo@32desk.com", "demo123"))
+            loginViewModel.authState.assertEmitted {
+                AuthState.ConnectionFailed == it
             }
         }
     }
@@ -115,8 +115,8 @@ class LoginViewModelTests {
 
         assertFailsWith<APIException> {
             runBlocking {
-                val loginViewModel = LoginViewModel(this.coroutineContext, provider, repository)
-                loginViewModel.handle(LoginActions.Login("demo@32desk.com", "demo"))
+                val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+                loginViewModel.handle(Action.Login("demo@32desk.com", "demo"))
                 runBlocking { delay(2000) }
             }
         }
@@ -139,10 +139,10 @@ class LoginViewModelTests {
         }
 
         runBlocking {
-            val loginViewModel = LoginViewModel(this.coroutineContext, provider, repository)
-            loginViewModel.handle(LoginActions.Login("", "demo"))
-            loginViewModel.state.assertEmitted {
-                it is LoginStates.FieldRequired && it.fieldName == "username"
+            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            loginViewModel.handle(Action.Login("", "demo"))
+            loginViewModel.authState.assertEmitted {
+                it is AuthState.FieldRequired && it.fieldName == "username"
             }
         }
 
@@ -165,10 +165,10 @@ class LoginViewModelTests {
         }
 
         runBlocking {
-            val loginViewModel = LoginViewModel(this.coroutineContext, provider, repository)
-            loginViewModel.handle(LoginActions.Login("demo@32desk.com", ""))
-            loginViewModel.state.assertEmitted {
-                it is LoginStates.FieldRequired && it.fieldName == "password"
+            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            loginViewModel.handle(Action.Login("demo@32desk.com", ""))
+            loginViewModel.authState.assertEmitted {
+                it is AuthState.FieldRequired && it.fieldName == "password"
             }
         }
 

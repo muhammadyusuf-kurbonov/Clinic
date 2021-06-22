@@ -1,20 +1,23 @@
 package uz.muhammadyusuf.kurbonov.myclinic.core
 
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import uz.muhammadyusuf.kurbonov.myclinic.core.login.LoginActions
+import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
+import uz.muhammadyusuf.kurbonov.myclinic.network.AuthRequestException
+import uz.muhammadyusuf.kurbonov.myclinic.network.NotConnectedException
+import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 import kotlin.coroutines.CoroutineContext
 
-open class AppViewModel<AT, ST>(
+class AppViewModel(
     parentCoroutineContext: CoroutineContext,
-    protected val provider: SystemFunctionProvider,
-    protected val repository: AppRepository
+    private val provider: SystemFunctionProvider,
+    private val repository: AppRepository
 ) : CoroutineScope {
 
     private val handler = CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -29,10 +32,72 @@ open class AppViewModel<AT, ST>(
                 handler
 
     @Suppress("PropertyName")
-    protected val _state = MutableStateFlow<ST?>(null)
-    val state: StateFlow<ST?> = _state.asStateFlow()
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Default)
+    val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    open fun handle(loginAction: LoginActions) {
+    @Suppress("PropertyName")
+    private val _customerState = MutableStateFlow<CustomerState>(CustomerState.Default)
+    val customerState: StateFlow<CustomerState> = _customerState.asStateFlow()
 
+
+    fun handle(action: Action) {
+        when (action) {
+            is Action.Login -> login(action.username, action.password)
+            is Action.Search -> startSearch(action.phone)
+        }
+    }
+
+    private fun login(username: String, password: String) {
+        launch {
+            try {
+                if (username.isEmpty()) {
+                    _authState.value = AuthState.FieldRequired("username")
+                    return@launch
+                }
+                if (password.isEmpty()) {
+                    _authState.value = AuthState.FieldRequired("password")
+                    return@launch
+                }
+                val token: AuthToken = repository.authenticate(
+                    username,
+                    password
+                )
+                provider.writePreference("token", token.token)
+                _authState.value = AuthState.AuthSuccess
+            } catch (e: AuthRequestException) {
+                provider.writePreference("token", "")
+                _authState.value = AuthState.AuthFailed
+            } catch (e: NotConnectedException) {
+                _authState.value = AuthState.ConnectionFailed
+            }
+        }
+    }
+
+    private fun startSearch(phone: String) = launch {
+        try {
+            val customerDto = repository.search(phone)
+            _customerState.value = CustomerState.Found(customerDto.toCustomer())
+        } catch (e: Exception) {
+        }
+
+    }
+
+    // Mapper method
+    private fun CustomerDTO.toCustomer(): Customer {
+        if (data.isEmpty())
+            throw IllegalArgumentException("Empty data leaked")
+        val data = data[0]
+
+        if (appointments.isEmpty())
+            throw IllegalArgumentException("No appointments yet?")
+
+        return Customer(
+            data._id,
+            data.first_name,
+            data.last_name,
+            data.avatar.url,
+            data.phone,
+            null, null
+        )
     }
 }
