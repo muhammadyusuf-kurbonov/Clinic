@@ -20,7 +20,11 @@ class AuthTests : BaseTestClass() {
             val token = appRepository.authenticate("demo@32desk.com", "demo")
             @Suppress("SpellCheckingInspection")
             assertEquals(
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6ImFjY2VzcyJ9.eyJ1c2VySWQiOiI1ZGMyYmVhYjBhZjljOWUzMGEwZWEwZjUiLCJpYXQiOjE2MTc5MzUwNDQsImV4cCI6MTY0OTQ3MTA0NCwiYXVkIjoiaHR0cHM6Ly95b3VyZG9tYWluLmNvbSIsImlzcyI6ImZlYXRoZXJzIiwic3ViIjoiYW5vbnltb3VzIiwianRpIjoiNjE4YjQ4OWMtYTk0Ni00OGU1LWEzYmUtNDljNDU5MDcwYmM1In0.CvdlfAxnyHybsoQ00OvL8EGNHygKQbkgqZRYPE0Ig40",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6ImFjY2VzcyJ9.eyJ1c2VySWQiOiI1ZGMyYmVhYjBh" +
+                        "ZjljOWUzMGEwZWEwZjUiLCJpYXQiOjE2MTc5MzUwNDQsImV4cCI6MTY0OTQ3MTA0NCwiY" +
+                        "XVkIjoiaHR0cHM6Ly95b3VyZG9tYWluLmNvbSIsImlzcyI6ImZlYXRoZXJzIiwic3ViIj" +
+                        "oiYW5vbnltb3VzIiwianRpIjoiNjE4YjQ4OWMtYTk0Ni00OGU1LWEzYmUtNDljNDU5MDc" +
+                        "wYmM1In0.CvdlfAxnyHybsoQ00OvL8EGNHygKQbkgqZRYPE0Ig40",
                 token.token
             )
         }
