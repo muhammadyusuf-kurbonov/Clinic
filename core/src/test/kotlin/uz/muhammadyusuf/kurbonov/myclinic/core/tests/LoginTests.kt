@@ -3,6 +3,8 @@ package uz.muhammadyusuf.kurbonov.myclinic.core.tests
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -18,6 +20,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.NotConnectedException
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
 import kotlin.test.assertFailsWith
 
+@RunWith(JUnit4::class)
 class LoginTests {
     @Test
     fun `login - success`() {
