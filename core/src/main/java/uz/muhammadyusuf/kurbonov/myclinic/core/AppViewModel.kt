@@ -53,6 +53,23 @@ class AppViewModel(
                 action.callDirection,
                 action.duration
             )
+            is Action.SetPurpose -> updateReport(action.purpose)
+        }
+    }
+
+    private fun updateReport(purpose: String) = launch {
+        if (reportState.value !is ReportState.PurposeRequested)
+            throw IllegalStateException("Can't set purpose without registered communication")
+        val communicationId = (reportState.value as ReportState.PurposeRequested).communicationId
+
+        try {
+            repository.updateCommunicationNote(communicationId, purpose)
+            _reportState.value = ReportState.Submitted
+        } catch (e: NotConnectedException) {
+            _reportState.value = ReportState.ConnectionFailed
+        } catch (e: AuthRequestException) {
+            _authState.value = AuthState.AuthRequired
+            _reportState.value = ReportState.ConnectionFailed
         }
     }
 
@@ -90,6 +107,9 @@ class AppViewModel(
                 _reportState.value = ReportState.PurposeRequested(communicationId.id)
             }
         } catch (e: NotConnectedException) {
+            _reportState.value = ReportState.ConnectionFailed
+        } catch (e: AuthRequestException) {
+            _authState.value = AuthState.AuthRequired
             _reportState.value = ReportState.ConnectionFailed
         }
     }

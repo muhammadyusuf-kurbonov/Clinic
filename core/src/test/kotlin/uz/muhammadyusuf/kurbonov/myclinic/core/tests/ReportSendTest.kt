@@ -37,10 +37,10 @@ class ReportSendTest {
         val repository = mockk<AppRepository> {
             coEvery {
                 sendCommunicationInfo(
-                    "123456789",
-                    CommunicationStatus.MISSED,
-                    0,
-                    CommunicationType.INCOMING
+                    any(),
+                    any(),
+                    any(),
+                    any()
                 )
             } returns CommunicationId("test")
         }
@@ -57,7 +57,14 @@ class ReportSendTest {
             mockkViewModel.reportState.assertEmitted {
                 ReportState.Submitted == it
             }
-            coVerify { repository.sendCommunicationInfo(any(), any(), any(), any()) }
+            coVerify {
+                repository.sendCommunicationInfo(
+                    "123456789",
+                    CommunicationStatus.MISSED,
+                    0,
+                    CommunicationType.INCOMING
+                )
+            }
         }
     }
 

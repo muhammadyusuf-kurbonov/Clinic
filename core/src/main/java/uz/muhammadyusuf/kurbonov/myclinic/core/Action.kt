@@ -8,4 +8,6 @@ sealed class Action {
         val callDirection: CallDirection,
         val isMissed: Boolean
     ) : Action()
+
+    class SetPurpose(val purpose: String) : Action()
 }
