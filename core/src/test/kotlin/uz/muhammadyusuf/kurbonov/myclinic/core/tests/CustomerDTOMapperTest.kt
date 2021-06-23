@@ -3,8 +3,6 @@ package uz.muhammadyusuf.kurbonov.myclinic.core.tests
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -16,7 +14,6 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 import kotlin.test.assertFailsWith
 
-@RunWith(JUnit4::class)
 class CustomerDTOMapperTest {
     @Test
     fun `mapper - empty data`() {
