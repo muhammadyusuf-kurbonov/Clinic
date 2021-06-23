@@ -1,8 +1,6 @@
 package uz.muhammadyusuf.kurbonov.myclinic.core.tests
 
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
+import io.mockk.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
@@ -33,6 +31,9 @@ class LoginTests {
         }
 
         val provider = mockk<SystemFunctionProvider> {
+            coEvery {
+                writePreference(any(), any())
+            } just Runs
         }
 
         runBlocking {
@@ -57,6 +58,9 @@ class LoginTests {
         }
 
         val provider = mockk<SystemFunctionProvider> {
+            coEvery {
+                writePreference(any(), any())
+            } just Runs
         }
 
         runBlocking {
