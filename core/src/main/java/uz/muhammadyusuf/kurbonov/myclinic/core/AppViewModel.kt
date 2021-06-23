@@ -7,8 +7,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import uz.muhammadyusuf.kurbonov.myclinic.network.*
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
+import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationStatus
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 import kotlin.coroutines.CoroutineContext
 
@@ -37,11 +39,58 @@ class AppViewModel(
     private val _customerState = MutableStateFlow<CustomerState>(CustomerState.Default)
     val customerState: StateFlow<CustomerState> = _customerState.asStateFlow()
 
+    @Suppress("PropertyName")
+    private val _reportState = MutableStateFlow<ReportState>(ReportState.Default)
+    val reportState: StateFlow<ReportState> = _reportState.asStateFlow()
+
 
     fun handle(action: Action) {
         when (action) {
             is Action.Login -> login(action.username, action.password)
             is Action.Search -> startSearch(action.phone)
+            is Action.Report -> sendReport(
+                action.isMissed,
+                action.callDirection,
+                action.duration
+            )
+        }
+    }
+
+    private fun sendReport(missed: Boolean, callDirection: CallDirection, duration: Long) = launch {
+        _reportState.value = ReportState.Sending
+        if (customerState.value is CustomerState.NotFound) {
+            _reportState.value = ReportState.AskToAddNewCustomer
+            return@launch
+        }
+        if (customerState.value is CustomerState.Default)
+            throw IllegalStateException("Customer state is default! Call search before sending report")
+
+        if (customerState.value is CustomerState.ConnectionFailed) {
+            _reportState.value = ReportState.ConnectionFailed
+            return@launch
+        }
+
+        val customer = (customerState.value as CustomerState.Found).customer
+        try {
+            if (missed) {
+                repository.sendCommunicationInfo(
+                    customer.id,
+                    CommunicationStatus.MISSED,
+                    0,
+                    callDirection
+                )
+                _reportState.value = ReportState.Submitted
+            } else {
+                val communicationId = repository.sendCommunicationInfo(
+                    customer.id,
+                    CommunicationStatus.ACCEPTED,
+                    duration,
+                    callDirection
+                )
+                _reportState.value = ReportState.PurposeRequested(communicationId.id)
+            }
+        } catch (e: NotConnectedException) {
+            _reportState.value = ReportState.ConnectionFailed
         }
     }
 
