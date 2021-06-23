@@ -21,7 +21,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
 import kotlin.test.assertFailsWith
 
 @RunWith(JUnit4::class)
-class LoginViewModelTests {
+class LoginTests {
     @Test
     fun `login - success`() {
         val repository = mock<AppRepository> {
@@ -66,7 +66,7 @@ class LoginViewModelTests {
             val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("demo@32desk.com", "demo123"))
             loginViewModel.authState.assertEmitted {
-                AuthState.AuthFailed == it
+                AuthState.AuthRequired == it
             }
             verify(provider).writePreference("token", "")
         }

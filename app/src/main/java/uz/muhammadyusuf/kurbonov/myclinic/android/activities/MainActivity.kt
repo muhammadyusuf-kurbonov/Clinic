@@ -5,7 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -15,22 +14,11 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import com.google.firebase.crashlytics.FirebaseCrashlytics
-import kotlinx.coroutines.runBlocking
-import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker
-import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker.Companion.AUTO_START_PREF_KEY
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 
 class MainActivity : AppCompatActivity() {
@@ -241,27 +229,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
-
-        requestUnrestrictedBackgroundService()
-    }
-
-    private fun verifyToken() {
-        val token = App.pref.getString("token", "") ?: ""
-
-        if (token.trim().isEmpty() or token.isBlank()) {
-            startActivity(Intent(this, LoginActivity::class.java))
-        } else {
-            mainTextView.text = getString(
-                R.string.main_label_text,
-                App.pref.getString("user.email", "(login again to see it)")
-            )
-        }
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        verifyToken()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -272,15 +239,10 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mnLogout -> {
-                App.pref.edit()
-                    .putString("token", "")
-                    .putString("user.email", "")
-                    .apply()
 
-                startActivity(Intent(this, LoginActivity::class.java))
+
             }
             R.id.mnSettings -> {
-                startActivity(Intent(this, SettingsActivity::class.java))
             }
         }
         return super.onOptionsItemSelected(item)
@@ -305,74 +267,5 @@ class MainActivity : AppCompatActivity() {
         channel.enableVibration(true)
         NotificationManagerCompat.from(applicationContext)
             .createNotificationChannel(channel)
-    }
-
-    private fun requestUnrestrictedBackgroundService(): Boolean {
-        WorkManager.getInstance(this).enqueue(
-            PeriodicWorkRequestBuilder<BackgroundCheckWorker>(25, TimeUnit.MINUTES)
-                .build()
-        )
-
-        var success = true
-        val pref = App.pref
-        val lastUpdate = pref.getLong(AUTO_START_PREF_KEY, -1)
-        val updated = if (lastUpdate == -1L) {
-            val editor = pref.edit()
-            editor.putLong(AUTO_START_PREF_KEY, System.currentTimeMillis())
-            editor.apply()
-            false
-        } else lastUpdate != -1L &&
-                TimeUnit.MILLISECONDS.toMinutes(
-                    System.currentTimeMillis() - lastUpdate
-                ) <= 30
-        if (!updated) {
-            for (intent in POWER_MANAGER_INTENTS)
-                if (packageManager.resolveActivity(
-                        intent,
-                        PackageManager.MATCH_DEFAULT_ONLY
-                    ) != null
-                ) {
-                    runBlocking {
-                        success = success && suspendCoroutine { cont ->
-                            val dialog = AlertDialog.Builder(this@MainActivity)
-                            val powerManagement =
-                                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                                    if (it.resultCode == RESULT_OK) {
-                                        val editor = pref.edit()
-                                        editor.putLong(
-                                            AUTO_START_PREF_KEY,
-                                            System.currentTimeMillis()
-                                        )
-                                        cont.resume(true)
-                                        editor.apply()
-                                    } else {
-                                        cont.resume(false)
-                                    }
-                                }
-                            dialog.setMessage(getString(R.string.ask_background_permission))
-                                .setPositiveButton(android.R.string.ok) { _, _ ->
-                                    try {
-                                        powerManagement.launch(intent)
-                                    } catch (e: SecurityException) {
-                                        Timber.d("Battery optimization is forbidden in ${Build.MANUFACTURER} + ${Build.BRAND} + ${Build.MODEL}")
-                                        FirebaseCrashlytics.getInstance().recordException(e)
-                                        AlertDialog.Builder(this@MainActivity)
-                                            .setMessage(getString(R.string.no_power_mangement_access))
-                                            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                                                dialog.dismiss()
-                                                cont.resume(true)
-                                            }.show()
-                                    }
-                                }
-                                .setNegativeButton(android.R.string.cancel) { _, _ ->
-                                    cont.resume(false)
-                                    finish()
-                                }
-                            dialog.show()
-                        }
-                    }
-                }
-        }
-        return success
     }
 }

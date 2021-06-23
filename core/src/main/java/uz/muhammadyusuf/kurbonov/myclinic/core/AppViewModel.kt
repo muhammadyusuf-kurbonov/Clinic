@@ -7,9 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
-import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
-import uz.muhammadyusuf.kurbonov.myclinic.network.AuthRequestException
-import uz.muhammadyusuf.kurbonov.myclinic.network.NotConnectedException
+import uz.muhammadyusuf.kurbonov.myclinic.network.*
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 import kotlin.coroutines.CoroutineContext
@@ -47,39 +45,43 @@ class AppViewModel(
         }
     }
 
-    private fun login(username: String, password: String) {
-        launch {
-            try {
-                if (username.isEmpty()) {
-                    _authState.value = AuthState.FieldRequired("username")
-                    return@launch
-                }
-                if (password.isEmpty()) {
-                    _authState.value = AuthState.FieldRequired("password")
-                    return@launch
-                }
-                val token: AuthToken = repository.authenticate(
-                    username,
-                    password
-                )
-                provider.writePreference("token", token.token)
-                _authState.value = AuthState.AuthSuccess
-            } catch (e: AuthRequestException) {
-                provider.writePreference("token", "")
-                _authState.value = AuthState.AuthFailed
-            } catch (e: NotConnectedException) {
-                _authState.value = AuthState.ConnectionFailed
+    private fun login(username: String, password: String) = launch {
+        try {
+            if (username.isEmpty()) {
+                _authState.value = AuthState.FieldRequired("username")
+                return@launch
             }
+            if (password.isEmpty()) {
+                _authState.value = AuthState.FieldRequired("password")
+                return@launch
+            }
+            val token: AuthToken = repository.authenticate(
+                username,
+                password
+            )
+            provider.writePreference("token", token.token)
+            _authState.value = AuthState.AuthSuccess
+        } catch (e: AuthRequestException) {
+            provider.writePreference("token", "")
+            _authState.value = AuthState.AuthRequired
+        } catch (e: NotConnectedException) {
+            _authState.value = AuthState.ConnectionFailed
         }
+
     }
 
     private fun startSearch(phone: String) = launch {
         try {
             val customerDto = repository.search(phone)
             _customerState.value = CustomerState.Found(customerDto.toCustomer())
-        } catch (e: Exception) {
+        } catch (e: CustomerNotFoundException) {
+            _customerState.value = CustomerState.NotFound
+        } catch (e: AuthRequestException) {
+            _customerState.value = CustomerState.Default
+            _authState.value = AuthState.AuthRequired
+        } catch (e: NotConnectedException) {
+            _customerState.value = CustomerState.ConnectionFailed
         }
-
     }
 
     // Mapper method

@@ -4,7 +4,6 @@ import android.os.Environment
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
-import uz.muhammadyusuf.kurbonov.myclinic.shared.formatAsDate
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -50,7 +49,7 @@ class FileDebugTree : Timber.DebugTree() {
             if (file.exists()) {
                 val fos = FileOutputStream(file, true)
 
-                val dateTime = System.currentTimeMillis().formatAsDate("yyyy-MM-dd HH:mm:ss")
+                val dateTime = System.currentTimeMillis().toString()
 
                 fos.write("$dateTime $message\n".toByteArray(Charsets.UTF_8))
                 fos.close()

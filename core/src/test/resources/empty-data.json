@@ -1,0 +1,55 @@
+{
+  "total": 1,
+  "limit": 50,
+  "skip": 0,
+  "data": [
+  ],
+  "elementaryExam": {
+    "map": []
+  },
+  "meta": [
+    {
+      "_id": "male",
+      "count": 104
+    },
+    {
+      "_id": "female",
+      "count": 95
+    },
+    {
+      "_id": null,
+      "count": 25
+    }
+  ],
+  "archived": 37,
+  "prepaid": 22,
+  "debtors": 18,
+  "totalCustomers": 224,
+  "appointments": [
+    {
+      "prev": {
+        "_id": "6055d31cfc2a0c6fccafeb0c",
+        "services": [
+          {
+            "treatmentId": "5dc3c84d9a76124f537464fe",
+            "userId": "5dc3c9d89a76124f53746503",
+            "startAt": "2021-03-20T06:30:00.000Z",
+            "quantity": 1,
+            "duration": 60,
+            "workPlaceId": null
+          }
+        ],
+        "notify": false,
+        "startAt": "2021-03-20T06:30:00.000Z",
+        "endAt": "2021-03-20T07:30:00.000Z",
+        "customerId": "5eff112313789959bfeaf79f",
+        "status": "notConfirmed",
+        "userId": "5dc2beab0af9c9e30a0ea0f5",
+        "companyId": "5dc2bf249a76124f5374648b",
+        "createdAt": "2021-03-20T10:49:00.555Z",
+        "updatedAt": "2021-03-20T10:49:00.555Z",
+        "__v": 0
+      }
+    }
+  ]
+}

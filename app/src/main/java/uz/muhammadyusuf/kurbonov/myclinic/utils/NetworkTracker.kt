@@ -10,7 +10,7 @@ import android.net.NetworkRequest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
-import uz.muhammadyusuf.kurbonov.myclinic.shared.printToConsole
+import timber.log.Timber
 import java.io.IOException
 import java.net.InetSocketAddress
 import javax.net.SocketFactory
@@ -23,7 +23,7 @@ class NetworkTracker(context: Context) {
     @OptIn(ExperimentalCoroutinesApi::class)
     val connectedToInternet = callbackFlow {
 
-        offer(true)
+        this.trySend(true).isSuccess
 
         val networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
@@ -47,8 +47,8 @@ class NetworkTracker(context: Context) {
             }
 
             fun commit() {
-                printToConsole("Network state is ${validNetworks.isNotEmpty()}")
-                offer(validNetworks.isNotEmpty())
+                Timber.d("Network state is ${validNetworks.isNotEmpty()}")
+                trySend(validNetworks.isNotEmpty())
             }
         }
 
@@ -64,18 +64,18 @@ class NetworkTracker(context: Context) {
 
     private fun ping(): Boolean {
         return try {
-            printToConsole("PINGING google.")
+            Timber.d("PINGING google.")
 
             val socket =
                 SocketFactory.getDefault().createSocket() ?: throw IOException("Socket is null.")
             socket.connect(InetSocketAddress("8.8.8.8", 53), 1500)
             socket.close()
 
-            printToConsole("PING success.")
+            Timber.d("PING success.")
             true
         } catch (e: IOException) {
             e.printStackTrace()
-            printToConsole("No internet connection. $e")
+            Timber.d("No internet connection. $e")
             false
         }
     }
