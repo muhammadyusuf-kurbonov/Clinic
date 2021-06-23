@@ -67,4 +67,28 @@ class CustomerDTOMapperTest {
             }
         }
     }
+
+    @Test
+    fun `mapper - success`() {
+        val dummy = GsonBuilder().create()
+            .fromJson(getJSON("customer.json"), CustomerDTO::class.java)
+        val repository = mock<AppRepository> {
+            onBlocking {
+                search("+998913975538")
+            } doReturn dummy
+        }
+
+        val provider = mock<SystemFunctionProvider> {
+        }
+
+        runBlocking {
+            val appViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            appViewModel.handle(Action.Search("+998913975538"))
+            appViewModel.customerState.assertEmitted {
+                it is CustomerState.Found
+            }
+            verify(repository).search("+998913975538")
+        }
+
+    }
 }
