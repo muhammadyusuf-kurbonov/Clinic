@@ -12,10 +12,6 @@ jobs:
         with:
           java-version: 1.8
 
-      # Execute unit tests
-      - name: Clean
-        run: ./gradlew clean
-
       - name: Unit Test
         run: ./gradlew test
 
