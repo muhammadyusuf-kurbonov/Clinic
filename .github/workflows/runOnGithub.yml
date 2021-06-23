@@ -17,6 +17,11 @@ jobs:
         run: gradle wrapper
       - uses: gradle/wrapper-validation-action@v1
 
+      - name: Decode google-services.json
+        env:
+          FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
+        run: echo $FIREBASE_SECRET > ./app/google-services.json
+
       - name: Unit Test
         run: ./gradlew test
 
