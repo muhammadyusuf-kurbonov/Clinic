@@ -11,6 +11,6 @@ class UtilsTest {
     @Test
     fun `call direction and communicationType are same`() {
         @Suppress("USELESS_IS_CHECK")
-        assert(CommunicationType.INCOMING !is CallDirection)
+        assert(CommunicationType.INCOMING is CallDirection)
     }
 }
