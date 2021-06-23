@@ -10,6 +10,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.CallDirection
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIException
@@ -165,18 +166,21 @@ class ReportSendTest {
         val provider = mockk<SystemFunctionProvider> {
         }
 
-        assertFailsWith<AuthRequestException> {
-            runBlocking {
-                val mockkViewModel =
-                    spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                        every { customerState.value } returns CustomerState.Found(dummyCustomer)
-                    }
-                mockkViewModel.handle(Action.Report(0, CallDirection.INCOMING, true))
-                mockkViewModel.reportState.assertEmitted {
-                    ReportState.ConnectionFailed == it
+
+        runBlocking {
+            val mockkViewModel =
+                spyk(AppViewModel(this.coroutineContext, provider, repository)) {
+                    every { customerState.value } returns CustomerState.Found(dummyCustomer)
                 }
+            mockkViewModel.handle(Action.Report(0, CallDirection.INCOMING, true))
+            mockkViewModel.reportState.assertEmitted {
+                ReportState.ConnectionFailed == it
+            }
+            mockkViewModel.authState.assertEmitted {
+                AuthState.AuthRequired == it
             }
         }
+
     }
 
     @Test
