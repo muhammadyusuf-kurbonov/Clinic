@@ -26,6 +26,12 @@ interface AppRepository {
         type: CommunicationType // call direction
     ): CommunicationId
 
+    /**
+     *  This method updates (patch) communications entity on backend
+     *  @throws AuthRequestException - when username or password are incorrect
+     *  @throws NotConnectedException - if there were problems with network
+     *  @throws APIException - if username or password are empty
+     */
     suspend fun updateCommunicationNote(
         communicationId: String,
         note: String
