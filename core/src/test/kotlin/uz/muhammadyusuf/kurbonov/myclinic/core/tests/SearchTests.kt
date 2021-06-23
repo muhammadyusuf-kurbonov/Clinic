@@ -1,14 +1,13 @@
 package uz.muhammadyusuf.kurbonov.myclinic.core.tests
 
 import com.google.gson.GsonBuilder
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import org.mockito.kotlin.doAnswer
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
@@ -26,13 +25,13 @@ class SearchTests {
 
         val dummy = GsonBuilder().create()
             .fromJson(getJSON("customer.json"), CustomerDTO::class.java)
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 search("+998913975538")
-            } doReturn dummy
+            } returns dummy
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         runBlocking {
@@ -41,21 +40,19 @@ class SearchTests {
             appViewModel.customerState.assertEmitted {
                 it is CustomerState.Found
             }
-            verify(repository).search("+998913975538")
+            coVerify { repository.search("+998913975538") }
         }
     }
 
     @Test
     fun `search - not found`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 search("+998913975538")
-            } doAnswer {
-                throw CustomerNotFoundException()
-            }
+            } throws CustomerNotFoundException()
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         runBlocking {
@@ -64,21 +61,19 @@ class SearchTests {
             appViewModel.customerState.assertEmitted {
                 it == CustomerState.NotFound
             }
-            verify(repository).search("+998913975538")
+            coVerify { repository.search("+998913975538") }
         }
     }
 
     @Test
     fun `search - not auth`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 search("+998913975538")
-            } doAnswer {
-                throw AuthRequestException()
-            }
+            } throws AuthRequestException()
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         runBlocking {
@@ -90,21 +85,19 @@ class SearchTests {
             appViewModel.authState.assertEmitted {
                 it == AuthState.AuthRequired
             }
-            verify(repository).search("+998913975538")
+            coVerify { repository.search("+998913975538") }
         }
     }
 
     @Test
     fun `search - api error`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 search("+998913975538")
-            } doAnswer {
-                throw APIException(400, "Bad request")
-            }
+            } throws APIException(400, "Bad request")
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         assertFailsWith<APIException> {
@@ -114,22 +107,20 @@ class SearchTests {
                 appViewModel.customerState.assertEmitted {
                     it == CustomerState.Default
                 }
-                verify(repository).search("+998913975538")
+                coVerify { repository.search("+998913975538") }
             }
         }
     }
 
     @Test
     fun `search - no connection`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 search("+998913975538")
-            } doAnswer {
-                throw NotConnectedException()
-            }
+            } throws NotConnectedException()
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         runBlocking {
@@ -138,7 +129,7 @@ class SearchTests {
             appViewModel.customerState.assertEmitted {
                 it == CustomerState.ConnectionFailed
             }
-            verify(repository).search("+998913975538")
+            coVerify { repository.search("+998913975538") }
         }
     }
 }

@@ -1,13 +1,13 @@
 package uz.muhammadyusuf.kurbonov.myclinic.core.tests
 
 import com.google.gson.GsonBuilder
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
@@ -22,14 +22,13 @@ class CustomerDTOMapperTest {
     fun `mapper - empty data`() {
         val dummy = GsonBuilder().create()
             .fromJson(getJSON("empty-data.json"), CustomerDTO::class.java)
-        val repository = mock<AppRepository> {
-            onBlocking {
-                search("+998913975538")
-            } doReturn dummy
-        }
+        val repository = mockk<AppRepository>()
+        coEvery {
+            repository.search("+998913975538")
+        } returns dummy
 
-        val provider = mock<SystemFunctionProvider> {
-        }
+
+        val provider = mockk<SystemFunctionProvider>()
 
         assertFailsWith<IllegalArgumentException> {
             runBlocking {
@@ -38,7 +37,7 @@ class CustomerDTOMapperTest {
                 appViewModel.customerState.assertEmitted {
                     it is CustomerState.Found
                 }
-                verify(repository).search("+998913975538")
+                coVerify { repository.search("+998913975538") }
             }
         }
     }
@@ -47,14 +46,13 @@ class CustomerDTOMapperTest {
     fun `mapper - empty appointments`() {
         val dummy = GsonBuilder().create()
             .fromJson(getJSON("appointments-empty.json"), CustomerDTO::class.java)
-        val repository = mock<AppRepository> {
-            onBlocking {
-                search("+998913975538")
-            } doReturn dummy
-        }
+        val repository = mockk<AppRepository>()
+        coEvery {
+            repository.search("+998913975538")
+        } returns dummy
 
-        val provider = mock<SystemFunctionProvider> {
-        }
+
+        val provider = mockk<SystemFunctionProvider>()
 
         assertFailsWith<IllegalArgumentException> {
             runBlocking {
@@ -63,7 +61,9 @@ class CustomerDTOMapperTest {
                 appViewModel.customerState.assertEmitted {
                     it is CustomerState.Found
                 }
-                verify(repository).search("+998913975538")
+                coVerify {
+                    repository.search("+998913975538")
+                }
             }
         }
     }
@@ -72,14 +72,13 @@ class CustomerDTOMapperTest {
     fun `mapper - success`() {
         val dummy = GsonBuilder().create()
             .fromJson(getJSON("customer.json"), CustomerDTO::class.java)
-        val repository = mock<AppRepository> {
-            onBlocking {
-                search("+998913975538")
-            } doReturn dummy
-        }
+        val repository = mockk<AppRepository>()
+        coEvery {
+            repository.search("+998913975538")
+        } returns dummy
 
-        val provider = mock<SystemFunctionProvider> {
-        }
+
+        val provider = mockk<SystemFunctionProvider>()
 
         runBlocking {
             val appViewModel = AppViewModel(this.coroutineContext, provider, repository)
@@ -87,7 +86,9 @@ class CustomerDTOMapperTest {
             appViewModel.customerState.assertEmitted {
                 it is CustomerState.Found
             }
-            verify(repository).search("+998913975538")
+            coVerify {
+                repository.search("+998913975538")
+            }
         }
 
     }

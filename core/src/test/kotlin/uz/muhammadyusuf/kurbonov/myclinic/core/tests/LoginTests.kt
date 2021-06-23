@@ -1,14 +1,13 @@
 package uz.muhammadyusuf.kurbonov.myclinic.core.tests
 
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import org.mockito.kotlin.doAnswer
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
@@ -24,16 +23,16 @@ import kotlin.test.assertFailsWith
 class LoginTests {
     @Test
     fun `login - success`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 authenticate(
                     "demo@32desk.com",
                     "demo"
                 )
-            } doReturn AuthToken("dummy")
+            } returns AuthToken("dummy")
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         runBlocking {
@@ -42,24 +41,22 @@ class LoginTests {
             loginViewModel.authState.assertEmitted {
                 AuthState.AuthSuccess == it
             }
-            verify(provider).writePreference("token", "dummy")
+            coVerify { provider.writePreference("token", "dummy") }
         }
     }
 
     @Test
     fun `login - failed`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 authenticate(
                     "demo@32desk.com",
                     "demo123"
                 )
-            } doAnswer {
-                throw AuthRequestException()
-            }
+            } throws AuthRequestException()
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         runBlocking {
@@ -68,24 +65,23 @@ class LoginTests {
             loginViewModel.authState.assertEmitted {
                 AuthState.AuthRequired == it
             }
-            verify(provider).writePreference("token", "")
+            coVerify { provider.writePreference("token", "") }
         }
     }
 
     @Test
     fun `login - connectionError`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 authenticate(
                     "demo@32desk.com",
                     "demo123"
                 )
-            } doAnswer {
-                throw NotConnectedException()
-            }
+            } throws NotConnectedException()
+
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         runBlocking {
@@ -99,18 +95,16 @@ class LoginTests {
 
     @Test
     fun `login - api error`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 authenticate(
                     "demo@32desk.com",
                     "demo"
                 )
-            } doAnswer {
-                throw APIException(400, "field required")
-            }
+            } throws APIException(400, "field required")
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         assertFailsWith<APIException> {
@@ -124,18 +118,16 @@ class LoginTests {
 
     @Test
     fun `login - empty username`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 authenticate(
                     "",
                     "demo"
                 )
-            } doAnswer {
-                throw APIException(400, "field required")
-            }
+            } throws APIException(400, "field required")
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         runBlocking {
@@ -150,18 +142,16 @@ class LoginTests {
 
     @Test
     fun `login - empty password`() {
-        val repository = mock<AppRepository> {
-            onBlocking {
+        val repository = mockk<AppRepository> {
+            coEvery {
                 authenticate(
                     "demo@32desk.com",
                     ""
                 )
-            } doAnswer {
-                throw APIException(400, "field required")
-            }
+            } throws APIException(400, "field required")
         }
 
-        val provider = mock<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionProvider> {
         }
 
         runBlocking {
