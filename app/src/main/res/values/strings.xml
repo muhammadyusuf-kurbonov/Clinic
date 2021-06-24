@@ -44,4 +44,10 @@
     <string name="no_power_mangement_access">I haven\'t got access to go to settings. Please goto settings and manually disable battery optimization and allow background activity, please</string>
     <string name="autoclose_title">Auto-close \"Add new customer\" request</string>
     <string name="settings_title">Settings</string>
+    <string name="permissions_title">Permissions</string>
+    <string name="permissions_overline">Please, give us these\n</string>
+    <string name="read_call_state_desc">Access to call state</string>
+    <string name="read_call_log_desc">Access to call log</string>
+    <string name="huawei_use_component_desc">Access special HUAWEI settings page</string>
+    <string name="foreground_permission_desc">Permission to work on background</string>
 </resources>

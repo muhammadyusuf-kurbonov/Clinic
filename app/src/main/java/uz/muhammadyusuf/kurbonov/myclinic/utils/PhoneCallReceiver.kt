@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.EXTRA_PHONE_NUMBER
 import android.telephony.TelephonyManager
-import kotlinx.coroutines.runBlocking
 import java.util.*
 
 
@@ -14,32 +13,30 @@ abstract class PhoneCallReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         //We listen to two intents.  The new outgoing call only tells us of an outgoing call.  We use it to get the number.
 
-        runBlocking {
-            if (intent.action == "android.intent.action.NEW_OUTGOING_CALL") {
-                savedNumber = intent.extras!!.getString(EXTRA_PHONE_NUMBER)
-            } else {
-                val stateStr = intent.extras!!.getString(TelephonyManager.EXTRA_STATE)
-                @Suppress("DEPRECATION") val number =
-                    intent.extras!!.getString(TelephonyManager.EXTRA_INCOMING_NUMBER)
-                if (number != null)
-                    savedNumber = number
-                else
-                    return@runBlocking
-                var state = 0
-                when (stateStr) {
-                    TelephonyManager.EXTRA_STATE_IDLE -> {
-                        state = TelephonyManager.CALL_STATE_IDLE
-                    }
-                    TelephonyManager.EXTRA_STATE_OFFHOOK -> {
-                        state = TelephonyManager.CALL_STATE_OFFHOOK
-                    }
-                    TelephonyManager.EXTRA_STATE_RINGING -> {
-                        state = TelephonyManager.CALL_STATE_RINGING
-                    }
-                }
-                onCallStateChanged(context, state, savedNumber)
+        if (intent.action == "android.intent.action.NEW_OUTGOING_CALL") {
+            savedNumber = intent.extras!!.getString(EXTRA_PHONE_NUMBER)
+        } else {
+            val stateStr = intent.extras!!.getString(TelephonyManager.EXTRA_STATE)
 
+            @Suppress("DEPRECATION")
+            val number = intent.extras!!.getString(TelephonyManager.EXTRA_INCOMING_NUMBER)
+            if (number != null)
+                savedNumber = number
+            else
+                return
+            var state = 0
+            when (stateStr) {
+                TelephonyManager.EXTRA_STATE_IDLE -> {
+                    state = TelephonyManager.CALL_STATE_IDLE
+                }
+                TelephonyManager.EXTRA_STATE_OFFHOOK -> {
+                    state = TelephonyManager.CALL_STATE_OFFHOOK
+                }
+                TelephonyManager.EXTRA_STATE_RINGING -> {
+                    state = TelephonyManager.CALL_STATE_RINGING
+                }
             }
+            onCallStateChanged(context, state, savedNumber)
         }
     }
 

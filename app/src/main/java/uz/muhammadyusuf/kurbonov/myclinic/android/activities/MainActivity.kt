@@ -16,13 +16,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.core.app.NotificationManagerCompat
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.main.MainScreen
@@ -169,24 +169,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private val permissionsRequest =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            val notGrantedPermissions = mutableListOf<String>()
-
-            it.keys.filter { permission ->
-                permission !in arrayListOf(
-                    "android.permission.READ_PRIVILEGED_PHONE_STATE"
-                )
-            }.forEach { permission ->
-                if (it[permission] != true)
-                    notGrantedPermissions.add(permission)
-            }
-
-            if (notGrantedPermissions.isNotEmpty())
-                mainTextView.text =
-                    getString(R.string.not_granted, notGrantedPermissions.joinToString())
-        }
-
     private val overlayRequest =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -204,16 +186,16 @@ class MainActivity : AppCompatActivity() {
     fun checkPermissionGranted(permission: String) =
         checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
+    private lateinit var navController: NavHostController
 
     @ExperimentalPermissionsApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
 
-            val permissionsGranted by produceState(initialValue = false) {
-                allAppPermissions.all { checkPermissionGranted(it) }
-            }
-            val navController = rememberNavController()
+            val permissionsGranted =
+                rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
+            navController = rememberNavController()
             CompositionLocalProvider(LocalNavigation provides navController) {
                 AppTheme {
                     NavHost(navController = navController, startDestination = "main") {
@@ -269,10 +251,11 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mnLogout -> {
-
-
             }
             R.id.mnSettings -> {
+            }
+            R.id.mnPermissions -> {
+                navController.navigate("permissions")
             }
         }
         return super.onOptionsItemSelected(item)
