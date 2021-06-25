@@ -4,7 +4,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -15,6 +14,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.NavHostController
@@ -167,6 +167,21 @@ class MainActivity : AppCompatActivity() {
 
         )
 
+        @ExperimentalPermissionsApi
+        @Composable
+        fun MainActivityCompose(navController: NavHostController) {
+
+            val permissionsGranted =
+                rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
+            CompositionLocalProvider(LocalNavigation provides navController) {
+                AppTheme {
+                    NavHost(navController = navController, startDestination = "main") {
+                        composable("main") { MainScreen(permissionsGranted) }
+                        composable("permissions") { PermissionScreen() }
+                    }
+                }
+            }
+        }
     }
 
     private val overlayRequest =
@@ -183,52 +198,20 @@ class MainActivity : AppCompatActivity() {
         findViewById(R.id.tvMain)
     }
 
-    fun checkPermissionGranted(permission: String) =
-        checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
-
     private lateinit var navController: NavHostController
 
     @ExperimentalPermissionsApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
-            val permissionsGranted =
-                rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
             navController = rememberNavController()
-            CompositionLocalProvider(LocalNavigation provides navController) {
-                AppTheme {
-                    NavHost(navController = navController, startDestination = "main") {
-                        composable("main") { MainScreen(permissionsGranted) }
-                        composable("permissions") { PermissionScreen() }
-                    }
-                }
-            }
+            MainActivityCompose(navController = navController)
         }
-//        setContentView(R.layout.activity_main)
 //
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 //            createNotificationChannel()
 //        }
 //
-//        permissionsRequest.launch(
-//            mutableListOf(
-//                Manifest.permission.READ_PHONE_STATE,
-//                Manifest.permission.READ_CALL_LOG,
-//                "android.permission.READ_PRIVILEGED_PHONE_STATE",
-//            ).apply {
-//                if (Build.MANUFACTURER.contains("huawei", false))
-//                    add("com.huawei.permission.external_app_settings.USE_COMPONENT")
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-//                    add(Manifest.permission.FOREGROUND_SERVICE)
-//            }.toTypedArray()
-//        )
-//
-//        findViewById<TextView>(R.id.tvVersion).text = getString(
-//            R.string.version_template,
-//            getString(R.string.app_name),
-//            BuildConfig.VERSION_NAME
-//        )
 //
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //            if (!Settings.canDrawOverlays(this)) {
@@ -281,4 +264,5 @@ class MainActivity : AppCompatActivity() {
         NotificationManagerCompat.from(applicationContext)
             .createNotificationChannel(channel)
     }
+
 }
