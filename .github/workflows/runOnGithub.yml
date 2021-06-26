@@ -17,6 +17,20 @@ jobs:
         run: gradle wrapper
       - uses: gradle/wrapper-validation-action@v1
 
+      - name: Cache gradle deps cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Cache gradle wrapper
+        uses: actions/cache@v1
+        with:
+          path: ./gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
       - name: Decode google-services.json
         env:
           FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
@@ -28,3 +42,44 @@ jobs:
       - name: Android Test Report
         uses: asadmansr/android-test-report-action@v1.2.0
         if: ${{ always() }} # IMPORTANT: run Android Test Report regardless
+
+  androidTests:
+    runs-on: macos-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 11
+
+      - name: "Gradle wrapper install"
+        run: gradle wrapper
+      - uses: gradle/wrapper-validation-action@v1
+
+      - name: Cache gradle deps cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Cache gradle wrapper
+        uses: actions/cache@v1
+        with:
+          path: ./gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Decode google-services.json
+        env:
+          FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
+        run: echo $FIREBASE_SECRET > ./app/google-services.json
+
+
+      - name: run android tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: ./gradlew connectedCheck
