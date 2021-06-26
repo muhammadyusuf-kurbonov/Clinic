@@ -43,4 +43,10 @@
     <string name="no_power_mangement_access">Нет доступа к настройкам. Пожалуйста, для корректной работы приложения зайдите в настройки и вручную отключите оптимизацию батареи и разрешите фоновую деятельность.</string>
     <string name="autoclose_title">Автозакрытие диалога \"Добавить нового клиента\"</string>
     <string name="settings_title">Настройки</string>
+    <string name="permissions_title">Разрешения</string>
+    <string name="permissions_overline">Пожалуйста, предоставьте нам эти \n</string>
+    <string name="read_call_state_desc">Доступ к вызову</string>
+    <string name="read_call_log_desc">Доступ к журналу звонков</string>
+    <string name="huawei_use_component_desc">Специальное разрешение от Huawei</string>
+    <string name="foreground_permission_desc">Разрешение на фоновую активность</string>
 </resources>

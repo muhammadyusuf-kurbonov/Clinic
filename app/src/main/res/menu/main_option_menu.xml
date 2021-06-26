@@ -5,6 +5,9 @@
         android:id="@+id/mnSettings"
         android:title="@string/settings_title" />
     <item
+        android:id="@+id/mnPermissions"
+        android:title="@string/permissions_title" />
+    <item
         android:id="@+id/mnLogout"
         android:title="@string/logout" />
 </menu>

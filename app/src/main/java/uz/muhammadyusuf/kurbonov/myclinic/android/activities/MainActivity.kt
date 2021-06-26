@@ -1,24 +1,35 @@
 package uz.muhammadyusuf.kurbonov.myclinic.android.activities
 
-import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.app.NotificationManagerCompat
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.android.main.MainScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.permission_screen.PermissionScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissions
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
 
 
 class MainActivity : AppCompatActivity() {
@@ -156,25 +167,22 @@ class MainActivity : AppCompatActivity() {
 
         )
 
+        @ExperimentalPermissionsApi
+        @Composable
+        fun MainActivityCompose(navController: NavHostController) {
+
+            val permissionsGranted =
+                rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
+            CompositionLocalProvider(LocalNavigation provides navController) {
+                AppTheme {
+                    NavHost(navController = navController, startDestination = "main") {
+                        composable("main") { MainScreen(permissionsGranted) }
+                        composable("permissions") { PermissionScreen() }
+                    }
+                }
+            }
+        }
     }
-
-    private val permissionsRequest =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            val notGrantedPermissions = mutableListOf<String>()
-
-            it.keys.filter { permission ->
-                permission !in arrayListOf(
-                    "android.permission.READ_PRIVILEGED_PHONE_STATE"
-                )
-            }.forEach { permission ->
-                if (it[permission] != true)
-                    notGrantedPermissions.add(permission)
-            }
-
-            if (notGrantedPermissions.isNotEmpty())
-                mainTextView.text =
-                    getString(R.string.not_granted, notGrantedPermissions.joinToString())
-            }
 
     private val overlayRequest =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -190,45 +198,32 @@ class MainActivity : AppCompatActivity() {
         findViewById(R.id.tvMain)
     }
 
+    private lateinit var navController: NavHostController
 
+    @ExperimentalPermissionsApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
+        setContent {
+            navController = rememberNavController()
+            MainActivityCompose(navController = navController)
         }
-
-        permissionsRequest.launch(
-            mutableListOf(
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.READ_CALL_LOG,
-                "android.permission.READ_PRIVILEGED_PHONE_STATE",
-            ).apply {
-                if (Build.MANUFACTURER.contains("huawei", false))
-                    add("com.huawei.permission.external_app_settings.USE_COMPONENT")
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                    add(Manifest.permission.FOREGROUND_SERVICE)
-            }.toTypedArray()
-        )
-
-        findViewById<TextView>(R.id.tvVersion).text = getString(
-            R.string.version_template,
-            getString(R.string.app_name),
-            BuildConfig.VERSION_NAME
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(this)) {
-                // ask for setting
-                overlayRequest.launch(
-                    Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:$packageName")
-                    )
-                )
-            }
-        }
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            createNotificationChannel()
+//        }
+//
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            if (!Settings.canDrawOverlays(this)) {
+//                // ask for setting
+//                overlayRequest.launch(
+//                    Intent(
+//                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+//                        Uri.parse("package:$packageName")
+//                    )
+//                )
+//            }
+//        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -239,10 +234,11 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mnLogout -> {
-
-
             }
             R.id.mnSettings -> {
+            }
+            R.id.mnPermissions -> {
+                navController.navigate("permissions")
             }
         }
         return super.onOptionsItemSelected(item)
@@ -268,4 +264,5 @@ class MainActivity : AppCompatActivity() {
         NotificationManagerCompat.from(applicationContext)
             .createNotificationChannel(channel)
     }
+
 }
