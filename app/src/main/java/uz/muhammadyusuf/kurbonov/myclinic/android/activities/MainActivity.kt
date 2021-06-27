@@ -6,12 +6,9 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.TextView
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
@@ -27,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import io.paperdb.Paper
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.LoginScreen
@@ -177,56 +175,40 @@ class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
             //endregion
 
         )
+    }
 
-        @ExperimentalPermissionsApi
-        @Composable
-        fun MainActivityCompose(
-            navController: NavHostController,
-            appViewModel: AppViewModel
+    @ExperimentalPermissionsApi
+    @Composable
+    fun MainActivityCompose(
+        navController: NavHostController,
+        appViewModel: AppViewModel
+    ) {
+
+        CompositionLocalProvider(
+            LocalNavigation provides navController,
+            AppViewModelProvider provides appViewModel
         ) {
+            AppTheme {
+                NavHost(navController = navController, startDestination = "main") {
+                    composable("main") {
+                        val permissionsGranted =
+                            rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
 
-            CompositionLocalProvider(
-                LocalNavigation provides navController,
-                AppViewModelProvider provides appViewModel
-            ) {
-                AppTheme {
-                    NavHost(navController = navController, startDestination = "main") {
-                        composable("main") {
-                            val permissionsGranted =
-                                rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
-
-                            MainScreen(permissionsGranted)
-                        }
-                        composable("permissions") { PermissionScreen() }
-                        composable("login") { LoginScreen() }
+                        MainScreen(permissionsGranted)
                     }
-                    val authState = AppViewModelProvider.current.authState.collectAsState()
-                    if (authState.value is AuthState.AuthRequired) {
-                        LaunchedEffect(key1 = "started") {
-                            navController.navigate("login")
-                        }
+                    composable("permissions") { PermissionScreen() }
+                    composable("login") { LoginScreen() }
+                }
+                val authState = AppViewModelProvider.current.authState.collectAsState()
+                val tokenIsEmpty = readPreference("token", "").isEmpty()
+
+                if ((authState.value is AuthState.AuthRequired) or tokenIsEmpty) {
+                    LaunchedEffect(key1 = "started") {
+                        navController.navigate("login")
                     }
                 }
             }
         }
-    }
-
-    private val sharedPreferences by lazy {
-        getSharedPreferences("main.xml", 0)
-    }
-
-    private val overlayRequest =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!Settings.canDrawOverlays(this)) {
-                    mainTextView.setText(R.string.main_label_ask_permission)
-                }
-            }
-        }
-
-
-    private val mainTextView: TextView by lazy {
-        findViewById(R.id.tvMain)
     }
 
     private lateinit var appViewModel: AppViewModel
@@ -309,36 +291,12 @@ class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
     }
 
     override fun writePreference(key: String, value: Any) {
-        sharedPreferences.edit().apply {
-            when (value) {
-                is String -> putString(key, value)
-                is Int -> putInt(key, value)
-                is Long -> putLong(key, value)
-                is Float -> putFloat(key, value)
-                is Boolean -> putBoolean(key, value)
-                else ->
-                    throw IllegalArgumentException(
-                        "Type of value ${value.javaClass.simpleName}" +
-                                " is not writable to SharedPrefs"
-                    )
-            }
-            apply()
-        }
+        Paper.book().write(key, value)
     }
 
-    override fun <T> readPreference(key: String, defaultValue: T?): T {
-        @Suppress("UNCHECKED_CAST")
-        return when (defaultValue) {
-            is String? -> sharedPreferences.getString(key, defaultValue)
-            is Int -> sharedPreferences.getInt(key, defaultValue)
-            is Boolean -> sharedPreferences.getBoolean(key, defaultValue)
-            is Float -> sharedPreferences.getFloat(key, defaultValue)
-            is Long -> sharedPreferences.getLong(key, defaultValue)
-            else -> throw IllegalArgumentException(
-                "Type of defaultValue " +
-                        " is not readable to SharedPrefs"
-            )
-        } as T
-    }
+    override fun <T> readPreference(key: String, defaultValue: T?): T =
+        Paper.book().read(key, defaultValue)
+            ?: throw IllegalArgumentException("Default value can\'t be null")
+
 
 }
