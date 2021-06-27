@@ -2,7 +2,7 @@ name: Run Unit tests
 on: [ push ]
 
 jobs:
-  test:
+  unitTests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
