@@ -2,13 +2,17 @@ package uz.muhammadyusuf.kurbonov.myclinic.android.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -54,8 +58,11 @@ fun LoginForm(
             )
             Text(
                 text = stringResource(id = R.string.app_name),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                textAlign = TextAlign.Center
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(4.dp),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.h6
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -134,6 +141,7 @@ fun PasswordField(
     var isPasswordVisible by remember {
         mutableStateOf(false)
     }
+    val focusManager = LocalFocusManager.current
 
     OutlinedTextField(
         value = state, onValueChange = onValueChange,
@@ -157,7 +165,11 @@ fun PasswordField(
         },
         visualTransformation = if (isPasswordVisible)
             VisualTransformation.None else
-            PasswordVisualTransformation()
+            PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = {
+            focusManager.clearFocus()
+        })
     )
 
 }
