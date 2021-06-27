@@ -44,6 +44,10 @@ class AppViewModel(
     internal val _reportState = MutableStateFlow<ReportState>(ReportState.Default)
     val reportState: StateFlow<ReportState> = _reportState.asStateFlow()
 
+    init {
+        if (repository.token.isEmpty())
+            handle(Action.Logout)
+    }
 
     fun handle(action: Action) {
         when (action) {
@@ -137,6 +141,7 @@ class AppViewModel(
                 password
             )
             provider.writePreference("token", token.token)
+            repository.token = token.token
             _authState.value = AuthState.AuthSuccess
         } catch (e: AuthRequestException) {
             provider.writePreference("token", "")
