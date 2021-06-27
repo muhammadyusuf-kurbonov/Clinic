@@ -32,15 +32,15 @@ class AppViewModel(
                 handler
 
     @Suppress("PropertyName")
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Default)
+    internal val _authState = MutableStateFlow<AuthState>(AuthState.Default)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
     @Suppress("PropertyName")
-    private val _customerState = MutableStateFlow<CustomerState>(CustomerState.Default)
+    internal val _customerState = MutableStateFlow<CustomerState>(CustomerState.Default)
     val customerState: StateFlow<CustomerState> = _customerState.asStateFlow()
 
     @Suppress("PropertyName")
-    private val _reportState = MutableStateFlow<ReportState>(ReportState.Default)
+    internal val _reportState = MutableStateFlow<ReportState>(ReportState.Default)
     val reportState: StateFlow<ReportState> = _reportState.asStateFlow()
 
 
