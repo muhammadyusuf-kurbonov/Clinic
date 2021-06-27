@@ -47,6 +47,7 @@ class AppViewModel(
     fun handle(action: Action) {
         when (action) {
             is Action.Login -> login(action.username, action.password)
+            Action.Logout -> logout()
             is Action.Search -> startSearch(action.phone)
             is Action.Report -> sendReport(
                 action.isMissed,
@@ -55,6 +56,12 @@ class AppViewModel(
             )
             is Action.SetPurpose -> updateReport(action.purpose)
         }
+    }
+
+    private fun logout() {
+        provider.writePreference("token", "")
+        repository.token = ""
+        _authState.value = AuthState.AuthRequired
     }
 
     private fun updateReport(purpose: String) = launch {

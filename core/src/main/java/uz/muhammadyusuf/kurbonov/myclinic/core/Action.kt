@@ -2,6 +2,7 @@ package uz.muhammadyusuf.kurbonov.myclinic.core
 
 sealed class Action {
     class Login(val username: String, val password: String) : Action()
+    object Logout : Action()
     class Search(val phone: String) : Action()
     class Report(
         val duration: Long,
