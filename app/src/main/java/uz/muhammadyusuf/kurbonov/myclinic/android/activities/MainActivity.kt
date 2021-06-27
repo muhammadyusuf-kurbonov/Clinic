@@ -25,8 +25,10 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.android.main.MainScreen
-import uz.muhammadyusuf.kurbonov.myclinic.android.permission_screen.PermissionScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.LoginScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.MainScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.PermissionScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissions
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme

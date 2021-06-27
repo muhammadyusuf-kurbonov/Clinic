@@ -10,7 +10,7 @@ import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.MainActivity
-import uz.muhammadyusuf.kurbonov.myclinic.android.permission_screen.PermissionItem
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.PermissionItem
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
 
 class PermissionItemTests {
