@@ -67,7 +67,7 @@ class LoginTests {
             val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("demo@32desk.com", "demo123"))
             loginViewModel.authState.assertEmitted {
-                AuthState.AuthRequired == it
+                AuthState.AuthFailed == it
             }
             coVerify { provider.writePreference("token", "") }
         }
