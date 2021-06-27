@@ -58,7 +58,18 @@ class AppViewModel(
         }
     }
 
-    // TODO: create tests
+    fun saveStates() {
+        provider.writePreference("authState", authState.value)
+        provider.writePreference("customerState", customerState.value)
+        provider.writePreference("reportState", reportState.value)
+    }
+
+    fun restoreFromState() {
+        _authState.value = provider.readPreference("authState", AuthState.Default)
+        _customerState.value = provider.readPreference("customerState", CustomerState.Default)
+        _reportState.value = provider.readPreference("reportState", ReportState.Default)
+    }
+
     private fun logout() {
         provider.writePreference("token", "")
         repository.token = ""
