@@ -19,8 +19,9 @@ jobs:
           path: |
             ./gradle/wrapper
             ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}2
-          restore-keys: ${{ runner.os }}-gradle-1
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}3
+          restore-keys: ${{ runner.os }}-gradle-3
 
 
       - name: "Gradle wrapper install"
@@ -57,8 +58,9 @@ jobs:
           path: |
             ./gradle/wrapper
             ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}2
-          restore-keys: ${{ runner.os }}-gradle-
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}3
+          restore-keys: ${{ runner.os }}-gradle-3
 
       - name: "Gradle wrapper install"
         run: gradle wrapper
