@@ -16,13 +16,17 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.LoginScreen
@@ -32,9 +36,14 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissions
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
+import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
 
     companion object {
         @Suppress("SpellCheckingInspection")
@@ -171,19 +180,39 @@ class MainActivity : AppCompatActivity() {
 
         @ExperimentalPermissionsApi
         @Composable
-        fun MainActivityCompose(navController: NavHostController) {
+        fun MainActivityCompose(
+            navController: NavHostController,
+            appViewModel: AppViewModel
+        ) {
 
-            val permissionsGranted =
-                rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
-            CompositionLocalProvider(LocalNavigation provides navController) {
+            CompositionLocalProvider(
+                LocalNavigation provides navController,
+                AppViewModelProvider provides appViewModel
+            ) {
                 AppTheme {
                     NavHost(navController = navController, startDestination = "main") {
-                        composable("main") { MainScreen(permissionsGranted) }
+                        composable("main") {
+                            val permissionsGranted =
+                                rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
+
+                            MainScreen(permissionsGranted)
+                        }
                         composable("permissions") { PermissionScreen() }
+                        composable("login") { LoginScreen() }
+                    }
+                    val authState = AppViewModelProvider.current.authState.collectAsState()
+                    if (authState.value is AuthState.AuthRequired) {
+                        LaunchedEffect(key1 = "started") {
+                            navController.navigate("login")
+                        }
                     }
                 }
             }
         }
+    }
+
+    private val sharedPreferences by lazy {
+        getSharedPreferences("main.xml", 0)
     }
 
     private val overlayRequest =
@@ -200,6 +229,7 @@ class MainActivity : AppCompatActivity() {
         findViewById(R.id.tvMain)
     }
 
+    private lateinit var appViewModel: AppViewModel
     private lateinit var navController: NavHostController
 
     @ExperimentalPermissionsApi
@@ -207,7 +237,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             navController = rememberNavController()
-            MainActivityCompose(navController = navController)
+            appViewModel = AppViewModel(
+                lifecycleScope.coroutineContext,
+                this,
+                AppRepository(readPreference("token", ""))
+            )
+            MainActivityCompose(navController = navController, appViewModel)
         }
 //
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -236,6 +271,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mnLogout -> {
+                appViewModel.handle(Action.Logout)
             }
             R.id.mnSettings -> {
             }
@@ -265,6 +301,44 @@ class MainActivity : AppCompatActivity() {
         channel.enableVibration(true)
         NotificationManagerCompat.from(applicationContext)
             .createNotificationChannel(channel)
+    }
+
+    override fun onError(throwable: Throwable): Boolean {
+        FirebaseCrashlytics.getInstance().recordException(throwable)
+        return true
+    }
+
+    override fun writePreference(key: String, value: Any) {
+        sharedPreferences.edit().apply {
+            when (value) {
+                is String -> putString(key, value)
+                is Int -> putInt(key, value)
+                is Long -> putLong(key, value)
+                is Float -> putFloat(key, value)
+                is Boolean -> putBoolean(key, value)
+                else ->
+                    throw IllegalArgumentException(
+                        "Type of value ${value.javaClass.simpleName}" +
+                                " is not writable to SharedPrefs"
+                    )
+            }
+            apply()
+        }
+    }
+
+    override fun <T> readPreference(key: String, defaultValue: T?): T {
+        @Suppress("UNCHECKED_CAST")
+        return when (defaultValue) {
+            is String? -> sharedPreferences.getString(key, defaultValue)
+            is Int -> sharedPreferences.getInt(key, defaultValue)
+            is Boolean -> sharedPreferences.getBoolean(key, defaultValue)
+            is Float -> sharedPreferences.getFloat(key, defaultValue)
+            is Long -> sharedPreferences.getLong(key, defaultValue)
+            else -> throw IllegalArgumentException(
+                "Type of defaultValue " +
+                        " is not readable to SharedPrefs"
+            )
+        } as T
     }
 
 }
