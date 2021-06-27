@@ -54,9 +54,6 @@ jobs:
           distribution: 'adopt'
           java-version: 11
 
-      - name: "Gradle wrapper install"
-        run: gradle wrapper
-      - uses: gradle/wrapper-validation-action@v1
 
       - name: Cache gradle deps cache
         uses: actions/cache@v1
@@ -71,6 +68,10 @@ jobs:
           path: ./gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
+
+      - name: "Gradle wrapper install"
+        run: gradle wrapper
+      - uses: gradle/wrapper-validation-action@v1
 
       - name: Decode google-services.json
         env:
