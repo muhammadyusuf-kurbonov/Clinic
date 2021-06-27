@@ -31,6 +31,7 @@ class AppViewModel(
                 Dispatchers.Default +
                 handler
 
+
     @Suppress("PropertyName")
     internal val _authState = MutableStateFlow<AuthState>(AuthState.Default)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
@@ -123,14 +124,14 @@ class AppViewModel(
 
     private fun login(username: String, password: String) = launch {
         try {
-            if (username.isEmpty()) {
-                _authState.value = AuthState.FieldRequired("username")
+
+            val emailValid = username.isNotEmpty() && username.matches(Regex("^(((?! ).)+)@(.+)$"))
+            val passwordValid = password.isNotEmpty()
+            if (!(emailValid && passwordValid)) {
+                _authState.value = AuthState.ValidationFailed
                 return@launch
             }
-            if (password.isEmpty()) {
-                _authState.value = AuthState.FieldRequired("password")
-                return@launch
-            }
+            _authState.value = AuthState.Authenticating
             val token: AuthToken = repository.authenticate(
                 username,
                 password
@@ -139,7 +140,7 @@ class AppViewModel(
             _authState.value = AuthState.AuthSuccess
         } catch (e: AuthRequestException) {
             provider.writePreference("token", "")
-            _authState.value = AuthState.AuthRequired
+            _authState.value = AuthState.AuthFailed
         } catch (e: NotConnectedException) {
             _authState.value = AuthState.ConnectionFailed
         }

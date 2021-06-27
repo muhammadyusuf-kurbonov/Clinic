@@ -138,7 +138,31 @@ class LoginTests {
             val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("", "demo"))
             loginViewModel.authState.assertEmitted {
-                it is AuthState.FieldRequired && it.fieldName == "username"
+                it == AuthState.ValidationFailed
+            }
+        }
+
+    }
+
+    @Test
+    fun `login - invalid username`() {
+        val repository = mockk<AppRepository> {
+            coEvery {
+                authenticate(
+                    "demo123",
+                    "demo"
+                )
+            } throws APIException(400, "field required")
+        }
+
+        val provider = mockk<SystemFunctionsProvider> {
+        }
+
+        runBlocking {
+            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            loginViewModel.handle(Action.Login("demo123", "demo"))
+            loginViewModel.authState.assertEmitted {
+                it == AuthState.ValidationFailed
             }
         }
 
@@ -162,7 +186,7 @@ class LoginTests {
             val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("demo@32desk.com", ""))
             loginViewModel.authState.assertEmitted {
-                it is AuthState.FieldRequired && it.fieldName == "password"
+                it == AuthState.ValidationFailed
             }
         }
 
