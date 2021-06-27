@@ -21,7 +21,7 @@ import kotlin.test.assertFailsWith
 class LoginTests {
     @Test
     fun `login - success`() {
-        val repository = mockk<AppRepository> {
+        val repository = mockk<AppRepository>(relaxed = true) {
             coEvery {
                 authenticate(
                     "demo@32desk.com",
