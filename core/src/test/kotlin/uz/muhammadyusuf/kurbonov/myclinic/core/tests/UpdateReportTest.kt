@@ -7,13 +7,10 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 import uz.muhammadyusuf.kurbonov.myclinic.network.NotConnectedException
-import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationId
-import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationStatus
-import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationType
 
 @RunWith(JUnit4::class)
 class UpdateReportTest {
@@ -21,21 +18,12 @@ class UpdateReportTest {
     fun `update report - success`() {
         val repository = mockk<AppRepository> {
             coEvery {
-                sendCommunicationInfo(
-                    any(),
-                    any(),
-                    any(),
-                    any()
-                )
-            } returns CommunicationId("test")
-
-            coEvery {
                 updateCommunicationNote(any(), any())
             } just Runs
 
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -48,13 +36,6 @@ class UpdateReportTest {
             }
 
             coVerify {
-                repository.sendCommunicationInfo(
-                    "123456789",
-                    CommunicationStatus.ACCEPTED,
-                    10,
-                    CommunicationType.INCOMING
-                )
-
                 repository.updateCommunicationNote("test", "test")
             }
         }
@@ -64,21 +45,12 @@ class UpdateReportTest {
     fun `update report - connection error`() {
         val repository = mockk<AppRepository> {
             coEvery {
-                sendCommunicationInfo(
-                    any(),
-                    any(),
-                    any(),
-                    any()
-                )
-            } returns CommunicationId("test")
-
-            coEvery {
                 updateCommunicationNote(any(), any())
             } throws NotConnectedException()
 
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -90,13 +62,6 @@ class UpdateReportTest {
                 it is ReportState.ConnectionFailed
             }
             coVerify {
-                repository.sendCommunicationInfo(
-                    "123456789",
-                    CommunicationStatus.ACCEPTED,
-                    10,
-                    CommunicationType.INCOMING
-                )
-
                 repository.updateCommunicationNote("test", "test")
             }
         }

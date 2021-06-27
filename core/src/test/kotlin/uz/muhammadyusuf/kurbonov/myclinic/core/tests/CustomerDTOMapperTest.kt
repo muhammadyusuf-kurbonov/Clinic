@@ -10,7 +10,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
@@ -28,7 +28,7 @@ class CustomerDTOMapperTest {
         } returns dummy
 
 
-        val provider = mockk<SystemFunctionProvider>()
+        val provider = mockk<SystemFunctionsProvider>()
 
         assertFailsWith<IllegalArgumentException> {
             runBlocking {
@@ -52,7 +52,7 @@ class CustomerDTOMapperTest {
         } returns dummy
 
 
-        val provider = mockk<SystemFunctionProvider>()
+        val provider = mockk<SystemFunctionsProvider>()
 
         assertFailsWith<IllegalArgumentException> {
             runBlocking {
@@ -78,7 +78,7 @@ class CustomerDTOMapperTest {
         } returns dummy
 
 
-        val provider = mockk<SystemFunctionProvider>()
+        val provider = mockk<SystemFunctionsProvider>()
 
         runBlocking {
             val appViewModel = AppViewModel(this.coroutineContext, provider, repository)

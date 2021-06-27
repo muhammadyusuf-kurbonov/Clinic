@@ -16,7 +16,7 @@ import kotlin.coroutines.CoroutineContext
 
 class AppViewModel(
     parentCoroutineContext: CoroutineContext,
-    private val provider: SystemFunctionProvider,
+    private val provider: SystemFunctionsProvider,
     private val repository: AppRepository
 ) : CoroutineScope {
 

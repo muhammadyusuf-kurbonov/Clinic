@@ -8,7 +8,7 @@ import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.core.CallDirection
-import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
@@ -47,7 +47,7 @@ class ReportSendTest {
         }
 
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -82,7 +82,7 @@ class ReportSendTest {
             } returns CommunicationId("test")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -109,7 +109,7 @@ class ReportSendTest {
             } returns CommunicationId("test")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -136,7 +136,7 @@ class ReportSendTest {
             } throws NotConnectedException()
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -163,7 +163,7 @@ class ReportSendTest {
             } throws AuthRequestException()
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
 
@@ -196,7 +196,7 @@ class ReportSendTest {
             } throws APIException(400, "test")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         assertFailsWith<APIException> {
@@ -226,7 +226,7 @@ class ReportSendTest {
             } returns CommunicationId("test")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -269,7 +269,7 @@ class ReportSendTest {
             null, null
         )
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {

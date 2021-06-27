@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIException
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
@@ -30,7 +30,7 @@ class LoginTests {
             } returns AuthToken("dummy")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
             coEvery {
                 writePreference(any(), any())
             } just Runs
@@ -57,7 +57,7 @@ class LoginTests {
             } throws AuthRequestException()
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
             coEvery {
                 writePreference(any(), any())
             } just Runs
@@ -85,7 +85,7 @@ class LoginTests {
 
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -108,7 +108,7 @@ class LoginTests {
             } throws APIException(400, "field required")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         assertFailsWith<APIException> {
@@ -131,7 +131,7 @@ class LoginTests {
             } throws APIException(400, "field required")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -155,7 +155,7 @@ class LoginTests {
             } throws APIException(400, "field required")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
