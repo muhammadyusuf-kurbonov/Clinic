@@ -20,6 +20,19 @@ class AppViewModel(
     private val repository: AppRepository
 ) : CoroutineScope {
 
+    companion object {
+        internal val instances = mutableListOf<AppViewModel>()
+        fun pushAction(action: Action) {
+            if (instances.isEmpty())
+                throw IllegalStateException("No instances are initialized yet")
+            println(instances)
+            instances.forEach {
+                it.handle(action)
+                println("$it is handling $action")
+            }
+        }
+    }
+
     private val handler = CoroutineExceptionHandler { coroutineContext, throwable ->
         if (!provider.onError(throwable))
             coroutineContext.cancel()
@@ -43,6 +56,17 @@ class AppViewModel(
     private val _reportState = MutableStateFlow<ReportState>(ReportState.Default)
     val reportState: StateFlow<ReportState> = _reportState.asStateFlow()
 
+
+    init {
+        instances.add(this)
+        coroutineContext.job.invokeOnCompletion {
+            instances.remove(this)
+        }
+    }
+
+    protected fun finalize() {
+        instances.remove(this)
+    }
 
     fun handle(action: Action) {
         when (action) {
