@@ -16,7 +16,7 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 @Suppress("MemberVisibilityCanBePrivate")
-internal class AppRepositoryImpl(val token: String, baseUrl: String) : AppRepository {
+internal class AppRepositoryImpl(override var token: String, baseUrl: String) : AppRepository {
 
     private val service by lazy {
         Retrofit.Builder()

@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIException
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
@@ -21,7 +21,7 @@ import kotlin.test.assertFailsWith
 class LoginTests {
     @Test
     fun `login - success`() {
-        val repository = mockk<AppRepository> {
+        val repository = mockk<AppRepository>(relaxed = true) {
             coEvery {
                 authenticate(
                     "demo@32desk.com",
@@ -30,7 +30,7 @@ class LoginTests {
             } returns AuthToken("dummy")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
             coEvery {
                 writePreference(any(), any())
             } just Runs
@@ -57,7 +57,7 @@ class LoginTests {
             } throws AuthRequestException()
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
             coEvery {
                 writePreference(any(), any())
             } just Runs
@@ -67,7 +67,7 @@ class LoginTests {
             val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("demo@32desk.com", "demo123"))
             loginViewModel.authState.assertEmitted {
-                AuthState.AuthRequired == it
+                AuthState.AuthFailed == it
             }
             coVerify { provider.writePreference("token", "") }
         }
@@ -85,7 +85,7 @@ class LoginTests {
 
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -108,7 +108,7 @@ class LoginTests {
             } throws APIException(400, "field required")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         assertFailsWith<APIException> {
@@ -131,14 +131,38 @@ class LoginTests {
             } throws APIException(400, "field required")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
             val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("", "demo"))
             loginViewModel.authState.assertEmitted {
-                it is AuthState.FieldRequired && it.fieldName == "username"
+                it == AuthState.ValidationFailed
+            }
+        }
+
+    }
+
+    @Test
+    fun `login - invalid username`() {
+        val repository = mockk<AppRepository> {
+            coEvery {
+                authenticate(
+                    "demo123",
+                    "demo"
+                )
+            } throws APIException(400, "field required")
+        }
+
+        val provider = mockk<SystemFunctionsProvider> {
+        }
+
+        runBlocking {
+            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            loginViewModel.handle(Action.Login("demo123", "demo"))
+            loginViewModel.authState.assertEmitted {
+                it == AuthState.ValidationFailed
             }
         }
 
@@ -155,14 +179,14 @@ class LoginTests {
             } throws APIException(400, "field required")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
             val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("demo@32desk.com", ""))
             loginViewModel.authState.assertEmitted {
-                it is AuthState.FieldRequired && it.fieldName == "password"
+                it == AuthState.ValidationFailed
             }
         }
 

@@ -7,6 +7,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationType
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 
 interface AppRepository {
+    var token: String
     /**
      * This method is for searching customer by phone-number
      *

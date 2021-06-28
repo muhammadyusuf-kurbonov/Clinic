@@ -10,7 +10,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
 import uz.muhammadyusuf.kurbonov.myclinic.network.*
@@ -31,7 +31,7 @@ class SearchTests {
             } returns dummy
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -52,7 +52,7 @@ class SearchTests {
             } throws CustomerNotFoundException()
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -73,7 +73,7 @@ class SearchTests {
             } throws AuthRequestException()
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
@@ -97,7 +97,7 @@ class SearchTests {
             } throws APIException(400, "Bad request")
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         assertFailsWith<APIException> {
@@ -120,7 +120,7 @@ class SearchTests {
             } throws NotConnectedException()
         }
 
-        val provider = mockk<SystemFunctionProvider> {
+        val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
