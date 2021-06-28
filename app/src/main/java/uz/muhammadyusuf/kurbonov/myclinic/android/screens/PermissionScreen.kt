@@ -1,5 +1,10 @@
 package uz.muhammadyusuf.kurbonov.myclinic.android.screens
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,7 +17,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -40,6 +45,7 @@ fun PermissionScreen() = Column(modifier = Modifier.padding(8.dp)) {
             append(stringResource(R.string.permissions_title))
         }
     })
+    val context = LocalContext.current
     Spacer(modifier = Modifier.height(8.dp))
     val permissionsWithDescriptions = allAppPermissions zip
             allAppPermissionsDescriptions(LocalContext.current)
@@ -53,6 +59,38 @@ fun PermissionScreen() = Column(modifier = Modifier.padding(8.dp)) {
                 hasPermission = permissionState.hasPermission,
                 shouldShowRationale = permissionState.shouldShowRationale
             )
+        }
+        item {
+            var update by remember {
+                mutableStateOf(0)
+            }
+            val overlayActivityResult =
+                rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.StartActivityForResult()
+                ) {
+                    update++
+                }
+
+            val grantedState by produceState(
+                initialValue = false,
+                update
+            ) {
+                value = Settings.canDrawOverlays(context)
+            }
+            PermissionItem(
+                description = "Overlay drawing",
+                onRowClick = {
+                    overlayActivityResult.launch(
+                        Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:${context.packageName}")
+                        )
+                    )
+                },
+                hasPermission = grantedState,
+                shouldShowRationale = !grantedState
+            )
+
         }
     }
 }

@@ -192,7 +192,9 @@ class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
                 NavHost(navController = navController, startDestination = "main") {
                     composable("main") {
                         val permissionsGranted =
-                            rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
+                            rememberMultiplePermissionsState(allAppPermissions.toList())
+                                .allPermissionsGranted and
+                                    Settings.canDrawOverlays(LocalContext.current)
 
                         MainScreen(permissionsGranted)
                     }
