@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.insets.imePadding
 import kotlinx.coroutines.delay
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
@@ -47,7 +48,11 @@ fun LoginForm(
         mutableStateOf("")
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+    ) {
         Column(
             modifier = Modifier.align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -74,7 +79,8 @@ fun LoginForm(
                 loginState
             )
 
-            PasswordField(state = password,
+            PasswordField(
+                state = password,
                 onValueChange = {
                     password = it
                 }, loginState
