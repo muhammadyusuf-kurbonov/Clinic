@@ -15,12 +15,12 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import javax.net.SocketFactory
 
+@ExperimentalCoroutinesApi
 class NetworkTracker(context: Context) {
     private val manager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
     private val validNetworks = mutableListOf<Network>()
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val connectedToInternet = callbackFlow {
 
         this.trySend(true).isSuccess

@@ -6,33 +6,42 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.TextView
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import io.paperdb.Paper
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.android.main.MainScreen
-import uz.muhammadyusuf.kurbonov.myclinic.android.permission_screen.PermissionScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.LoginScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.MainScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.PermissionScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissions
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
+import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
 
     companion object {
         @Suppress("SpellCheckingInspection")
@@ -166,38 +175,43 @@ class MainActivity : AppCompatActivity() {
             //endregion
 
         )
+    }
 
-        @ExperimentalPermissionsApi
-        @Composable
-        fun MainActivityCompose(navController: NavHostController) {
+    @ExperimentalPermissionsApi
+    @Composable
+    fun MainActivityCompose(
+        navController: NavHostController,
+        appViewModel: AppViewModel
+    ) {
 
-            val permissionsGranted =
-                rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
-            CompositionLocalProvider(LocalNavigation provides navController) {
-                AppTheme {
-                    NavHost(navController = navController, startDestination = "main") {
-                        composable("main") { MainScreen(permissionsGranted) }
-                        composable("permissions") { PermissionScreen() }
+        CompositionLocalProvider(
+            LocalNavigation provides navController,
+            AppViewModelProvider provides appViewModel
+        ) {
+            AppTheme {
+                NavHost(navController = navController, startDestination = "main") {
+                    composable("main") {
+                        val permissionsGranted =
+                            rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
+
+                        MainScreen(permissionsGranted)
+                    }
+                    composable("permissions") { PermissionScreen() }
+                    composable("login") { LoginScreen() }
+                }
+                val authState = AppViewModelProvider.current.authState.collectAsState()
+                val tokenIsEmpty = readPreference("token", "").isEmpty()
+
+                if ((authState.value is AuthState.AuthRequired) or tokenIsEmpty) {
+                    LaunchedEffect(key1 = "started") {
+                        navController.navigate("login")
                     }
                 }
             }
         }
     }
 
-    private val overlayRequest =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!Settings.canDrawOverlays(this)) {
-                    mainTextView.setText(R.string.main_label_ask_permission)
-                }
-            }
-        }
-
-
-    private val mainTextView: TextView by lazy {
-        findViewById(R.id.tvMain)
-    }
-
+    private lateinit var appViewModel: AppViewModel
     private lateinit var navController: NavHostController
 
     @ExperimentalPermissionsApi
@@ -205,7 +219,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             navController = rememberNavController()
-            MainActivityCompose(navController = navController)
+            appViewModel = AppViewModel(
+                lifecycleScope.coroutineContext,
+                this,
+                AppRepository(readPreference("token", ""))
+            )
+            MainActivityCompose(navController = navController, appViewModel)
         }
 //
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -234,6 +253,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mnLogout -> {
+                appViewModel.handle(Action.Logout)
             }
             R.id.mnSettings -> {
             }
@@ -264,5 +284,19 @@ class MainActivity : AppCompatActivity() {
         NotificationManagerCompat.from(applicationContext)
             .createNotificationChannel(channel)
     }
+
+    override fun onError(throwable: Throwable): Boolean {
+        FirebaseCrashlytics.getInstance().recordException(throwable)
+        return true
+    }
+
+    override fun writePreference(key: String, value: Any) {
+        Paper.book().write(key, value)
+    }
+
+    override fun <T> readPreference(key: String, defaultValue: T?): T =
+        Paper.book().read(key, defaultValue)
+            ?: throw IllegalArgumentException("Default value can\'t be null")
+
 
 }

@@ -16,7 +16,7 @@ import kotlin.coroutines.CoroutineContext
 
 class AppViewModel(
     parentCoroutineContext: CoroutineContext,
-    private val provider: SystemFunctionProvider,
+    private val provider: SystemFunctionsProvider,
     private val repository: AppRepository
 ) : CoroutineScope {
 
@@ -31,22 +31,23 @@ class AppViewModel(
                 Dispatchers.Default +
                 handler
 
+
     @Suppress("PropertyName")
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Default)
+    internal val _authState = MutableStateFlow<AuthState>(AuthState.Default)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
     @Suppress("PropertyName")
-    private val _customerState = MutableStateFlow<CustomerState>(CustomerState.Default)
+    internal val _customerState = MutableStateFlow<CustomerState>(CustomerState.Default)
     val customerState: StateFlow<CustomerState> = _customerState.asStateFlow()
 
     @Suppress("PropertyName")
-    private val _reportState = MutableStateFlow<ReportState>(ReportState.Default)
+    internal val _reportState = MutableStateFlow<ReportState>(ReportState.Default)
     val reportState: StateFlow<ReportState> = _reportState.asStateFlow()
-
 
     fun handle(action: Action) {
         when (action) {
             is Action.Login -> login(action.username, action.password)
+            Action.Logout -> logout()
             is Action.Search -> startSearch(action.phone)
             is Action.Report -> sendReport(
                 action.isMissed,
@@ -55,6 +56,24 @@ class AppViewModel(
             )
             is Action.SetPurpose -> updateReport(action.purpose)
         }
+    }
+
+    fun saveStates() {
+        provider.writePreference("authState", authState.value)
+        provider.writePreference("customerState", customerState.value)
+        provider.writePreference("reportState", reportState.value)
+    }
+
+    fun restoreFromState() {
+        _authState.value = provider.readPreference("authState", AuthState.Default)
+        _customerState.value = provider.readPreference("customerState", CustomerState.Default)
+        _reportState.value = provider.readPreference("reportState", ReportState.Default)
+    }
+
+    private fun logout() {
+        provider.writePreference("token", "")
+        repository.token = ""
+        _authState.value = AuthState.AuthRequired
     }
 
     private fun updateReport(purpose: String) = launch {
@@ -116,23 +135,24 @@ class AppViewModel(
 
     private fun login(username: String, password: String) = launch {
         try {
-            if (username.isEmpty()) {
-                _authState.value = AuthState.FieldRequired("username")
+
+            val emailValid = username.isNotEmpty() && username.matches(Regex("^(((?! ).)+)@(.+)$"))
+            val passwordValid = password.isNotEmpty()
+            if (!(emailValid && passwordValid)) {
+                _authState.value = AuthState.ValidationFailed
                 return@launch
             }
-            if (password.isEmpty()) {
-                _authState.value = AuthState.FieldRequired("password")
-                return@launch
-            }
+            _authState.value = AuthState.Authenticating
             val token: AuthToken = repository.authenticate(
                 username,
                 password
             )
             provider.writePreference("token", token.token)
+            repository.token = token.token
             _authState.value = AuthState.AuthSuccess
         } catch (e: AuthRequestException) {
             provider.writePreference("token", "")
-            _authState.value = AuthState.AuthRequired
+            _authState.value = AuthState.AuthFailed
         } catch (e: NotConnectedException) {
             _authState.value = AuthState.ConnectionFailed
         }

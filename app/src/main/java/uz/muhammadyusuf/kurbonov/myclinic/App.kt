@@ -1,7 +1,7 @@
 package uz.muhammadyusuf.kurbonov.myclinic
 
-import android.annotation.SuppressLint
 import android.app.Application
+import io.paperdb.Paper
 
 class App : Application() {
     companion object {
@@ -10,9 +10,8 @@ class App : Application() {
         const val HEADUP_NOTIFICATION_CHANNEL_ID = "32desk_notification_channel"
     }
 
-    @SuppressLint("UnsafeExperimentalUsageError")
     override fun onCreate() {
         super.onCreate()
-
+        Paper.init(this)
     }
 }

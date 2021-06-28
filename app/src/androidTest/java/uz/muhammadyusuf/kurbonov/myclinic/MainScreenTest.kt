@@ -10,7 +10,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.MainActivity
-import uz.muhammadyusuf.kurbonov.myclinic.android.main.MainScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.MainScreen
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
 
