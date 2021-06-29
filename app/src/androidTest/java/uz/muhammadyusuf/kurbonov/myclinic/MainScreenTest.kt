@@ -23,7 +23,10 @@ class MainScreenTest {
     fun testMainScreenAppName() {
         testRule.setContent {
             AppTheme {
-                MainScreen(permissionsGranted = true)
+                val navController = rememberNavController()
+                CompositionLocalProvider(LocalNavigation provides navController) {
+                    MainScreen(permissionsGranted = true)
+                }
             }
         }
 
