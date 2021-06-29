@@ -3,19 +3,23 @@ package uz.muhammadyusuf.kurbonov.myclinic.android.workers
 import android.content.Context
 import android.view.WindowManager
 import android.widget.FrameLayout
-import androidx.compose.foundation.Image
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Recomposer
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.compositionContext
 import androidx.lifecycle.*
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import io.github.hyuwah.draggableviewlib.OverlayDraggableListener
 import io.github.hyuwah.draggableviewlib.makeOverlayDraggable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import uz.muhammadyusuf.kurbonov.myclinic.R
+import kotlinx.coroutines.*
 import uz.muhammadyusuf.kurbonov.myclinic.android.SystemFunctionsProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.OverlayScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 
@@ -27,6 +31,7 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
     private lateinit var windowManager: WindowManager
     private lateinit var view: FrameLayout
 
+    @ExperimentalAnimationApi
     override suspend fun doWork(): Result = withContext(Dispatchers.Default) {
         val provider = SystemFunctionsProvider()
         val appViewModel = AppViewModel(
@@ -38,10 +43,11 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
         val overlayLayout = FrameLayout(applicationContext)
         overlayLayout.addView(ComposeView(applicationContext).apply {
             setContent {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = ""
-                )
+                CompositionLocalProvider(AppViewModelProvider provides appViewModel) {
+                    AppTheme {
+                        OverlayScreen()
+                    }
+                }
             }
         })
 
@@ -58,9 +64,21 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
             ViewTreeLifecycleOwner.set(view, lifecycleOwner)
             ViewTreeViewModelStoreOwner.set(view) { viewModelStore }
             ViewTreeSavedStateRegistryOwner.set(view, lifecycleOwner)
+            val coroutineContext = AndroidUiDispatcher.CurrentThread
+            val runRecomposeScope = CoroutineScope(coroutineContext)
+            val recomposer = Recomposer(coroutineContext)
+            view.compositionContext = recomposer
+            runRecomposeScope.launch {
+                recomposer.runRecomposeAndApplyChanges()
+            }
             windowManager.addView(view, params)
         }
-        Result.success()
+        try {
+            awaitCancellation()
+        } finally {
+            windowManager.removeView(view)
+            Result.success()
+        }
     }
 
     override fun onParamsChanged(updatedParams: WindowManager.LayoutParams) {
