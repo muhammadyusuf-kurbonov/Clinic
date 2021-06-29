@@ -7,15 +7,20 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -40,22 +45,26 @@ fun OverlayScreen() {
         mutableStateOf(true)
     }
     Row(verticalAlignment = Alignment.Bottom) {
-        IconButton(onClick = {
-            isExpanded = !isExpanded
-            println("expanded is $isExpanded")
-        }) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = stringResource(id = R.string.app_name),
-                modifier = Modifier
-                    .height(48.dp)
-                    .width(48.dp)
-                    .background(Color.White, shape = CircleShape)
-                    .border(1.dp, MaterialTheme.colors.primary, shape = CircleShape)
-                    .padding(8.dp)
-            )
 
-        }
+        Image(
+            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+            contentDescription = stringResource(id = R.string.app_name),
+            modifier = Modifier
+                .height(48.dp)
+                .width(48.dp)
+                .background(Color.White, shape = CircleShape)
+                .border(1.dp, MaterialTheme.colors.primary, shape = CircleShape)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            isExpanded = !isExpanded
+                        }
+                    )
+                }
+                .padding(8.dp)
+        )
+
+
         Spacer(modifier = Modifier.width(4.dp))
 
         AnimatedVisibility(
@@ -122,76 +131,35 @@ fun CustomerInfo(customer: Customer) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val nameAndPhone = buildAnnotatedString {
+            Column {
+                val nameAndPhone = buildAnnotatedString {
 
-                withStyle(MaterialTheme.typography.h6.toSpanStyle()) {
-                    append(customer.last_name + " " + customer.first_name + "\n")
-                }
+                    withStyle(MaterialTheme.typography.h6.toSpanStyle()) {
+                        append(customer.last_name + " " + customer.first_name + "\n")
+                    }
 
-                withStyle(
-                    SpanStyle(
-                        color = MaterialTheme.colors.onBackground
-                            .copy(alpha = ContentAlpha.disabled)
-                    )
-                ) {
-                    append(customer.phone)
+                    withStyle(
+                        SpanStyle(
+                            color = MaterialTheme.colors.onBackground
+                                .copy(alpha = ContentAlpha.disabled)
+                        )
+                    ) {
+                        append(customer.phone)
+                    }
                 }
-            }
-            Text(
-                modifier = Modifier
-                    .padding(4.dp),
-                text = nameAndPhone,
-                fontWeight = FontWeight.ExtraBold
-            )
-        }
-        Text(
-            text = stringResource(id = R.string.balance, customer.balance),
-            modifier = Modifier.padding(4.dp),
-            style = MaterialTheme.typography.subtitle1
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            val simpleDateFormat = SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault())
-            Column(modifier = Modifier.weight(4f)) {
                 Text(
-                    text = stringResource(id = R.string.next_appointment),
-                    fontWeight = FontWeight.Bold
+                    modifier = Modifier
+                        .padding(4.dp),
+                    text = nameAndPhone,
+                    fontWeight = FontWeight.ExtraBold
                 )
-                if (customer.nextAppointment != null) {
-                    val nextAppointment = customer.nextAppointment!!
-                    val lastAppointmentText =
-                        "${simpleDateFormat.format(nextAppointment.date)} \n" +
-                                "${nextAppointment.user}\n" +
-                                nextAppointment.diagnose
-                    Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
-                } else {
-                    Text(
-                        text = "There isn't coming appointment yet",
-                        modifier = Modifier.padding(4.dp),
-                        style = MaterialTheme.typography.body2
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
                 Text(
-                    text = stringResource(id = R.string.previous_appointment),
-                    fontWeight = FontWeight.Bold
+                    text = stringResource(id = R.string.balance, customer.balance),
+                    modifier = Modifier.padding(4.dp),
+                    style = MaterialTheme.typography.subtitle1
                 )
-                if (customer.lastAppointment != null) {
-                    val lastAppointment = customer.lastAppointment!!
-                    val lastAppointmentText =
-                        "${simpleDateFormat.format(lastAppointment.date)}\n" +
-                                "${lastAppointment.user}\n" +
-                                lastAppointment.diagnose
-                    Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
-                } else {
-                    Text(
-                        text = "No previous appointment yet", modifier = Modifier.padding(4.dp),
-                        style = MaterialTheme.typography.body2
-                    )
-                }
             }
+
             val painter = rememberCoilPainter(
                 request = customer.avatar_url,
                 fadeIn = true
@@ -211,6 +179,75 @@ fun CustomerInfo(customer: Customer) {
                     contentDescription = "",
                     colorFilter = ColorFilter.tint(MaterialTheme.colors.onSurface)
                 )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            val simpleDateFormat = SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault())
+            Column(modifier = Modifier.weight(4f)) {
+                Text(
+                    text = stringResource(id = R.string.next_appointment),
+                    style = MaterialTheme.typography.subtitle2,
+                    fontWeight = FontWeight.Bold
+                )
+                if (customer.nextAppointment != null) {
+                    val nextAppointment = customer.nextAppointment!!
+                    val lastAppointmentText =
+                        buildAnnotatedString {
+                            withStyle(
+                                MaterialTheme.typography.body1.toSpanStyle().copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            ) {
+                                append(nextAppointment.diagnose + "\n")
+                            }
+                            withStyle(MaterialTheme.typography.caption.toSpanStyle()) {
+                                append(simpleDateFormat.format(nextAppointment.date))
+                                append(" - ")
+                                append(nextAppointment.user)
+                            }
+                        }
+                    Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
+                } else {
+                    Text(
+                        text = "There isn't coming appointment yet",
+                        modifier = Modifier.padding(4.dp),
+                        style = MaterialTheme.typography.body2
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = stringResource(id = R.string.previous_appointment),
+                    style = MaterialTheme.typography.subtitle1,
+                    fontWeight = FontWeight.Bold
+                )
+                if (customer.lastAppointment != null) {
+                    val lastAppointment = customer.lastAppointment!!
+                    val lastAppointmentText =
+                        buildAnnotatedString {
+                            withStyle(
+                                MaterialTheme.typography.body1.toSpanStyle().copy(
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            ) {
+                                append(lastAppointment.diagnose + "\n")
+                            }
+                            withStyle(MaterialTheme.typography.caption.toSpanStyle()) {
+                                append(simpleDateFormat.format(lastAppointment.date))
+                                append(" - ")
+                                append(lastAppointment.user)
+                            }
+                        }
+                    Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
+                } else {
+                    Text(
+                        text = "No previous appointment yet", modifier = Modifier.padding(4.dp),
+                        style = MaterialTheme.typography.body2
+                    )
+                }
             }
         }
     }
