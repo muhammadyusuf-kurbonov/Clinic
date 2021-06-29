@@ -8,11 +8,13 @@ data class Customer(
     val last_name: String,
     val avatar_url: String?,
     val phone: String,
+    val balance: Long,
     val lastAppointment: Appointment?,
     val nextAppointment: Appointment?,
 ) {
     data class Appointment(
         val date: Date,
         val user: String, // doctor
+        val diagnose: String
     )
 }

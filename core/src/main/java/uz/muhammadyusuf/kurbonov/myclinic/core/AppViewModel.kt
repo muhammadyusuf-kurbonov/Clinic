@@ -11,7 +11,10 @@ import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import uz.muhammadyusuf.kurbonov.myclinic.network.*
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationStatus
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.AppointmentItem
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 class AppViewModel(
@@ -199,6 +202,17 @@ class AppViewModel(
 
     // Mapper method
     private fun CustomerDTO.toCustomer(): Customer {
+
+        fun AppointmentItem.toAppointment(): Customer.Appointment {
+            @Suppress("SpellCheckingInspection")
+            return Customer.Appointment(
+                SimpleDateFormat(
+                    "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()
+                ).parse(this.startAt),
+                "${this.services[0].user?.lastName} ${this.services[0].user?.firstName}",
+                services[0].treatment?.label ?: "No info"
+            )
+        }
         if (data.isEmpty())
             throw IllegalArgumentException("Empty data leaked")
         val data = data[0]
@@ -206,13 +220,17 @@ class AppViewModel(
         if (appointments.isEmpty())
             throw IllegalArgumentException("No appointments yet?")
 
+        val lastAndNexAppointment = appointments[0]
+
         return Customer(
             data._id,
             data.first_name,
             data.last_name,
             data.avatar.url,
             data.phone,
-            null, null
+            data.balance,
+            lastAndNexAppointment.prev?.toAppointment(),
+            lastAndNexAppointment.next?.toAppointment()
         )
     }
 }
