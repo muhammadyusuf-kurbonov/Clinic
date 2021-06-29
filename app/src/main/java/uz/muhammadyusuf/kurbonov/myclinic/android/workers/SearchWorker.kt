@@ -1,6 +1,8 @@
 package uz.muhammadyusuf.kurbonov.myclinic.android.workers
 
 import android.content.Context
+import android.graphics.PixelFormat
+import android.os.Build
 import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -41,7 +43,8 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
         )
 
         val overlayLayout = FrameLayout(applicationContext)
-        overlayLayout.addView(ComposeView(applicationContext).apply {
+        val composeView = ComposeView(applicationContext)
+        overlayLayout.addView(composeView.apply {
             setContent {
                 CompositionLocalProvider(AppViewModelProvider provides appViewModel) {
                     AppTheme {
@@ -52,7 +55,23 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
         })
 
         view = overlayLayout
-        val params = overlayLayout.makeOverlayDraggable(listener = this@SearchWorker)
+        @Suppress("DEPRECATION")
+        val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        } else {
+            WindowManager.LayoutParams.TYPE_PHONE
+        }
+        val positionParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            provider.readPreference("OVERLAY_X_POS", 0),
+            provider.readPreference("OVERLAY_Y_POS", 0),
+            layoutFlag,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+        )
+
+        val params = composeView.makeOverlayDraggable(listener = this@SearchWorker, positionParams)
         windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE)
                 as WindowManager
 
@@ -77,6 +96,14 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
             awaitCancellation()
         } finally {
             windowManager.removeView(view)
+            provider.writePreference(
+                "OVERLAY_X_POS",
+                (view.layoutParams as WindowManager.LayoutParams).x
+            )
+            provider.writePreference(
+                "OVERLAY_Y_POS",
+                (view.layoutParams as WindowManager.LayoutParams).y
+            )
             Result.success()
         }
     }
