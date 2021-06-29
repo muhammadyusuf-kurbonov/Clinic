@@ -16,6 +16,8 @@ import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.treatment.TreatmentDTO
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.users.UserDTO
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -34,6 +36,15 @@ class GlobalInstanceTest {
                 coEvery {
                     authenticate(any(), any())
                 } returns AuthToken("test-token")
+                coEvery {
+                    getUser(any())
+                } returns GsonBuilder().create()
+                    .fromJson(getJSON("user-get-found.json"), UserDTO::class.java).data[0]
+
+                coEvery {
+                    getTreatment(any())
+                } returns GsonBuilder().create()
+                    .fromJson(getJSON("treatment-get-found.json"), TreatmentDTO::class.java).data[0]
             }
 
             val provider = mockk<SystemFunctionsProvider>(relaxed = true) {
@@ -69,7 +80,7 @@ class GlobalInstanceTest {
             val dummy = GsonBuilder().create()
                 .fromJson(getJSON("customer.json"), CustomerDTO::class.java)
 
-            val repository = mockk<AppRepository> {
+            val repository = mockk<AppRepository>(relaxed = true) {
                 coEvery {
                     authenticate(any(), any())
                 } returns AuthToken("test-token")
