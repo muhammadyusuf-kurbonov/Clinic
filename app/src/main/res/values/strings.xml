@@ -50,4 +50,5 @@
     <string name="read_call_log_desc">Access to call log</string>
     <string name="huawei_use_component_desc">Access special HUAWEI settings page</string>
     <string name="foreground_permission_desc">Permission to work on background</string>
+    <string name="retry">Retry</string>
 </resources>

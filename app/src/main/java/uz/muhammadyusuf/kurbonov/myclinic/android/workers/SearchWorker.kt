@@ -20,9 +20,11 @@ import io.github.hyuwah.draggableviewlib.makeOverlayDraggable
 import kotlinx.coroutines.*
 import uz.muhammadyusuf.kurbonov.myclinic.android.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.OverlayScreen
-import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalPhoneNumberProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 
 class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
@@ -35,18 +37,26 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
 
     @ExperimentalAnimationApi
     override suspend fun doWork(): Result = withContext(Dispatchers.Default) {
+
+        val phone = inputData.getString("phone") ?: throw IllegalStateException("No phone sent")
+
         val provider = SystemFunctionsProvider()
-        val appViewModel = AppViewModel(
+        val appViewModel = AppStatesController(
             coroutineContext,
             provider,
             AppRepository(provider.readPreference("token", ""))
         )
 
+        appViewModel.handle(Action.Search(phone))
+
         val overlayLayout = FrameLayout(applicationContext)
         val composeView = ComposeView(applicationContext)
         overlayLayout.addView(composeView.apply {
             setContent {
-                CompositionLocalProvider(AppViewModelProvider provides appViewModel) {
+                CompositionLocalProvider(
+                    LocalAppControllerProvider provides appViewModel,
+                    LocalPhoneNumberProvider provides phone
+                ) {
                     AppTheme {
                         OverlayScreen()
                     }

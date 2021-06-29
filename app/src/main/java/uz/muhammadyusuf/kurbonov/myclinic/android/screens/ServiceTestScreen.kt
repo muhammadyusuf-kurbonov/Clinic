@@ -13,9 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import uz.muhammadyusuf.kurbonov.myclinic.android.workers.SearchWorker
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
 
 @Composable
 fun ServiceTestScreen() {
@@ -28,16 +29,22 @@ fun ServiceTestScreen() {
                         .enqueueUniqueWork(
                             "main",
                             ExistingWorkPolicy.REPLACE,
-                            OneTimeWorkRequestBuilder<SearchWorker>().build()
+                            OneTimeWorkRequestBuilder<SearchWorker>()
+                                .setInputData(
+                                    workDataOf(
+                                        "phone" to "+998913975538"
+                                    )
+                                )
+                                .build()
                         )
                 }, text = "Start service")
 
                 ServiceControlButton(onClick = {
-                    AppViewModel.pushAction(Action.Search("+998913975539"))
+                    AppStatesController.pushAction(Action.Search("+998913975539"))
                 }, text = "Search - not found")
 
                 ServiceControlButton(onClick = {
-                    AppViewModel.pushAction(Action.Search("+998903500490"))
+                    AppStatesController.pushAction(Action.Search("+998903500490"))
                 }, text = "Search - found")
 
                 ServiceControlButton(onClick = {

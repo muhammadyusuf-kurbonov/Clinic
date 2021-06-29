@@ -32,12 +32,13 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.screens.LoginScreen
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.MainScreen
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.PermissionScreen
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.ServiceTestScreen
-import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissions
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
@@ -183,12 +184,12 @@ class MainActivity : AppCompatActivity() {
     @Composable
     fun MainActivityCompose(
         navController: NavHostController,
-        appViewModel: AppViewModel
+        appStatesController: AppStatesController
     ) {
 
         CompositionLocalProvider(
             LocalNavigation provides navController,
-            AppViewModelProvider provides appViewModel
+            LocalAppControllerProvider provides appStatesController
         ) {
             AppTheme {
                 NavHost(navController = navController, startDestination = "main") {
@@ -206,8 +207,14 @@ class MainActivity : AppCompatActivity() {
                     // TODO: Remove, it's for test
                     composable("service_test") { ServiceTestScreen() }
                 }
-                val authState = AppViewModelProvider.current.authState.collectAsState()
+                val authState = AppStateStore.authState.collectAsState()
                 val tokenIsEmpty = provider.readPreference("token", "").isEmpty()
+
+                LaunchedEffect(key1 = Unit) {
+                    val route = intent.extras?.getString("route", null)
+                    if (route != null)
+                        navController.navigate(route)
+                }
 
                 if ((authState.value is AuthState.AuthRequired) or tokenIsEmpty) {
                     LaunchedEffect(key1 = "started") {
@@ -218,7 +225,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var appViewModel: AppViewModel
+    private lateinit var appStatesController: AppStatesController
     private lateinit var provider: SystemFunctionsProvider
     private lateinit var navController: NavHostController
 
@@ -228,12 +235,12 @@ class MainActivity : AppCompatActivity() {
         setContent {
             navController = rememberNavController()
             provider = SystemFunctionsProvider()
-            appViewModel = AppViewModel(
+            appStatesController = AppStatesController(
                 lifecycleScope.coroutineContext,
                 provider,
                 AppRepository(provider.readPreference("token", ""))
             )
-            MainActivityCompose(navController = navController, appViewModel)
+            MainActivityCompose(navController = navController, appStatesController)
         }
     }
 
@@ -245,7 +252,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mnLogout -> {
-                appViewModel.handle(Action.Logout)
+                appStatesController.handle(Action.Logout)
             }
             R.id.mnSettings -> {
             }

@@ -21,15 +21,16 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.imePadding
 import kotlinx.coroutines.delay
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 
 @Composable
 fun LoginScreen() {
-    val appViewModel = AppViewModelProvider.current
-    val state = appViewModel.authState.collectAsState()
+    val appViewModel = LocalAppControllerProvider.current
+    val state = AppStateStore.authState.collectAsState()
 
     LoginForm(state) { email, password ->
         appViewModel.handle(Action.Login(email, password))
@@ -112,6 +113,9 @@ fun LoginForm(
                 }
                 is AuthState.Authenticating -> {
                     Text(text = stringResource(id = R.string.logging_in_caption))
+                }
+                AuthState.ConnectionFailed -> {
+                    Text(text = stringResource(id = R.string.no_connection))
                 }
                 else -> {
                 }
