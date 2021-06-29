@@ -14,7 +14,7 @@ data class Customer(
 ) {
     data class Appointment(
         val date: Date,
-        val user: String, // doctor
+        val user: String, // doctor name and surname
         val diagnose: String
     )
 }

@@ -12,7 +12,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
@@ -36,7 +36,7 @@ class GlobalInstanceTest {
                 } returns AuthToken("test-token")
             }
 
-            val provider = mockk<SystemFunctionProvider>(relaxed = true) {
+            val provider = mockk<SystemFunctionsProvider>(relaxed = true) {
             }
 
             launch {
@@ -75,7 +75,7 @@ class GlobalInstanceTest {
                 } returns AuthToken("test-token")
             }
 
-            val provider = mockk<SystemFunctionProvider>(relaxed = true) {
+            val provider = mockk<SystemFunctionsProvider>(relaxed = true) {
             }
 
             val appViewModel1 = AppViewModel(

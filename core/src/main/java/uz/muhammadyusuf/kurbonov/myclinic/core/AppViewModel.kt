@@ -189,7 +189,20 @@ class AppViewModel(
     private fun startSearch(phone: String) = launch {
         try {
             val customerDto = repository.search(phone)
-            _customerState.value = CustomerState.Found(customerDto.toCustomer())
+            val customer = customerDto.toCustomer()
+            _customerState.value = CustomerState.Found(customer)
+
+            val lastAndNextAppointment = customerDto.appointments[0]
+            val lastAppointment = lastAndNextAppointment.prev?.let { getAppointment(it) }
+            val nextAppointment = lastAndNextAppointment.next?.let { getAppointment(it) }
+
+            _customerState.value = CustomerState.Found(
+                customer.copy(
+                    lastAppointment = lastAppointment,
+                    nextAppointment = nextAppointment
+                )
+            )
+
         } catch (e: CustomerNotFoundException) {
             _customerState.value = CustomerState.NotFound
         } catch (e: AuthRequestException) {
@@ -200,27 +213,36 @@ class AppViewModel(
         }
     }
 
+    private suspend fun getAppointment(appointmentItem: AppointmentItem): Customer.Appointment? =
+        withContext(Dispatchers.IO) {
+            return@withContext try {
+                val userLoader = async { repository.getUser(appointmentItem.userId) }
+                val treatmentLoader =
+                    async { repository.getTreatment(appointmentItem.services[0].treatmentId) }
+
+                val user = userLoader.await()
+                val treatment = treatmentLoader.await()
+
+                Customer.Appointment(
+                    SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()
+                    ).parse(appointmentItem.startAt),
+                    "${user.lastName} ${user.firstName}",
+                    treatment.label
+                )
+            } catch (e: Exception) {
+                null
+            }
+        }
+
     // Mapper method
     private fun CustomerDTO.toCustomer(): Customer {
-
-        fun AppointmentItem.toAppointment(): Customer.Appointment {
-            @Suppress("SpellCheckingInspection")
-            return Customer.Appointment(
-                SimpleDateFormat(
-                    "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()
-                ).parse(this.startAt),
-                "${this.services[0].user?.lastName} ${this.services[0].user?.firstName}",
-                services[0].treatment?.label ?: "No info"
-            )
-        }
         if (data.isEmpty())
             throw IllegalArgumentException("Empty data leaked")
         val data = data[0]
 
         if (appointments.isEmpty())
             throw IllegalArgumentException("No appointments yet?")
-
-        val lastAndNexAppointment = appointments[0]
 
         return Customer(
             data._id,
@@ -229,8 +251,8 @@ class AppViewModel(
             data.avatar.url,
             data.phone,
             data.balance,
-            lastAndNexAppointment.prev?.toAppointment(),
-            lastAndNexAppointment.next?.toAppointment()
+            null,
+            null
         )
     }
 }

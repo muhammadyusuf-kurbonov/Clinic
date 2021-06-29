@@ -30,7 +30,7 @@ class ReportSendTest {
         "Ivanov",
         null,
         "+998913975538",
-        null, null
+        0, null, null
     )
 
     @Test
@@ -260,21 +260,13 @@ class ReportSendTest {
                 )
             } returns CommunicationId("test")
         }
-        val dummy = Customer(
-            "123456789",
-            "Ivan",
-            "Ivanov",
-            null,
-            "+998913975538",
-            null, null
-        )
 
         val provider = mockk<SystemFunctionsProvider> {
         }
 
         runBlocking {
             val mockkViewModel = spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                every { customerState.value } returns CustomerState.Found(dummy)
+                every { customerState.value } returns CustomerState.Found(dummyCustomer)
             }
             mockkViewModel.handle(Action.Report(10, CallDirection.OUTGOING, false))
             mockkViewModel.reportState.assertEmitted {
