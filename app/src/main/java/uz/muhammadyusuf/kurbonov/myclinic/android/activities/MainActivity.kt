@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.compose.setContent
@@ -15,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
@@ -23,13 +25,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.google.firebase.crashlytics.FirebaseCrashlytics
-import io.paperdb.Paper
 import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
+import uz.muhammadyusuf.kurbonov.myclinic.android.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.LoginScreen
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.MainScreen
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.PermissionScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.ServiceTestScreen
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissions
@@ -41,7 +43,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 
 
-class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
+class MainActivity : AppCompatActivity() {
 
     companion object {
         @Suppress("SpellCheckingInspection")
@@ -192,15 +194,20 @@ class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
                 NavHost(navController = navController, startDestination = "main") {
                     composable("main") {
                         val permissionsGranted =
-                            rememberMultiplePermissionsState(permissions = allAppPermissions.toList()).allPermissionsGranted
+                            rememberMultiplePermissionsState(allAppPermissions.toList())
+                                .allPermissionsGranted and
+                                    Settings.canDrawOverlays(LocalContext.current)
 
                         MainScreen(permissionsGranted)
                     }
                     composable("permissions") { PermissionScreen() }
                     composable("login") { LoginScreen() }
+
+                    // TODO: Remove, it's for test
+                    composable("service_test") { ServiceTestScreen() }
                 }
                 val authState = AppViewModelProvider.current.authState.collectAsState()
-                val tokenIsEmpty = readPreference("token", "").isEmpty()
+                val tokenIsEmpty = provider.readPreference("token", "").isEmpty()
 
                 if ((authState.value is AuthState.AuthRequired) or tokenIsEmpty) {
                     LaunchedEffect(key1 = "started") {
@@ -212,6 +219,7 @@ class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
     }
 
     private lateinit var appViewModel: AppViewModel
+    private lateinit var provider: SystemFunctionsProvider
     private lateinit var navController: NavHostController
 
     @ExperimentalPermissionsApi
@@ -219,30 +227,14 @@ class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
         super.onCreate(savedInstanceState)
         setContent {
             navController = rememberNavController()
+            provider = SystemFunctionsProvider()
             appViewModel = AppViewModel(
                 lifecycleScope.coroutineContext,
-                this,
-                AppRepository(readPreference("token", ""))
+                provider,
+                AppRepository(provider.readPreference("token", ""))
             )
             MainActivityCompose(navController = navController, appViewModel)
         }
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            createNotificationChannel()
-//        }
-//
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            if (!Settings.canDrawOverlays(this)) {
-//                // ask for setting
-//                overlayRequest.launch(
-//                    Intent(
-//                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-//                        Uri.parse("package:$packageName")
-//                    )
-//                )
-//            }
-//        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -284,19 +276,4 @@ class MainActivity : AppCompatActivity(), SystemFunctionsProvider {
         NotificationManagerCompat.from(applicationContext)
             .createNotificationChannel(channel)
     }
-
-    override fun onError(throwable: Throwable): Boolean {
-        FirebaseCrashlytics.getInstance().recordException(throwable)
-        return true
-    }
-
-    override fun writePreference(key: String, value: Any) {
-        Paper.book().write(key, value)
-    }
-
-    override fun <T> readPreference(key: String, defaultValue: T?): T =
-        Paper.book().read(key, defaultValue)
-            ?: throw IllegalArgumentException("Default value can\'t be null")
-
-
 }

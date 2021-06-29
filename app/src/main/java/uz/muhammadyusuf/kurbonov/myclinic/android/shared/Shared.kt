@@ -21,7 +21,7 @@ fun allAppPermissionsDescriptions(context: Context) = mutableListOf(
     context.getString(R.string.read_call_state_desc),
     context.getString(R.string.read_call_log_desc),
 ).apply {
-    if (Build.MANUFACTURER.contains("huawei", false))
+    if (Build.MANUFACTURER.contains("huawei", true))
         add(context.getString(R.string.huawei_use_component_desc))
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
         add(context.getString(R.string.foreground_permission_desc))

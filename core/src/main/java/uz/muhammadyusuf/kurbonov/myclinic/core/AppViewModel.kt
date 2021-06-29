@@ -11,7 +11,10 @@ import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import uz.muhammadyusuf.kurbonov.myclinic.network.*
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationStatus
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.AppointmentItem
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 class AppViewModel(
@@ -19,6 +22,19 @@ class AppViewModel(
     private val provider: SystemFunctionsProvider,
     private val repository: AppRepository
 ) : CoroutineScope {
+
+    companion object {
+        internal val instances = mutableListOf<AppViewModel>()
+        fun pushAction(action: Action) {
+            if (instances.isEmpty())
+                throw IllegalStateException("No instances are initialized yet")
+            println(instances)
+            instances.forEach {
+                it.handle(action)
+                println("$it is handling $action")
+            }
+        }
+    }
 
     private val handler = CoroutineExceptionHandler { coroutineContext, throwable ->
         if (!provider.onError(throwable))
@@ -43,6 +59,17 @@ class AppViewModel(
     @Suppress("PropertyName")
     internal val _reportState = MutableStateFlow<ReportState>(ReportState.Default)
     val reportState: StateFlow<ReportState> = _reportState.asStateFlow()
+
+    init {
+        instances.add(this)
+        coroutineContext.job.invokeOnCompletion {
+            instances.remove(this)
+        }
+    }
+
+    protected fun finalize() {
+        instances.remove(this)
+    }
 
     fun handle(action: Action) {
         when (action) {
@@ -162,7 +189,20 @@ class AppViewModel(
     private fun startSearch(phone: String) = launch {
         try {
             val customerDto = repository.search(phone)
-            _customerState.value = CustomerState.Found(customerDto.toCustomer())
+            val customer = customerDto.toCustomer()
+            _customerState.value = CustomerState.Found(customer)
+
+            val lastAndNextAppointment = customerDto.appointments[0]
+            val lastAppointment = lastAndNextAppointment.prev?.let { getAppointment(it) }
+            val nextAppointment = lastAndNextAppointment.next?.let { getAppointment(it) }
+
+            _customerState.value = CustomerState.Found(
+                customer.copy(
+                    lastAppointment = lastAppointment,
+                    nextAppointment = nextAppointment
+                )
+            )
+
         } catch (e: CustomerNotFoundException) {
             _customerState.value = CustomerState.NotFound
         } catch (e: AuthRequestException) {
@@ -172,6 +212,28 @@ class AppViewModel(
             _customerState.value = CustomerState.ConnectionFailed
         }
     }
+
+    private suspend fun getAppointment(appointmentItem: AppointmentItem): Customer.Appointment? =
+        withContext(Dispatchers.IO) {
+            return@withContext try {
+                val userLoader = async { repository.getUser(appointmentItem.userId) }
+                val treatmentLoader =
+                    async { repository.getTreatment(appointmentItem.services[0].treatmentId) }
+
+                val user = userLoader.await()
+                val treatment = treatmentLoader.await()
+
+                Customer.Appointment(
+                    SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()
+                    ).parse(appointmentItem.startAt),
+                    "${user.lastName} ${user.firstName}",
+                    treatment.label
+                )
+            } catch (e: Exception) {
+                null
+            }
+        }
 
     // Mapper method
     private fun CustomerDTO.toCustomer(): Customer {
@@ -188,7 +250,9 @@ class AppViewModel(
             data.last_name,
             data.avatar.url,
             data.phone,
-            null, null
+            data.balance,
+            null,
+            null
         )
     }
 }

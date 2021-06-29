@@ -15,6 +15,8 @@ import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
 import uz.muhammadyusuf.kurbonov.myclinic.network.*
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.treatment.TreatmentDTO
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.users.UserDTO
 import kotlin.test.assertFailsWith
 
 @RunWith(JUnit4::class)
@@ -29,6 +31,15 @@ class SearchTests {
             coEvery {
                 search("+998913975538")
             } returns dummy
+            coEvery {
+                getUser(any())
+            } returns GsonBuilder().create()
+                .fromJson(getJSON("user-get-found.json"), UserDTO::class.java).data[0]
+
+            coEvery {
+                getTreatment(any())
+            } returns GsonBuilder().create()
+                .fromJson(getJSON("treatment-get-found.json"), TreatmentDTO::class.java).data[0]
         }
 
         val provider = mockk<SystemFunctionsProvider> {

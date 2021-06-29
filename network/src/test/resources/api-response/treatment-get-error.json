@@ -1,0 +1,8 @@
+{
+  "name": "GeneralError",
+  "message": "Cast to ObjectId failed for value \"5dc3c84d9a76124f537464f\" at path \"_id\" for model \"treatment\"",
+  "code": 500,
+  "className": "general-error",
+  "data": {},
+  "errors": {}
+}

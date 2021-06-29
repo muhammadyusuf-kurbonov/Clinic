@@ -5,6 +5,8 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationId
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationStatus
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.CommunicationType
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.treatment.TreatmentDTO
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.users.UserDTO
 
 interface AppRepository {
     var token: String
@@ -19,6 +21,10 @@ interface AppRepository {
      * @return found customer
      */
     suspend fun search(phone: String): CustomerDTO
+
+    suspend fun getUser(id: String): UserDTO.Data
+
+    suspend fun getTreatment(id: String): TreatmentDTO.Data
 
     suspend fun sendCommunicationInfo(
         customerId: String,

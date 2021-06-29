@@ -3,10 +3,7 @@ package uz.muhammadyusuf.kurbonov.myclinic.android.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +20,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 @Composable
 fun MainScreen(permissionsGranted: Boolean) {
     Box(modifier = Modifier.fillMaxSize()) {
+        val navController = LocalNavigation.current
         Column(modifier = Modifier.align(Alignment.Center)) {
             Image(
                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
@@ -32,6 +30,11 @@ fun MainScreen(permissionsGranted: Boolean) {
                 text = stringResource(id = R.string.app_name),
                 style = MaterialTheme.typography.h4
             )
+
+            //TODO: Remove, it's for test
+            Button(onClick = { navController.navigate("service_test") }) {
+                Text(text = "Service test")
+            }
         }
 
         Text(
@@ -46,7 +49,6 @@ fun MainScreen(permissionsGranted: Boolean) {
         )
 
         if (!permissionsGranted) {
-            val navController = LocalNavigation.current
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
