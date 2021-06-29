@@ -9,6 +9,8 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.communications.Communica
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.communications.response.CommunicationResponse
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customers.CustomerAddRequestBody
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.treatment.TreatmentDTO
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.users.UserDTO
 
 interface APIService {
     @POST("/authentication")
@@ -37,4 +39,14 @@ interface APIService {
     suspend fun addCustomer(
         @Body customerAddRequestBody: CustomerAddRequestBody
     ): Response<ResponseBody>
+
+    @GET("/treatment")
+    suspend fun getTreatment(
+        @Query("_id") id: String
+    ): TreatmentDTO
+
+    @GET("/users")
+    suspend fun getUser(
+        @Query("_id") id: String
+    ): UserDTO
 }

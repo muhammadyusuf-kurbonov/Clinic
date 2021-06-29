@@ -1,0 +1,44 @@
+{
+  "total": 1,
+  "limit": 50,
+  "skip": 0,
+  "data": [
+    {
+      "_id": "5dc3c84d9a76124f537464fe",
+      "icd": [],
+      "manipulations": [],
+      "bundle": [],
+      "serviceId": "5dc3c8229a76124f537464fc",
+      "price": 60000,
+      "code": "Д003",
+      "label": "Первичная консультация специалиста с КТ и составлением плана лечения",
+      "duration": 60,
+      "bufferDuration": null,
+      "public": true,
+      "companyId": "5dc2bf249a76124f5374648b",
+      "createdAt": "2019-11-07T07:31:25.398Z",
+      "updatedAt": "2020-02-20T22:03:20.041Z",
+      "__v": 0,
+      "shortcode": "3",
+      "deleted": false,
+      "reminder": {},
+      "can_update": true,
+      "blocked": false,
+      "can_delete": true,
+      "service": {
+        "_id": "5dc3c8229a76124f537464fc",
+        "label": "Диагностика",
+        "public": true,
+        "totalTreatments": 7,
+        "companyId": "5dc2bf249a76124f5374648b",
+        "createdAt": "2019-11-07T07:30:42.859Z",
+        "updatedAt": "2021-06-16T12:04:27.914Z",
+        "__v": 0,
+        "priority": 3,
+        "can_update": false,
+        "blocked": true,
+        "can_delete": false
+      }
+    }
+  ]
+}
