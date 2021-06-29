@@ -10,5 +10,8 @@ sealed class Action {
         val isMissed: Boolean
     ) : Action()
 
+    object RestoreStates : Action()
+    object SaveStates : Action()
+    object UpdateToken : Action()
     class SetPurpose(val purpose: String) : Action()
 }

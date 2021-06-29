@@ -9,7 +9,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
@@ -34,19 +35,20 @@ class CustomerDTOMapperTest {
                 getTreatment(any())
             } returns GsonBuilder().create()
                 .fromJson(getJSON("treatment-get-found.json"), TreatmentDTO::class.java).data[0]
+
+            coEvery {
+                search("+998913975538")
+            } returns dummy
         }
-        coEvery {
-            repository.search("+998913975538")
-        } returns dummy
 
 
         val provider = mockk<SystemFunctionsProvider>()
 
         assertFailsWith<IllegalArgumentException> {
             runBlocking {
-                val appViewModel = AppViewModel(this.coroutineContext, provider, repository)
+                val appViewModel = AppStatesController(this.coroutineContext, provider, repository)
                 appViewModel.handle(Action.Search("+998913975538"))
-                appViewModel.customerState.assertEmitted {
+                AppStateStore.customerState.assertEmitted {
                     it is CustomerState.Found
                 }
                 coVerify { repository.search("+998913975538") }
@@ -68,19 +70,19 @@ class CustomerDTOMapperTest {
                 getTreatment(any())
             } returns GsonBuilder().create()
                 .fromJson(getJSON("treatment-get-found.json"), TreatmentDTO::class.java).data[0]
-        }
-        coEvery {
-            repository.search("+998913975538")
-        } returns dummy
 
+            coEvery {
+                search("+998913975538")
+            } returns dummy
+        }
 
         val provider = mockk<SystemFunctionsProvider>()
 
         assertFailsWith<IllegalArgumentException> {
             runBlocking {
-                val appViewModel = AppViewModel(this.coroutineContext, provider, repository)
+                val appViewModel = AppStatesController(this.coroutineContext, provider, repository)
                 appViewModel.handle(Action.Search("+998913975538"))
-                appViewModel.customerState.assertEmitted {
+                AppStateStore.customerState.assertEmitted {
                     it is CustomerState.Found
                 }
                 coVerify {
@@ -104,18 +106,20 @@ class CustomerDTOMapperTest {
                 getTreatment(any())
             } returns GsonBuilder().create()
                 .fromJson(getJSON("treatment-get-found.json"), TreatmentDTO::class.java).data[0]
+
+            coEvery {
+                search("+998913975538")
+            } returns dummy
+
         }
-        coEvery {
-            repository.search("+998913975538")
-        } returns dummy
 
 
         val provider = mockk<SystemFunctionsProvider>()
 
         runBlocking {
-            val appViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            val appViewModel = AppStatesController(this.coroutineContext, provider, repository)
             appViewModel.handle(Action.Search("+998913975538"))
-            appViewModel.customerState.assertEmitted {
+            AppStateStore.customerState.assertEmitted {
                 it is CustomerState.Found &&
                         it.customer.lastAppointment != null
             }

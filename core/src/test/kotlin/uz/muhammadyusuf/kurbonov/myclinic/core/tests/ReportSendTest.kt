@@ -1,14 +1,13 @@
 package uz.muhammadyusuf.kurbonov.myclinic.core.tests
 
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
-import uz.muhammadyusuf.kurbonov.myclinic.core.CallDirection
-import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.*
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
@@ -51,11 +50,10 @@ class ReportSendTest {
         }
 
         runBlocking {
-            val mockkViewModel = spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                every { customerState.value } returns CustomerState.Found(dummyCustomer)
-            }
-            mockkViewModel.handle(Action.Report(0, CallDirection.INCOMING, true))
-            mockkViewModel.reportState.assertEmitted {
+            AppStateStore.updateCustomerState(CustomerState.Found(dummyCustomer))
+            val testController = AppStatesController(this.coroutineContext, provider, repository)
+            testController.handle(Action.Report(0, CallDirection.INCOMING, true))
+            AppStateStore.reportState.assertEmitted {
                 ReportState.Submitted == it
             }
             coVerify {
@@ -86,11 +84,10 @@ class ReportSendTest {
         }
 
         runBlocking {
-            val mockkViewModel = spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                every { customerState.value } returns CustomerState.NotFound
-            }
-            mockkViewModel.handle(Action.Report(0, CallDirection.INCOMING, true))
-            mockkViewModel.reportState.assertEmitted {
+            AppStateStore.updateCustomerState(CustomerState.NotFound)
+            val testController = AppStatesController(this.coroutineContext, provider, repository)
+            testController.handle(Action.Report(0, CallDirection.INCOMING, true))
+            AppStateStore.reportState.assertEmitted {
                 ReportState.AskToAddNewCustomer == it
             }
         }
@@ -113,11 +110,10 @@ class ReportSendTest {
         }
 
         runBlocking {
-            val mockkViewModel = spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                every { customerState.value } returns CustomerState.ConnectionFailed
-            }
-            mockkViewModel.handle(Action.Report(0, CallDirection.INCOMING, true))
-            mockkViewModel.reportState.assertEmitted {
+            AppStateStore.updateCustomerState(CustomerState.ConnectionFailed)
+            val testController = AppStatesController(this.coroutineContext, provider, repository)
+            testController.handle(Action.Report(0, CallDirection.INCOMING, true))
+            AppStateStore.reportState.assertEmitted {
                 ReportState.ConnectionFailed == it
             }
         }
@@ -140,11 +136,10 @@ class ReportSendTest {
         }
 
         runBlocking {
-            val mockkViewModel = spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                every { customerState.value } returns CustomerState.Found(dummyCustomer)
-            }
-            mockkViewModel.handle(Action.Report(0, CallDirection.INCOMING, true))
-            mockkViewModel.reportState.assertEmitted {
+            AppStateStore.updateCustomerState(CustomerState.Found(dummyCustomer))
+            val testController = AppStatesController(this.coroutineContext, provider, repository)
+            testController.handle(Action.Report(0, CallDirection.INCOMING, true))
+            AppStateStore.reportState.assertEmitted {
                 ReportState.ConnectionFailed == it
             }
         }
@@ -168,15 +163,13 @@ class ReportSendTest {
 
 
         runBlocking {
-            val mockkViewModel =
-                spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                    every { customerState.value } returns CustomerState.Found(dummyCustomer)
-                }
-            mockkViewModel.handle(Action.Report(0, CallDirection.INCOMING, true))
-            mockkViewModel.reportState.assertEmitted {
-                ReportState.ConnectionFailed == it
+            AppStateStore.updateCustomerState(CustomerState.Found(dummyCustomer))
+            val testController = AppStatesController(this.coroutineContext, provider, repository)
+            testController.handle(Action.Report(0, CallDirection.INCOMING, true))
+            AppStateStore.reportState.assertEmitted {
+                ReportState.Default == it
             }
-            mockkViewModel.authState.assertEmitted {
+            AppStateStore.authState.assertEmitted {
                 AuthState.AuthRequired == it
             }
         }
@@ -201,12 +194,11 @@ class ReportSendTest {
 
         assertFailsWith<APIException> {
             runBlocking {
-                val mockkViewModel =
-                    spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                        every { customerState.value } returns CustomerState.Found(dummyCustomer)
-                    }
-                mockkViewModel.handle(Action.Report(0, CallDirection.INCOMING, true))
-                mockkViewModel.reportState.assertEmitted {
+                AppStateStore.updateCustomerState(CustomerState.Found(dummyCustomer))
+                val testController =
+                    AppStatesController(this.coroutineContext, provider, repository)
+                testController.handle(Action.Report(0, CallDirection.INCOMING, true))
+                AppStateStore.reportState.assertEmitted {
                     ReportState.ConnectionFailed == it
                 }
             }
@@ -230,11 +222,10 @@ class ReportSendTest {
         }
 
         runBlocking {
-            val mockkViewModel = spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                every { customerState.value } returns CustomerState.Found(dummyCustomer)
-            }
-            mockkViewModel.handle(Action.Report(10, CallDirection.INCOMING, false))
-            mockkViewModel.reportState.assertEmitted {
+            AppStateStore.updateCustomerState(CustomerState.Found(dummyCustomer))
+            val testController = AppStatesController(this.coroutineContext, provider, repository)
+            testController.handle(Action.Report(10, CallDirection.INCOMING, false))
+            AppStateStore.reportState.assertEmitted {
                 it is ReportState.PurposeRequested
             }
             coVerify {
@@ -265,11 +256,10 @@ class ReportSendTest {
         }
 
         runBlocking {
-            val mockkViewModel = spyk(AppViewModel(this.coroutineContext, provider, repository)) {
-                every { customerState.value } returns CustomerState.Found(dummyCustomer)
-            }
-            mockkViewModel.handle(Action.Report(10, CallDirection.OUTGOING, false))
-            mockkViewModel.reportState.assertEmitted {
+            AppStateStore.updateCustomerState(CustomerState.Found(dummyCustomer))
+            val testController = AppStatesController(this.coroutineContext, provider, repository)
+            testController.handle(Action.Report(10, CallDirection.OUTGOING, false))
+            AppStateStore.reportState.assertEmitted {
                 it is ReportState.PurposeRequested
             }
             coVerify {

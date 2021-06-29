@@ -1,9 +1,9 @@
 package uz.muhammadyusuf.kurbonov.myclinic.core
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateAuthState
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateCustomerState
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateReportState
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
@@ -17,14 +17,14 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
-class AppViewModel(
+class AppStatesController(
     parentCoroutineContext: CoroutineContext,
     private val provider: SystemFunctionsProvider,
     private val repository: AppRepository
 ) : CoroutineScope {
 
     companion object {
-        internal val instances = mutableListOf<AppViewModel>()
+        internal val instances = mutableListOf<AppStatesController>()
         fun pushAction(action: Action) {
             if (instances.isEmpty())
                 throw IllegalStateException("No instances are initialized yet")
@@ -48,18 +48,6 @@ class AppViewModel(
                 handler
 
 
-    @Suppress("PropertyName")
-    internal val _authState = MutableStateFlow<AuthState>(AuthState.Default)
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
-
-    @Suppress("PropertyName")
-    internal val _customerState = MutableStateFlow<CustomerState>(CustomerState.Default)
-    val customerState: StateFlow<CustomerState> = _customerState.asStateFlow()
-
-    @Suppress("PropertyName")
-    internal val _reportState = MutableStateFlow<ReportState>(ReportState.Default)
-    val reportState: StateFlow<ReportState> = _reportState.asStateFlow()
-
     init {
         instances.add(this)
         coroutineContext.job.invokeOnCompletion {
@@ -82,58 +70,79 @@ class AppViewModel(
                 action.duration
             )
             is Action.SetPurpose -> updateReport(action.purpose)
+            Action.RestoreStates -> restoreFromState()
+            Action.SaveStates -> saveStates()
+            Action.UpdateToken -> {
+                repository.token = provider.readPreference("token", "")
+            }
         }
     }
 
-    fun saveStates() {
-        provider.writePreference("authState", authState.value)
-        provider.writePreference("customerState", customerState.value)
-        provider.writePreference("reportState", reportState.value)
+    private fun saveStates() {
+        provider.writePreference("authState", AppStateStore.authState.value)
+        provider.writePreference("customerState", AppStateStore.customerState.value)
+        provider.writePreference("reportState", AppStateStore.reportState.value)
     }
 
-    fun restoreFromState() {
-        _authState.value = provider.readPreference("authState", AuthState.Default)
-        _customerState.value = provider.readPreference("customerState", CustomerState.Default)
-        _reportState.value = provider.readPreference("reportState", ReportState.Default)
+    private fun restoreFromState() {
+        updateAuthState(
+            provider.readPreference(
+                "authState", if (provider.readPreference("token", "").isNotEmpty())
+                    AuthState.AuthSuccess else AuthState.AuthRequired
+            )
+        )
+        if (AppStateStore.authState.value is AuthState.AuthSuccess)
+            repository.token = provider.readPreference("token", "")
+
+        updateCustomerState(
+            provider.readPreference("customerState", CustomerState.Default)
+        )
+        updateReportState(
+            provider.readPreference("reportState", ReportState.Default)
+        )
     }
 
     private fun logout() {
         provider.writePreference("token", "")
         repository.token = ""
-        _authState.value = AuthState.AuthRequired
+        updateAuthState(AuthState.AuthRequired)
     }
 
     private fun updateReport(purpose: String) = launch {
-        if (reportState.value !is ReportState.PurposeRequested)
+        if (AppStateStore.reportState.value !is ReportState.PurposeRequested)
             throw IllegalStateException("Can't set purpose without registered communication")
-        val communicationId = (reportState.value as ReportState.PurposeRequested).communicationId
+        val communicationId =
+            (AppStateStore.reportState.value as ReportState.PurposeRequested).communicationId
 
         try {
+            updateReportState(ReportState.Sending)
             repository.updateCommunicationNote(communicationId, purpose)
-            _reportState.value = ReportState.Submitted
+            updateReportState(ReportState.Submitted)
         } catch (e: NotConnectedException) {
-            _reportState.value = ReportState.ConnectionFailed
+            updateReportState(
+                ReportState.ConnectionFailed
+            )
         } catch (e: AuthRequestException) {
-            _authState.value = AuthState.AuthRequired
-            _reportState.value = ReportState.ConnectionFailed
+            updateAuthState(AuthState.AuthRequired)
+            updateReportState(ReportState.Default)
         }
     }
 
     private fun sendReport(missed: Boolean, callDirection: CallDirection, duration: Long) = launch {
-        _reportState.value = ReportState.Sending
-        if (customerState.value is CustomerState.NotFound) {
-            _reportState.value = ReportState.AskToAddNewCustomer
+        updateReportState(ReportState.Sending)
+        if (AppStateStore.customerState.value is CustomerState.NotFound) {
+            updateReportState(ReportState.AskToAddNewCustomer)
             return@launch
         }
-        if (customerState.value is CustomerState.Default)
+        if (AppStateStore.customerState.value is CustomerState.Default)
             throw IllegalStateException("Customer state is default! Call search before sending report")
 
-        if (customerState.value is CustomerState.ConnectionFailed) {
-            _reportState.value = ReportState.ConnectionFailed
+        if (AppStateStore.customerState.value is CustomerState.ConnectionFailed) {
+            updateReportState(ReportState.ConnectionFailed)
             return@launch
         }
 
-        val customer = (customerState.value as CustomerState.Found).customer
+        val customer = (AppStateStore.customerState.value as CustomerState.Found).customer
         try {
             if (missed) {
                 repository.sendCommunicationInfo(
@@ -142,7 +151,7 @@ class AppViewModel(
                     0,
                     callDirection
                 )
-                _reportState.value = ReportState.Submitted
+                updateReportState(ReportState.Submitted)
             } else {
                 val communicationId = repository.sendCommunicationInfo(
                     customer.id,
@@ -150,66 +159,76 @@ class AppViewModel(
                     duration,
                     callDirection
                 )
-                _reportState.value = ReportState.PurposeRequested(communicationId.id)
+                updateReportState(
+                    ReportState.PurposeRequested(communicationId.id)
+                )
             }
         } catch (e: NotConnectedException) {
-            _reportState.value = ReportState.ConnectionFailed
+            updateReportState(
+                ReportState.ConnectionFailed
+            )
         } catch (e: AuthRequestException) {
-            _authState.value = AuthState.AuthRequired
-            _reportState.value = ReportState.ConnectionFailed
+            updateAuthState(AuthState.AuthRequired)
+            updateReportState(ReportState.Default)
         }
     }
 
     private fun login(username: String, password: String) = launch {
         try {
-
+            updateAuthState(AuthState.Authenticating)
             val emailValid = username.isNotEmpty() && username.matches(Regex("^(((?! ).)+)@(.+)$"))
             val passwordValid = password.isNotEmpty()
             if (!(emailValid && passwordValid)) {
-                _authState.value = AuthState.ValidationFailed
+                updateAuthState(AuthState.ValidationFailed)
                 return@launch
             }
-            _authState.value = AuthState.Authenticating
             val token: AuthToken = repository.authenticate(
                 username,
                 password
             )
             provider.writePreference("token", token.token)
             repository.token = token.token
-            _authState.value = AuthState.AuthSuccess
+            updateAuthState(AuthState.AuthSuccess)
         } catch (e: AuthRequestException) {
-            provider.writePreference("token", "")
-            _authState.value = AuthState.AuthFailed
+            if (AppStateStore.authState.value == AuthState.Authenticating) {
+                provider.writePreference("token", "")
+                updateAuthState(AuthState.AuthFailed)
+            }
         } catch (e: NotConnectedException) {
-            _authState.value = AuthState.ConnectionFailed
+            if (AppStateStore.authState.value == AuthState.Authenticating) {
+                updateAuthState(AuthState.ConnectionFailed)
+            }
         }
-
     }
 
     private fun startSearch(phone: String) = launch {
         try {
+            updateCustomerState(CustomerState.Searching)
             val customerDto = repository.search(phone)
             val customer = customerDto.toCustomer()
-            _customerState.value = CustomerState.Found(customer)
+            updateCustomerState(CustomerState.Found(customer))
+
 
             val lastAndNextAppointment = customerDto.appointments[0]
             val lastAppointment = lastAndNextAppointment.prev?.let { getAppointment(it) }
             val nextAppointment = lastAndNextAppointment.next?.let { getAppointment(it) }
 
-            _customerState.value = CustomerState.Found(
-                customer.copy(
-                    lastAppointment = lastAppointment,
-                    nextAppointment = nextAppointment
+            updateCustomerState(
+                CustomerState.Found(
+                    customer.copy(
+                        lastAppointment = lastAppointment,
+                        nextAppointment = nextAppointment
+                    )
                 )
             )
 
         } catch (e: CustomerNotFoundException) {
-            _customerState.value = CustomerState.NotFound
+            updateCustomerState(CustomerState.NotFound)
         } catch (e: AuthRequestException) {
-            _customerState.value = CustomerState.Default
-            _authState.value = AuthState.AuthRequired
+            updateCustomerState(CustomerState.Default)
+            updateAuthState(AuthState.AuthRequired)
         } catch (e: NotConnectedException) {
-            _customerState.value = CustomerState.ConnectionFailed
+            updateCustomerState(CustomerState.ConnectionFailed)
         }
     }
 

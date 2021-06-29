@@ -6,7 +6,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
@@ -27,11 +28,11 @@ class UpdateReportTest {
         }
 
         runBlocking {
-            val appViewModel = AppViewModel(this.coroutineContext, provider, repository)
-            appViewModel._reportState.value = ReportState.PurposeRequested("test")
+            AppStateStore.updateReportState(ReportState.PurposeRequested("test"))
+            val appViewModel = AppStatesController(this.coroutineContext, provider, repository)
             appViewModel.handle(Action.SetPurpose("test"))
 
-            appViewModel.reportState.assertEmitted {
+            AppStateStore.reportState.assertEmitted {
                 it is ReportState.Submitted
             }
 
@@ -54,11 +55,11 @@ class UpdateReportTest {
         }
 
         runBlocking {
-            val mockkViewModel = AppViewModel(this.coroutineContext, provider, repository)
-            mockkViewModel._reportState.value = ReportState.PurposeRequested("test")
+            AppStateStore.updateReportState(ReportState.PurposeRequested("test"))
+            val mockkViewModel = AppStatesController(this.coroutineContext, provider, repository)
             mockkViewModel.handle(Action.SetPurpose("test"))
 
-            mockkViewModel.reportState.assertEmitted {
+            AppStateStore.reportState.assertEmitted {
                 it is ReportState.ConnectionFailed
             }
             coVerify {
