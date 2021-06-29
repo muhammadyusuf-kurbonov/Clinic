@@ -112,7 +112,7 @@ fun OverlayContent(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = stringResource(id = R.string.no_connection),
+                text = stringResource(id = R.string.no_internet_connection),
                 style = MaterialTheme.typography.subtitle2
             )
             Spacer(modifier = Modifier.height(2.dp))
@@ -155,7 +155,7 @@ fun OverlayContent(
         } // implemented before
         CustomerState.Default -> {
             Text(
-                text = stringResource(id = R.string.searching_text),
+                text = stringResource(id = R.string.searching),
                 style = MaterialTheme.typography.subtitle2
             )
         }
@@ -168,7 +168,7 @@ fun OverlayContent(
         }
         CustomerState.Searching -> {
             Text(
-                text = stringResource(id = R.string.searching_text),
+                text = stringResource(id = R.string.searching),
                 style = MaterialTheme.typography.subtitle2
             )
         }
@@ -263,7 +263,7 @@ fun CustomerInfo(customer: Customer) {
                     Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
                 } else {
                     Text(
-                        text = "There isn't coming appointment yet",
+                        text = stringResource(R.string.no_next_appointment),
                         modifier = Modifier.padding(4.dp),
                         style = MaterialTheme.typography.body2
                     )
@@ -296,7 +296,8 @@ fun CustomerInfo(customer: Customer) {
                     Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
                 } else {
                     Text(
-                        text = "No previous appointment yet", modifier = Modifier.padding(4.dp),
+                        text = stringResource(R.string.no_prev_appointment),
+                        modifier = Modifier.padding(4.dp),
                         style = MaterialTheme.typography.body2
                     )
                 }

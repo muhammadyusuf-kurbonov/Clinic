@@ -112,10 +112,10 @@ fun LoginForm(
                     Text(text = stringResource(id = R.string.login_failed), color = Color.Red)
                 }
                 is AuthState.Authenticating -> {
-                    Text(text = stringResource(id = R.string.logging_in_caption))
+                    Text(text = stringResource(id = R.string.authenticating))
                 }
                 AuthState.ConnectionFailed -> {
-                    Text(text = stringResource(id = R.string.no_connection))
+                    Text(text = stringResource(id = R.string.no_internet_connection))
                 }
                 else -> {
                 }
@@ -156,7 +156,7 @@ fun PasswordField(
     OutlinedTextField(
         value = state, onValueChange = onValueChange,
         label = {
-            Text(text = stringResource(id = R.string.password))
+            Text(text = stringResource(id = R.string.password_hint))
         },
         modifier = Modifier
             .padding(4.dp),

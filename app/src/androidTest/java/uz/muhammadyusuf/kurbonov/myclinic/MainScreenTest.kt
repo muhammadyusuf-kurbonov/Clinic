@@ -46,7 +46,7 @@ class MainScreenTest {
         testRule
             .onNodeWithText(
                 testRule.activity
-                    .getString(R.string.main_label_ask_permission)
+                    .getString(R.string.ask_permissions)
             )
             .assertIsDisplayed()
     }
@@ -65,7 +65,7 @@ class MainScreenTest {
         testRule
             .onNodeWithText(
                 testRule.activity
-                    .getString(R.string.main_label_ask_permission)
+                    .getString(R.string.ask_permissions)
             )
             .assertDoesNotExist()
     }
