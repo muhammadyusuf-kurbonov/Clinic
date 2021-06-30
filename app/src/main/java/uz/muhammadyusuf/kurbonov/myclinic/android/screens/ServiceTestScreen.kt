@@ -17,6 +17,7 @@ import androidx.work.workDataOf
 import uz.muhammadyusuf.kurbonov.myclinic.android.workers.SearchWorker
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
+import uz.muhammadyusuf.kurbonov.myclinic.core.CallDirection
 
 @Composable
 fun ServiceTestScreen() {
@@ -44,6 +45,18 @@ fun ServiceTestScreen() {
                 }, text = "Search - not found")
 
                 ServiceControlButton(onClick = {
+                    AppStatesController.pushAction(
+                        Action.Report(5, CallDirection.INCOMING, false)
+                    )
+                }, text = "Report")
+
+                ServiceControlButton(onClick = {
+                    AppStatesController.pushAction(
+                        Action.Report(0, CallDirection.INCOMING, true)
+                    )
+                }, text = "Report missed")
+
+                ServiceControlButton(onClick = {
                     AppStatesController.pushAction(Action.Search("+998903500490"))
                 }, text = "Search - found")
 
@@ -53,8 +66,6 @@ fun ServiceTestScreen() {
                             "main",
                         )
                 }, text = "Stop service")
-
-
             }
         }
     }

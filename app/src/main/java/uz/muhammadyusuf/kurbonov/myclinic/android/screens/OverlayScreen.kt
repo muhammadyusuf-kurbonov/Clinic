@@ -31,8 +31,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.work.WorkManager
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.imageloading.ImageLoadState
+import kotlinx.coroutines.delay
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.MainActivity
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
@@ -101,6 +103,12 @@ fun OverlayScreen() {
                     },
                     requestNewCustomerRegistration = {
 
+                    },
+                    finish = {
+                        WorkManager.getInstance(context)
+                            .cancelUniqueWork(
+                                "main",
+                            )
                     }
                 )
             }
@@ -116,6 +124,7 @@ fun OverlayContent(
     retry: () -> Unit = {},
     requestNewCustomerRegistration: () -> Unit = {},
     requestPurpose: () -> Unit = {},
+    finish: () -> Unit = {}
 ) {
     if ((authState is AuthState.ConnectionFailed) or
         (customerState is CustomerState.ConnectionFailed)
@@ -203,8 +212,21 @@ fun OverlayContent(
                     requestPurpose()
                 }
             }
-            ReportState.Sending -> TODO()
-            ReportState.Submitted -> TODO()
+            ReportState.Sending -> Text(
+                text = stringResource(R.string.registering_the_call),
+                style = MaterialTheme.typography.subtitle2
+            )
+            ReportState.Submitted -> {
+                Text(
+                    text = "The call is registered",
+                    style = MaterialTheme.typography.subtitle2,
+                    color = Color.Green
+                )
+                LaunchedEffect(key1 = "ending") {
+                    delay(1500)
+                    finish()
+                }
+            }
         }
     }
 }
