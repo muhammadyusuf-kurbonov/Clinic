@@ -42,6 +42,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -83,17 +84,23 @@ fun OverlayScreen() {
                 .border(1.dp, MaterialTheme.colors.primary, shape = RoundedCornerShape(8.dp))
         ) {
 
+            val context = LocalContext.current
             val statesController = LocalAppControllerProvider.current
             val phoneNumber = LocalPhoneNumberProvider.current
 
             val authState by AppStateStore.authState.collectAsState()
             val customerState by AppStateStore.customerState.collectAsState()
+            val reportState by AppStateStore.reportState.collectAsState()
 
             Box(Modifier.padding(4.dp)) {
                 OverlayContent(authState = authState,
                     customerState = customerState,
+                    reportState = reportState,
                     retry = {
                         statesController.handle(Action.Search(phoneNumber))
+                    },
+                    requestNewCustomerRegistration = {
+
                     }
                 )
             }
@@ -105,20 +112,19 @@ fun OverlayScreen() {
 fun OverlayContent(
     authState: AuthState,
     customerState: CustomerState,
-    retry: () -> Unit = {}
+    reportState: ReportState,
+    retry: () -> Unit = {},
+    requestNewCustomerRegistration: () -> Unit = {},
+    requestPurpose: () -> Unit = {},
 ) {
     if ((authState is AuthState.ConnectionFailed) or
         (customerState is CustomerState.ConnectionFailed)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(id = R.string.no_internet_connection),
-                style = MaterialTheme.typography.subtitle2
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Button(onClick = { retry() }) {
-                Text(text = stringResource(R.string.retry), style = MaterialTheme.typography.button)
-            }
+        SimpleActionButton(
+            label = stringResource(id = R.string.no_internet_connection),
+            buttonLabel = stringResource(id = R.string.retry)
+        ) {
+            retry()
         }
         return
     }
@@ -150,27 +156,55 @@ fun OverlayContent(
         return
     }
 
-    when (customerState) {
-        CustomerState.ConnectionFailed -> {
-        } // implemented before
-        CustomerState.Default -> {
-            Text(
-                text = stringResource(id = R.string.searching),
-                style = MaterialTheme.typography.subtitle2
-            )
+    if (reportState == ReportState.Default) {
+        when (customerState) {
+            CustomerState.ConnectionFailed -> {
+            } // implemented before
+            CustomerState.Default -> {
+                Text(
+                    text = stringResource(id = R.string.searching),
+                    style = MaterialTheme.typography.subtitle2
+                )
+            }
+            is CustomerState.Found -> CustomerInfo(customer = customerState.customer)
+            CustomerState.NotFound -> {
+                Text(
+                    text = stringResource(id = R.string.not_found),
+                    style = MaterialTheme.typography.subtitle2
+                )
+            }
+            CustomerState.Searching -> {
+                Text(
+                    text = stringResource(id = R.string.searching),
+                    style = MaterialTheme.typography.subtitle2
+                )
+            }
         }
-        is CustomerState.Found -> CustomerInfo(customer = customerState.customer)
-        CustomerState.NotFound -> {
-            Text(
-                text = stringResource(id = R.string.not_found),
-                style = MaterialTheme.typography.subtitle2
-            )
-        }
-        CustomerState.Searching -> {
-            Text(
-                text = stringResource(id = R.string.searching),
-                style = MaterialTheme.typography.subtitle2
-            )
+    } else {
+        val phone = LocalPhoneNumberProvider.current
+        when (reportState) {
+            ReportState.AskToAddNewCustomer -> {
+                SimpleActionButton(
+                    label = stringResource(id = R.string.add_user_request, phone),
+                    buttonLabel = "Register"
+                ) {
+                    requestNewCustomerRegistration()
+                }
+            }
+            ReportState.ConnectionFailed -> {
+            } //implemented before
+            ReportState.Default -> {
+            }
+            is ReportState.PurposeRequested -> {
+                SimpleActionButton(
+                    label = stringResource(id = R.string.purpose_msg, phone),
+                    buttonLabel = "Open dialog"
+                ) {
+                    requestPurpose()
+                }
+            }
+            ReportState.Sending -> TODO()
+            ReportState.Submitted -> TODO()
         }
     }
 }
@@ -302,6 +336,24 @@ fun CustomerInfo(customer: Customer) {
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SimpleActionButton(
+    label: String,
+    buttonLabel: String,
+    action: () -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.subtitle2
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Button(onClick = { action() }) {
+            Text(text = buttonLabel, style = MaterialTheme.typography.button)
         }
     }
 }
