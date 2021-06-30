@@ -24,15 +24,10 @@ class AppStatesController(
 ) : CoroutineScope {
 
     companion object {
-        internal val instances = mutableListOf<AppStatesController>()
+        internal lateinit var instance: AppStatesController
+
         fun pushAction(action: Action) {
-            if (instances.isEmpty())
-                throw IllegalStateException("No instances are initialized yet")
-            println(instances)
-            instances.forEach {
-                it.handle(action)
-                println("$it is handling $action")
-            }
+            instance.handle(action)
         }
     }
 
@@ -47,16 +42,8 @@ class AppStatesController(
                 Dispatchers.Default +
                 handler
 
-
     init {
-        instances.add(this)
-        coroutineContext.job.invokeOnCompletion {
-            instances.remove(this)
-        }
-    }
-
-    protected fun finalize() {
-        instances.remove(this)
+        instance = this
     }
 
     fun handle(action: Action) {
@@ -130,6 +117,7 @@ class AppStatesController(
 
     private fun sendReport(missed: Boolean, callDirection: CallDirection, duration: Long) = launch {
         updateReportState(ReportState.Sending)
+
         if (AppStateStore.customerState.value is CustomerState.NotFound) {
             updateReportState(ReportState.AskToAddNewCustomer)
             return@launch
