@@ -204,6 +204,7 @@ class AppStatesController(
     private fun startSearch(phone: String) = launch {
         try {
             updateCustomerState(CustomerState.Searching)
+            updateReportState(ReportState.Default)
             val customerDto = repository.search(phone)
             val customer = customerDto.toCustomer()
             updateCustomerState(CustomerState.Found(customer))
