@@ -48,7 +48,7 @@
     <string name="additional_info">Additional information</string>
     <string name="others">Other</string>
 
-    <string name="add_user_request">Tap to add %1s as new patient</string>
+    <string name="add_user_request">Add %1s as new patient</string>
     <string name="register_new_patient">Register new patient</string>
     <string name="required_error">Required</string>
 
