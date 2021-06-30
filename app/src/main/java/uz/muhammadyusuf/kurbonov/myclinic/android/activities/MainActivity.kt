@@ -240,6 +240,8 @@ class MainActivity : AppCompatActivity() {
                 provider,
                 AppRepository(provider.readPreference("token", ""))
             )
+            if (provider.readPreference("token", "").isNotEmpty())
+                AppStateStore.updateAuthState(AuthState.AuthSuccess)
             MainActivityCompose(navController = navController, appStatesController)
         }
     }
