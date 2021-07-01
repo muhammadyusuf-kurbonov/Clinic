@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -43,7 +44,7 @@ fun NewCustomerForm(
     state: RegisterState
 ) {
 
-    Column(modifier = Modifier.padding(4.dp)) {
+    Column(modifier = Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
 
         var firstName by remember {
             mutableStateOf("")
@@ -102,6 +103,33 @@ fun NewCustomerForm(
                 keyboardType = KeyboardType.Phone
             )
         )
+
+        when (state) {
+            RegisterState.ConnectionFailed -> Text(text = stringResource(id = R.string.no_internet_connection))
+            RegisterState.Default -> {
+            }
+            RegisterState.RegisterSuccess -> {
+                Text(text = stringResource(id = R.string.new_customer_toast, firstName))
+                Button(
+                    onClick = {
+                        finish()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(id = android.R.string.ok),
+                        style = MaterialTheme.typography.button
+                    )
+                }
+                return
+            }
+            RegisterState.Registering -> {
+                Text(text = "Registering")
+            }
+            RegisterState.VerificationFailed -> {
+                Text(text = "Fields required")
+            }
+        }
+
         Row {
             Button(
                 onClick = {
@@ -115,6 +143,8 @@ fun NewCustomerForm(
                 )
             }
 
+            Spacer(modifier = Modifier.width(4.dp))
+
             val context = LocalContext.current
             Button(onClick = {
                 try {
@@ -124,7 +154,6 @@ fun NewCustomerForm(
                         context.getString(R.string.new_customer_toast, firstName),
                         Toast.LENGTH_SHORT
                     ).show()
-                    finish()
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

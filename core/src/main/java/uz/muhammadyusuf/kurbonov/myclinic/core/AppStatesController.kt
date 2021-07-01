@@ -89,6 +89,7 @@ class AppStatesController(
 
         try {
             repository.addNewCustomer(firstName, lastName, phone)
+            updateRegisterState(RegisterState.RegisterSuccess)
         } catch (e: NotConnectedException) {
             updateRegisterState(RegisterState.ConnectionFailed)
         } catch (e: AuthRequestException) {
