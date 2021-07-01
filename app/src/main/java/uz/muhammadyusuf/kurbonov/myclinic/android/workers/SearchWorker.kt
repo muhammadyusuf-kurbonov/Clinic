@@ -77,7 +77,7 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
             provider.readPreference("OVERLAY_X_POS", 0),
             provider.readPreference("OVERLAY_Y_POS", 0),
             layoutFlag,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         )
 

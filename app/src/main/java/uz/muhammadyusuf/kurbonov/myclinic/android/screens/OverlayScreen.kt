@@ -95,14 +95,12 @@ fun OverlayScreen() {
             val reportState by AppStateStore.reportState.collectAsState()
 
             Box(Modifier.padding(4.dp)) {
-                OverlayContent(authState = authState,
+                OverlayContent(
+                    authState = authState,
                     customerState = customerState,
                     reportState = reportState,
                     retry = {
                         statesController.handle(Action.Search(phoneNumber))
-                    },
-                    requestNewCustomerRegistration = {
-
                     },
                     finish = {
                         WorkManager.getInstance(context)
@@ -122,7 +120,6 @@ fun OverlayContent(
     customerState: CustomerState,
     reportState: ReportState,
     retry: () -> Unit = {},
-    requestNewCustomerRegistration: () -> Unit = {},
     requestPurpose: () -> Unit = {},
     finish: () -> Unit = {}
 ) {
@@ -193,12 +190,9 @@ fun OverlayContent(
         val phone = LocalPhoneNumberProvider.current
         when (reportState) {
             ReportState.AskToAddNewCustomer -> {
-                SimpleActionButton(
-                    label = stringResource(id = R.string.add_user_request, phone),
-                    buttonLabel = "Register"
-                ) {
-                    requestNewCustomerRegistration()
-                }
+                NewCustomerScreen(
+                    finish = finish
+                )
             }
             ReportState.ConnectionFailed -> {
             } //implemented before

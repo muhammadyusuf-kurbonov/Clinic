@@ -48,8 +48,7 @@
     <string name="additional_info">Additional information</string>
     <string name="others">Other</string>
 
-    <string name="add_user_request">Add %1s as new patient</string>
-    <string name="register_new_patient">Register new patient</string>
+    <string name="register_new_patient">Register new patient with phone %1s</string>
     <string name="required_error">Required</string>
 
     <string name="new_customer_toast">%1s is now our customer</string>

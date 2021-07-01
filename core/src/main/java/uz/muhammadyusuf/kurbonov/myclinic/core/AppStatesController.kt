@@ -3,10 +3,12 @@ package uz.muhammadyusuf.kurbonov.myclinic.core
 import kotlinx.coroutines.*
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateAuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateCustomerState
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateRegisterState
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateReportState
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.RegisterState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import uz.muhammadyusuf.kurbonov.myclinic.network.*
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
@@ -62,6 +64,36 @@ class AppStatesController(
             Action.UpdateToken -> {
                 repository.token = provider.readPreference("token", "")
             }
+            is Action.RegisterNewCustomer -> registerNewCustomer(
+                action.firstName,
+                action.lastName,
+                action.phone
+            )
+        }
+    }
+
+    private fun registerNewCustomer(
+        firstName: String,
+        lastName: String,
+        phone: String
+    ) = launch {
+        updateRegisterState(RegisterState.Registering)
+
+        val firstNameIsValid = firstName.isNotEmpty()
+        val phoneIsValid = phone.isNotEmpty()
+
+        if (!(firstNameIsValid && phoneIsValid)) {
+            updateRegisterState(RegisterState.VerificationFailed)
+            return@launch
+        }
+
+        try {
+            repository.addNewCustomer(firstName, lastName, phone)
+        } catch (e: NotConnectedException) {
+            updateRegisterState(RegisterState.ConnectionFailed)
+        } catch (e: AuthRequestException) {
+            updateRegisterState(RegisterState.Default)
+            updateAuthState(AuthState.AuthRequired)
         }
     }
 
@@ -164,7 +196,9 @@ class AppStatesController(
     private fun login(username: String, password: String) = launch {
         try {
             updateAuthState(AuthState.Authenticating)
-            val emailValid = username.isNotEmpty() && username.matches(Regex("^(((?! ).)+)@(.+)$"))
+            val emailValid = username.isNotEmpty()
+                    && username.matches(Regex("^(((?! ).)+)@(.+)$"))
+
             val passwordValid = password.isNotEmpty()
             if (!(emailValid && passwordValid)) {
                 updateAuthState(AuthState.ValidationFailed)

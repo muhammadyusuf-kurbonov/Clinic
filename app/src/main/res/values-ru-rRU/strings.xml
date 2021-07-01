@@ -27,11 +27,10 @@
     <string name="send">Отправить</string>
     <string name="description_hint">Описание</string>
     <string name="purpose_msg">Укажите цель последнего вызова от клиента %1s</string>
-    <string name="add_user_request">Регистрация %s в качестве нового пациента</string>
     <string name="first_name_hint">Имя</string>
     <string name="last_name_hint">Фамилия</string>
     <string name="phone_number_hint">Телефон</string>
-    <string name="register_new_patient">Добавить нового пациента</string>
+    <string name="register_new_patient">Добавить нового пациента по номеру %1s</string>
     <string name="required_error">Обязательно</string>
 
     <string name="new_customer_toast">%1s теперь наш новый клиент</string>

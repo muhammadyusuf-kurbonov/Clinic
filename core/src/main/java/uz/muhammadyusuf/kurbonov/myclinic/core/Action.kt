@@ -10,6 +10,12 @@ sealed class Action {
         val isMissed: Boolean
     ) : Action()
 
+    class RegisterNewCustomer(
+        val firstName: String,
+        val lastName: String,
+        val phone: String
+    ) : Action()
+
     object RestoreStates : Action()
     object SaveStates : Action()
     object UpdateToken : Action()
