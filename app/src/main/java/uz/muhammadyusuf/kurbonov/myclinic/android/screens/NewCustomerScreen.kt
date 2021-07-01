@@ -120,7 +120,6 @@ fun NewCustomerForm(
                         style = MaterialTheme.typography.button
                     )
                 }
-                return
             }
             RegisterState.Registering -> {
                 Text(text = "Registering")
@@ -130,35 +129,37 @@ fun NewCustomerForm(
             }
         }
 
-        Row {
-            Button(
-                onClick = {
-                    finish()
-                },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
-            ) {
-                Text(
-                    text = stringResource(id = android.R.string.cancel),
-                    style = MaterialTheme.typography.button
-                )
-            }
-
-            Spacer(modifier = Modifier.width(4.dp))
-
-            val context = LocalContext.current
-            Button(onClick = {
-                try {
-                    register(firstName, lastName, phone)
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.new_customer_toast, firstName),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } catch (e: Exception) {
-                    e.printStackTrace()
+        if (state != RegisterState.RegisterSuccess) {
+            Row {
+                Button(
+                    onClick = {
+                        finish()
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
+                ) {
+                    Text(
+                        text = stringResource(id = android.R.string.cancel),
+                        style = MaterialTheme.typography.button
+                    )
                 }
-            }) {
-                Text(text = "Register", style = MaterialTheme.typography.button)
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                val context = LocalContext.current
+                Button(onClick = {
+                    try {
+                        register(firstName, lastName, phone)
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.new_customer_toast, firstName),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }) {
+                    Text(text = "Register", style = MaterialTheme.typography.button)
+                }
             }
         }
     }

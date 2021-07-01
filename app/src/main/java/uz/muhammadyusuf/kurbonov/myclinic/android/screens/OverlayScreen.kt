@@ -35,6 +35,7 @@ import androidx.work.WorkManager
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.imageloading.ImageLoadState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.activities.MainActivity
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
@@ -77,6 +78,8 @@ fun OverlayScreen() {
 
         Spacer(modifier = Modifier.width(4.dp))
 
+        val scope = rememberCoroutineScope()
+
         AnimatedVisibility(
             visible = isExpanded,
             enter = fadeIn(),
@@ -103,10 +106,14 @@ fun OverlayScreen() {
                         statesController.handle(Action.Search(phoneNumber))
                     },
                     finish = {
-                        WorkManager.getInstance(context)
-                            .cancelUniqueWork(
-                                "main",
-                            )
+                        scope.launch {
+                            delay(1500)
+
+                            WorkManager.getInstance(context)
+                                .cancelUniqueWork(
+                                    "main",
+                                )
+                        }
                     }
                 )
             }
