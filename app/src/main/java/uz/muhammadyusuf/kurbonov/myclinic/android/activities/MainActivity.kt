@@ -119,8 +119,8 @@ class MainActivity : AppCompatActivity() {
             R.id.mnLogout -> {
                 appStatesController.handle(Action.Logout)
             }
-            R.id.mnSettings -> {
-            }
+//            R.id.mnSettings -> {
+//            }
             R.id.mnPermissions -> {
                 navController.navigate("permissions")
             }
