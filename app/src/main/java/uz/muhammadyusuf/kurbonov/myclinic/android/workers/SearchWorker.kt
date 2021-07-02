@@ -52,6 +52,8 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
 
         appViewModel.handle(Action.Search(phone))
 
+        delay(1000)
+
         val overlayLayout = FrameLayout(applicationContext)
         val composeView = ComposeView(applicationContext)
         overlayLayout.addView(composeView.apply {

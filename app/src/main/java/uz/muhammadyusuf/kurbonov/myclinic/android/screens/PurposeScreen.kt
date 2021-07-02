@@ -3,6 +3,7 @@ package uz.muhammadyusuf.kurbonov.myclinic.android.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,11 +42,12 @@ fun PurposeScreen() {
     )
 
 
-    Column {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
         Text(
             text = stringResource(id = R.string.purpose_msg, phone),
-            style = MaterialTheme.typography.subtitle1
+            style = MaterialTheme.typography.subtitle1,
+            modifier = Modifier.fillMaxWidth()
         )
 
         for (purpose in purposes) {
