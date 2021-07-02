@@ -49,4 +49,5 @@
     <string name="no_prev_appointment">Нет назначенных встреч</string>
     <string name="registering_the_call">Регистрация звонка</string>
     <string name="change_appointment">Изменить встречу</string>
+    <string name="power_management_options_description">Отключение функции оптимизации питания для фоновой активности</string>
 </resources>

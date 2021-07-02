@@ -141,7 +141,7 @@ fun OverlayContent(
         return
     }
 
-    if (authState !is AuthState.AuthSuccess) {
+    if (authState !is AuthState.AuthSuccess && authState != AuthState.Default) {
 
         val context = LocalContext.current
 
