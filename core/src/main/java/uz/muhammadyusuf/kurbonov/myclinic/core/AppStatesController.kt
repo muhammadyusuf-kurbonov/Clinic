@@ -3,10 +3,12 @@ package uz.muhammadyusuf.kurbonov.myclinic.core
 import kotlinx.coroutines.*
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateAuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateCustomerState
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateRegisterState
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore.updateReportState
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.RegisterState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import uz.muhammadyusuf.kurbonov.myclinic.network.*
 import uz.muhammadyusuf.kurbonov.myclinic.network.models.AuthToken
@@ -24,15 +26,10 @@ class AppStatesController(
 ) : CoroutineScope {
 
     companion object {
-        internal val instances = mutableListOf<AppStatesController>()
+        internal lateinit var instance: AppStatesController
+
         fun pushAction(action: Action) {
-            if (instances.isEmpty())
-                throw IllegalStateException("No instances are initialized yet")
-            println(instances)
-            instances.forEach {
-                it.handle(action)
-                println("$it is handling $action")
-            }
+            instance.handle(action)
         }
     }
 
@@ -47,16 +44,8 @@ class AppStatesController(
                 Dispatchers.Default +
                 handler
 
-
     init {
-        instances.add(this)
-        coroutineContext.job.invokeOnCompletion {
-            instances.remove(this)
-        }
-    }
-
-    protected fun finalize() {
-        instances.remove(this)
+        instance = this
     }
 
     fun handle(action: Action) {
@@ -75,6 +64,37 @@ class AppStatesController(
             Action.UpdateToken -> {
                 repository.token = provider.readPreference("token", "")
             }
+            is Action.RegisterNewCustomer -> registerNewCustomer(
+                action.firstName,
+                action.lastName,
+                action.phone
+            )
+        }
+    }
+
+    private fun registerNewCustomer(
+        firstName: String,
+        lastName: String,
+        phone: String
+    ) = launch {
+        updateRegisterState(RegisterState.Registering)
+
+        val firstNameIsValid = firstName.isNotEmpty()
+        val phoneIsValid = phone.isNotEmpty()
+
+        if (!(firstNameIsValid && phoneIsValid)) {
+            updateRegisterState(RegisterState.VerificationFailed)
+            return@launch
+        }
+
+        try {
+            repository.addNewCustomer(firstName, lastName, phone)
+            updateRegisterState(RegisterState.RegisterSuccess)
+        } catch (e: NotConnectedException) {
+            updateRegisterState(RegisterState.ConnectionFailed)
+        } catch (e: AuthRequestException) {
+            updateRegisterState(RegisterState.Default)
+            updateAuthState(AuthState.AuthRequired)
         }
     }
 
@@ -130,6 +150,7 @@ class AppStatesController(
 
     private fun sendReport(missed: Boolean, callDirection: CallDirection, duration: Long) = launch {
         updateReportState(ReportState.Sending)
+
         if (AppStateStore.customerState.value is CustomerState.NotFound) {
             updateReportState(ReportState.AskToAddNewCustomer)
             return@launch
@@ -176,7 +197,9 @@ class AppStatesController(
     private fun login(username: String, password: String) = launch {
         try {
             updateAuthState(AuthState.Authenticating)
-            val emailValid = username.isNotEmpty() && username.matches(Regex("^(((?! ).)+)@(.+)$"))
+            val emailValid = username.isNotEmpty()
+                    && username.matches(Regex("^(((?! ).)+)@(.+)$"))
+
             val passwordValid = password.isNotEmpty()
             if (!(emailValid && passwordValid)) {
                 updateAuthState(AuthState.ValidationFailed)
@@ -204,6 +227,7 @@ class AppStatesController(
     private fun startSearch(phone: String) = launch {
         try {
             updateCustomerState(CustomerState.Searching)
+            updateReportState(ReportState.Default)
             val customerDto = repository.search(phone)
             val customer = customerDto.toCustomer()
             updateCustomerState(CustomerState.Found(customer))

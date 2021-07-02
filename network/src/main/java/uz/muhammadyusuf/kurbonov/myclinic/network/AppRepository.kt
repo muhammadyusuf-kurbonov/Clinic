@@ -57,6 +57,16 @@ interface AppRepository {
      */
     suspend fun authenticate(username: String, password: String): AuthToken
 
+    /**
+     * This method register new customer in system
+     *
+     * @param firstName must not be empty
+     * @param phone must not be empty
+     *
+     *  @throws AuthRequestException - when auth required (token expired)
+     *  @throws NotConnectedException - if there were problems with network
+     *  @throws APIException - if first_name or phone are empty
+     */
     suspend fun addNewCustomer(
         firstName: String,
         lastName: String,

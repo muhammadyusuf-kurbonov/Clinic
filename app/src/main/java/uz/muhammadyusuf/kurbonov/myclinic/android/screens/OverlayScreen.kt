@@ -1,5 +1,7 @@
 package uz.muhammadyusuf.kurbonov.myclinic.android.screens
 
+import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
@@ -21,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -28,13 +31,21 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.work.WorkManager
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.imageloading.ImageLoadState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.activities.MainActivity
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalPhoneNumberProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
 import uz.muhammadyusuf.kurbonov.myclinic.core.models.Customer
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.CustomerState
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -67,6 +78,8 @@ fun OverlayScreen() {
 
         Spacer(modifier = Modifier.width(4.dp))
 
+        val scope = rememberCoroutineScope()
+
         AnimatedVisibility(
             visible = isExpanded,
             enter = fadeIn(),
@@ -76,13 +89,33 @@ fun OverlayScreen() {
                 .border(1.dp, MaterialTheme.colors.primary, shape = RoundedCornerShape(8.dp))
         ) {
 
-            val appViewModel = AppViewModelProvider.current
+            val context = LocalContext.current
+            val statesController = LocalAppControllerProvider.current
+            val phoneNumber = LocalPhoneNumberProvider.current
 
-            val authState by appViewModel.authState.collectAsState()
-            val customerState by appViewModel.customerState.collectAsState()
+            val authState by AppStateStore.authState.collectAsState()
+            val customerState by AppStateStore.customerState.collectAsState()
+            val reportState by AppStateStore.reportState.collectAsState()
 
             Box(Modifier.padding(4.dp)) {
-                OverlayContent(authState = authState, customerState = customerState)
+                OverlayContent(
+                    authState = authState,
+                    customerState = customerState,
+                    reportState = reportState,
+                    retry = {
+                        statesController.handle(Action.Search(phoneNumber))
+                    },
+                    finish = {
+                        scope.launch {
+                            delay(1500)
+
+                            WorkManager.getInstance(context)
+                                .cancelUniqueWork(
+                                    "main",
+                                )
+                        }
+                    }
+                )
             }
         }
     }
@@ -91,34 +124,103 @@ fun OverlayScreen() {
 @Composable
 fun OverlayContent(
     authState: AuthState,
-    customerState: CustomerState
+    customerState: CustomerState,
+    reportState: ReportState,
+    retry: () -> Unit = {},
+    finish: () -> Unit = {}
 ) {
     if ((authState is AuthState.ConnectionFailed) or
         (customerState is CustomerState.ConnectionFailed)
     ) {
-        Column {
-            Text(text = stringResource(id = R.string.no_connection))
-            Spacer(modifier = Modifier.height(2.dp))
-            Button(onClick = { /*TODO*/ }) {
-                Text(text = "Retry")
-            }
+        SimpleActionButton(
+            label = stringResource(id = R.string.no_internet_connection),
+            buttonLabel = stringResource(id = R.string.retry)
+        ) {
+            retry()
         }
         return
     }
 
     if (authState !is AuthState.AuthSuccess) {
-        // todo: start login page and retry
+
+        val context = LocalContext.current
+
+        LaunchedEffect(key1 = Unit) {
+            context.startActivity(
+                Intent(
+                    context,
+                    MainActivity::class.java
+                )
+                    .putExtra("route", "login")
+                    .addFlags(FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = stringResource(id = R.string.auth_request),
+                style = MaterialTheme.typography.subtitle2
+            )
+            Button(onClick = { retry() }) {
+                Text(text = stringResource(R.string.retry), style = MaterialTheme.typography.button)
+            }
+        }
+        return
     }
 
-    when (customerState) {
-        CustomerState.ConnectionFailed -> {
-        } // implemented before
-        CustomerState.Default -> {
-            Text(text = "Welcome")
+    if (reportState == ReportState.Default) {
+        when (customerState) {
+            CustomerState.ConnectionFailed -> {
+            } // implemented before
+            CustomerState.Default -> {
+                Text(
+                    text = stringResource(id = R.string.searching),
+                    style = MaterialTheme.typography.subtitle2
+                )
+            }
+            is CustomerState.Found -> CustomerInfo(customer = customerState.customer)
+            CustomerState.NotFound -> {
+                Text(
+                    text = stringResource(id = R.string.not_found),
+                    style = MaterialTheme.typography.subtitle2
+                )
+            }
+            CustomerState.Searching -> {
+                Text(
+                    text = stringResource(id = R.string.searching),
+                    style = MaterialTheme.typography.subtitle2
+                )
+            }
         }
-        is CustomerState.Found -> CustomerInfo(customer = customerState.customer)
-        CustomerState.NotFound -> {
-            Text(text = stringResource(id = R.string.not_found))
+    } else {
+        when (reportState) {
+            ReportState.AskToAddNewCustomer -> {
+                NewCustomerScreen(
+                    finish = finish
+                )
+            }
+            ReportState.ConnectionFailed -> {
+            } //implemented before
+            ReportState.Default -> {
+            }
+            is ReportState.PurposeRequested -> {
+                PurposeScreen()
+            }
+            ReportState.Sending -> Text(
+                text = stringResource(R.string.registering_the_call),
+                style = MaterialTheme.typography.subtitle2
+            )
+            ReportState.Submitted -> {
+                Text(
+                    text = "The call is registered",
+                    style = MaterialTheme.typography.subtitle2,
+                    color = Color.Green
+                )
+                LaunchedEffect(key1 = "ending") {
+                    delay(1500)
+                    finish()
+                }
+            }
         }
     }
 }
@@ -211,7 +313,7 @@ fun CustomerInfo(customer: Customer) {
                     Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
                 } else {
                     Text(
-                        text = "There isn't coming appointment yet",
+                        text = stringResource(R.string.no_next_appointment),
                         modifier = Modifier.padding(4.dp),
                         style = MaterialTheme.typography.body2
                     )
@@ -244,11 +346,30 @@ fun CustomerInfo(customer: Customer) {
                     Text(text = lastAppointmentText, modifier = Modifier.padding(4.dp))
                 } else {
                     Text(
-                        text = "No previous appointment yet", modifier = Modifier.padding(4.dp),
+                        text = stringResource(R.string.no_prev_appointment),
+                        modifier = Modifier.padding(4.dp),
                         style = MaterialTheme.typography.body2
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SimpleActionButton(
+    label: String,
+    buttonLabel: String,
+    action: () -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.subtitle2
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Button(onClick = { action() }) {
+            Text(text = buttonLabel, style = MaterialTheme.typography.button)
         }
     }
 }

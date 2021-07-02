@@ -18,11 +18,16 @@ import androidx.work.WorkerParameters
 import io.github.hyuwah.draggableviewlib.OverlayDraggableListener
 import io.github.hyuwah.draggableviewlib.makeOverlayDraggable
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 import uz.muhammadyusuf.kurbonov.myclinic.android.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.OverlayScreen
-import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalPhoneNumberProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 
 class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
@@ -35,18 +40,26 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
 
     @ExperimentalAnimationApi
     override suspend fun doWork(): Result = withContext(Dispatchers.Default) {
+
+        val phone = inputData.getString("phone") ?: throw IllegalStateException("No phone sent")
+
         val provider = SystemFunctionsProvider()
-        val appViewModel = AppViewModel(
+        val appViewModel = AppStatesController(
             coroutineContext,
             provider,
             AppRepository(provider.readPreference("token", ""))
         )
 
+        appViewModel.handle(Action.Search(phone))
+
         val overlayLayout = FrameLayout(applicationContext)
         val composeView = ComposeView(applicationContext)
         overlayLayout.addView(composeView.apply {
             setContent {
-                CompositionLocalProvider(AppViewModelProvider provides appViewModel) {
+                CompositionLocalProvider(
+                    LocalAppControllerProvider provides appViewModel,
+                    LocalPhoneNumberProvider provides phone
+                ) {
                     AppTheme {
                         OverlayScreen()
                     }
@@ -67,13 +80,31 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
             provider.readPreference("OVERLAY_X_POS", 0),
             provider.readPreference("OVERLAY_Y_POS", 0),
             layoutFlag,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                    or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
 
         val params = composeView.makeOverlayDraggable(listener = this@SearchWorker, positionParams)
+        view.layoutParams = params
         windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE)
                 as WindowManager
+
+
+        launch(Dispatchers.Main) {
+            AppStateStore.reportState.collect {
+                try {
+                    val viewParams = view.layoutParams as WindowManager.LayoutParams
+                    if ((it is ReportState.PurposeRequested) or (it is ReportState.AskToAddNewCustomer)) {
+                        viewParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                    } else {
+                        viewParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    }
+                    windowManager.updateViewLayout(view, viewParams)
+                } catch (e: Exception) {
+                }
+            }
+        }
 
         withContext(Dispatchers.Main) {
             val viewModelStore = ViewModelStore()

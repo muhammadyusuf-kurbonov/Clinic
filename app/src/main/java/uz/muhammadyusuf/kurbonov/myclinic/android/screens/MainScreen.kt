@@ -59,7 +59,7 @@ fun MainScreen(permissionsGranted: Boolean) {
                 }) {
                     Surface(color = Color.Red, contentColor = Color.White) {
                         Text(
-                            text = stringResource(id = R.string.main_label_ask_permission),
+                            text = stringResource(id = R.string.ask_permissions),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp),

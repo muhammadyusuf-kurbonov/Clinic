@@ -1,51 +1,69 @@
 <resources>
     <string name="app_name" translatable="false">32Desk</string>
-    <string name="main_label_ask_permission">Please give me permission and I will be ready</string>
-    <string name="open_medical_card">Open card</string>
+
+
+    //Main screen string
+    <string name="ask_permissions">Please give me permission and I will be ready</string>
+    <string name="main_label_text">Welcome! Logged in as \n%s</string>
+    <string name="version_template" translatable="false">%1s v.%2s</string>
+
+    // Hints
     <string name="email_hint">Email</string>
-    <string name="password">Password</string>
+    <string name="password_hint">Password</string>
+    <string name="phone_number_hint">Phone number</string>
+    <string name="description_hint">Description</string>
+    <string name="first_name_hint">First name</string>
+    <string name="last_name_hint">Last name</string>
+
+    // Buttons
     <string name="login">Login</string>
+    <string name="logout">Logout</string>
+    <string name="send">Send</string>
+    <string name="retry">Retry</string>
+    <string name="open_medical_card">Open card</string>
+    <string name="settings">Settings</string>
+    <string name="permissions">Permissions</string>
+
+    // Subtitles
     <string name="next_appointment">Next Appointment</string>
     <string name="previous_appointment">Previous Appointment</string>
-    <string name="searching_text">Searching …</string>
-    <string name="read_timeout">Connection timeout</string>
-    <string name="no_connection">No internet connection</string>
+    <string name="balance">Balance: %1d</string>
+    <string name="no_next_appointment">There isn\'t coming appointment yet</string>
+    <string name="no_prev_appointment">No previous appointment yet</string>
+
+    // State strings
+    <string name="searching">Searching …</string>
+    <string name="connection_timeout">Connection timeout</string>
+    <string name="no_internet_connection">No internet connection</string>
     <string name="unknown_error">Sorry, error occurred!</string>
     <string name="not_found">Nobody was found</string>
     <string name="auth_request">Login, please</string>
-    <string name="balance">Balance: %1d</string>
-    <string name="main_label_text">Welcome! Logged in as \n%s</string>
-    <string name="logout">Logout</string>
-    <string name="logging_in_caption">Wait please …</string>
+    <string name="wait_please">Wait please …</string>
     <string name="login_success">Login success</string>
     <string name="login_failed">Login failed. Wrong login or password</string>
-    <string name="send_caption">Send</string>
-    <string name="description_hint">Description</string>
-    <string name="explain_title">Specify the purpose of the call</string>
-    <string name="additional_info">Additional information</string>
-    <string name="others">Other</string>
-    <string name="address_label">Ask address</string>
-    <string name="book_appointment">Make an appointment</string>
-    <string name="connection_error">Connection error</string>
+    <string name="registering_the_call">Registering the call</string>
     <string name="purpose_msg">Please, specify purpose of call from %1s </string>
-    <string name="add_user_request">Tap to add %1s as new patient</string>
-    <string name="first_name_hint">First name</string>
-    <string name="last_name">Last name</string>
-    <string name="phone_number_hint">Phone number</string>
-    <string name="register_new_patient">Register new patient</string>
+
+    // Purposes
+    <string name="make_appointment">Make an appointment</string>
+    <string name="change_appointment">Change appointment</string>
+    <string name="ask_address">Ask address</string>
+    <string name="additional_info">Additional information</string>
+    <string name="other">Other</string>
+
+    //Registration string
+    <string name="register_new_patient">Register new patient with phone %1s</string>
     <string name="required_error">Required</string>
-    <string name="version_template" translatable="false">%1s v.%2s</string>
-    <string name="not_granted">Grant, please those permissions: %1s</string>
-    <string name="call_direction">Call direction</string>
+
     <string name="new_customer_toast">%1s is now our customer</string>
     <string name="ask_background_permission">On this device you must allow us to run services in background</string>
     <string name="common_settings_category_title">Common</string>
     <string name="notification_pref_title">Notification type</string>
     <string name="no_power_mangement_access">I haven\'t got access to go to settings. Please goto settings and manually disable battery optimization and allow background activity, please</string>
-    <string name="autoclose_title">Auto-close \"Add new customer\" request</string>
-    <string name="settings_title">Settings</string>
-    <string name="permissions_title">Permissions</string>
+
     <string name="permissions_overline">Please, give us these\n</string>
+
+    // Permissions descriptions
     <string name="read_call_state_desc">Access to call state</string>
     <string name="read_call_log_desc">Access to call log</string>
     <string name="huawei_use_component_desc">Access special HUAWEI settings page</string>

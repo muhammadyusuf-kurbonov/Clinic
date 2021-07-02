@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -21,15 +22,16 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.imePadding
 import kotlinx.coroutines.delay
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.android.shared.AppViewModelProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 
 @Composable
 fun LoginScreen() {
-    val appViewModel = AppViewModelProvider.current
-    val state = appViewModel.authState.collectAsState()
+    val appViewModel = LocalAppControllerProvider.current
+    val state = AppStateStore.authState.collectAsState()
 
     LoginForm(state) { email, password ->
         appViewModel.handle(Action.Login(email, password))
@@ -111,7 +113,10 @@ fun LoginForm(
                     Text(text = stringResource(id = R.string.login_failed), color = Color.Red)
                 }
                 is AuthState.Authenticating -> {
-                    Text(text = stringResource(id = R.string.logging_in_caption))
+                    Text(text = stringResource(id = R.string.wait_please))
+                }
+                AuthState.ConnectionFailed -> {
+                    Text(text = stringResource(id = R.string.no_internet_connection))
                 }
                 else -> {
                 }
@@ -152,7 +157,7 @@ fun PasswordField(
     OutlinedTextField(
         value = state, onValueChange = onValueChange,
         label = {
-            Text(text = stringResource(id = R.string.password))
+            Text(text = stringResource(id = R.string.password_hint))
         },
         modifier = Modifier
             .padding(4.dp),
@@ -172,7 +177,10 @@ fun PasswordField(
         visualTransformation = if (isPasswordVisible)
             VisualTransformation.None else
             PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Done,
+            keyboardType = KeyboardType.Password
+        ),
         keyboardActions = KeyboardActions(onDone = {
             focusManager.clearFocus()
         })

@@ -42,7 +42,7 @@ fun PermissionScreen() = Column(modifier = Modifier.padding(8.dp)) {
             append(stringResource(R.string.permissions_overline))
         }
         withStyle(MaterialTheme.typography.h6.toSpanStyle()) {
-            append(stringResource(R.string.permissions_title))
+            append(stringResource(R.string.permissions))
         }
     })
     val context = LocalContext.current
