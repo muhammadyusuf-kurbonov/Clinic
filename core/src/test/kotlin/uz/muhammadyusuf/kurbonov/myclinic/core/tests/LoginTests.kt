@@ -7,7 +7,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.network.APIException
@@ -37,9 +38,9 @@ class LoginTests {
         }
 
         runBlocking {
-            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            val loginViewModel = AppStatesController(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("demo@32desk.com", "demo"))
-            loginViewModel.authState.assertEmitted {
+            AppStateStore.authState.assertEmitted {
                 AuthState.AuthSuccess == it
             }
             coVerify { provider.writePreference("token", "dummy") }
@@ -64,9 +65,9 @@ class LoginTests {
         }
 
         runBlocking {
-            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            val loginViewModel = AppStatesController(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("demo@32desk.com", "demo123"))
-            loginViewModel.authState.assertEmitted {
+            AppStateStore.authState.assertEmitted {
                 AuthState.AuthFailed == it
             }
             coVerify { provider.writePreference("token", "") }
@@ -89,9 +90,9 @@ class LoginTests {
         }
 
         runBlocking {
-            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
-            loginViewModel.handle(Action.Login("demo@32desk.com", "demo123"))
-            loginViewModel.authState.assertEmitted {
+            val controller = AppStatesController(this.coroutineContext, provider, repository)
+            controller.handle(Action.Login("demo@32desk.com", "demo123"))
+            AppStateStore.authState.assertEmitted {
                 AuthState.ConnectionFailed == it
             }
         }
@@ -113,7 +114,8 @@ class LoginTests {
 
         assertFailsWith<APIException> {
             runBlocking {
-                val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+                val loginViewModel =
+                    AppStatesController(this.coroutineContext, provider, repository)
                 loginViewModel.handle(Action.Login("demo@32desk.com", "demo"))
                 runBlocking { delay(2000) }
             }
@@ -135,9 +137,9 @@ class LoginTests {
         }
 
         runBlocking {
-            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            val loginViewModel = AppStatesController(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("", "demo"))
-            loginViewModel.authState.assertEmitted {
+            AppStateStore.authState.assertEmitted {
                 it == AuthState.ValidationFailed
             }
         }
@@ -159,9 +161,9 @@ class LoginTests {
         }
 
         runBlocking {
-            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            val loginViewModel = AppStatesController(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("demo123", "demo"))
-            loginViewModel.authState.assertEmitted {
+            AppStateStore.authState.assertEmitted {
                 it == AuthState.ValidationFailed
             }
         }
@@ -183,9 +185,9 @@ class LoginTests {
         }
 
         runBlocking {
-            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
+            val loginViewModel = AppStatesController(this.coroutineContext, provider, repository)
             loginViewModel.handle(Action.Login("demo@32desk.com", ""))
-            loginViewModel.authState.assertEmitted {
+            AppStateStore.authState.assertEmitted {
                 it == AuthState.ValidationFailed
             }
         }

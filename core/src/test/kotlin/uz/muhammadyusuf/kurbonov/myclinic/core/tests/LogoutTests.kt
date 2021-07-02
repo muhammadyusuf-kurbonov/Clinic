@@ -6,7 +6,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppViewModel
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
 import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
@@ -25,9 +26,9 @@ class LogoutTests {
         }
 
         runBlocking {
-            val loginViewModel = AppViewModel(this.coroutineContext, provider, repository)
-            loginViewModel.handle(Action.Logout)
-            loginViewModel.authState.assertEmitted {
+            val statesController = AppStatesController(this.coroutineContext, provider, repository)
+            statesController.handle(Action.Logout)
+            AppStateStore.authState.assertEmitted {
                 AuthState.AuthRequired == it
             }
             coVerify {

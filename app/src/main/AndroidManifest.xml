@@ -22,25 +22,7 @@
         android:theme="@style/Theme.MyClinic"
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
-        <activity
-            android:name=".android.activities.PermissionsActivity"
-            android:exported="true" />
-        <activity
-            android:name=".android.activities.ComposeActivity"
-            android:exported="true" />
-        <activity
-            android:name=".android.activities.SettingsActivity"
-            android:exported="true" />
-        <activity
-            android:name=".android.activities.NewCustomerActivity"
-            android:exported="true"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.DayNight.Dialog.Alert" />
-        <activity
-            android:name=".android.activities.NoteActivity"
-            android:excludeFromRecents="true"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.DayNight.Dialog.Alert" />
+
         <activity
             android:name=".android.activities.MainActivity"
             android:exported="true">
@@ -50,10 +32,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".android.activities.LoginActivity"
-            android:exported="true"
-            android:launchMode="singleTask" />
 
         <receiver
             android:name=".android.recievers.CallReceiver"
@@ -64,9 +42,9 @@
             </intent-filter>
         </receiver>
 
-        <meta-data
-            android:name="firebase_performance_logcat_enabled"
-            android:value="true" />
+        <!--        <meta-data-->
+        <!--            android:name="firebase_performance_logcat_enabled"-->
+        <!--            android:value="true" />-->
     </application>
 
 </manifest>

@@ -11,6 +11,8 @@ import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.authentification.AuthReq
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.communications.CommunicationInfo
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customer_search.CustomerDTO
 import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.customers.CustomerAddRequestBody
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.treatment.TreatmentDTO
+import uz.muhammadyusuf.kurbonov.myclinic.network.pojos.users.UserDTO
 import uz.muhammadyusuf.kurbonov.myclinic.shared.attempts
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -77,6 +79,28 @@ internal class AppRepositoryImpl(override var token: String, baseUrl: String) : 
             throw mapToDomainExceptions(e)
         }
 
+    }
+
+    override suspend fun getUser(id: String): UserDTO.Data {
+        val user = try {
+            service.getUser(id)
+        } catch (e: Exception) {
+            throw mapToDomainExceptions(e)
+        }
+        if (user.total != 1)
+            throw IllegalArgumentException("Id seems is wrong. Test it $id")
+        return user.data[0]
+    }
+
+    override suspend fun getTreatment(id: String): TreatmentDTO.Data {
+        val treatment = try {
+            service.getTreatment(id)
+        } catch (e: Exception) {
+            throw mapToDomainExceptions(e)
+        }
+        if (treatment.total != 1)
+            throw IllegalArgumentException("Id seems is wrong. Test it $id")
+        return treatment.data[0]
     }
 
     override suspend fun sendCommunicationInfo(
