@@ -15,8 +15,8 @@ android {
         applicationId "uz.muhammadyusuf.kurbonov.myclinic"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 4
-        versionName '0.2.2.0-special'
+        versionCode 5
+        versionName '0.3.0.0'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

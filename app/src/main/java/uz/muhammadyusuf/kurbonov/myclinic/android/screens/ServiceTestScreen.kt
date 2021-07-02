@@ -24,7 +24,7 @@ import uz.muhammadyusuf.kurbonov.myclinic.core.CallDirection
 @Composable
 fun ServiceTestScreen() {
     val context = LocalContext.current
-    Box {
+    Box(modifier = Modifier.padding(8.dp)) {
         var phone by remember {
             mutableStateOf("")
         }
