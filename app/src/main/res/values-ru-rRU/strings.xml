@@ -16,14 +16,13 @@
     <string name="balance">Баланс: %1d</string>
     <string name="main_label_text">Добро пожаловать.\nВы вошли как \n %s</string>
     <string name="logout">Выйти</string>
-    <string name="authenticating">Подождите …</string>
+    <string name="wait_please">Подождите …</string>
     <string name="login_success">Вход успешен</string>
     <string name="login_failed">Вход не удался. Неверный логин или пароль</string>
-    <string name="explain_title">Укажите цель вызова</string>
-    <string name="book_appointment">Запись на приём</string>
+    <string name="make_appointment">Запись на приём</string>
     <string name="additional_info">Дополнительная информация</string>
-    <string name="others">Другое</string>
-    <string name="address_label">Узнать адрес</string>
+    <string name="other">Другое</string>
+    <string name="ask_address">Узнать адрес</string>
     <string name="send">Отправить</string>
     <string name="description_hint">Описание</string>
     <string name="purpose_msg">Укажите цель последнего вызова от клиента %1s</string>
@@ -38,7 +37,6 @@
     <string name="common_settings_category_title">Общие</string>
     <string name="notification_pref_title">Тип уведомления</string>
     <string name="no_power_mangement_access">Нет доступа к настройкам. Пожалуйста, для корректной работы приложения зайдите в настройки и вручную отключите оптимизацию батареи и разрешите фоновую деятельность.</string>
-    <string name="autoclose_title">Автозакрытие диалога \"Добавить нового клиента\"</string>
     <string name="settings">Настройки</string>
     <string name="permissions">Разрешения</string>
     <string name="permissions_overline">Пожалуйста, предоставьте нам эти \n</string>
@@ -50,4 +48,5 @@
     <string name="no_next_appointment">Нет предстоящих встреч</string>
     <string name="no_prev_appointment">Нет назначенных встреч</string>
     <string name="registering_the_call">Регистрация звонка</string>
+    <string name="change_appointment">Изменить встречу</string>
 </resources>

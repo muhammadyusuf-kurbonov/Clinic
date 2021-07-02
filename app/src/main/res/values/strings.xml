@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name" translatable="false">32Desk</string>
 
+
+    //Main screen string
     <string name="ask_permissions">Please give me permission and I will be ready</string>
     <string name="main_label_text">Welcome! Logged in as \n%s</string>
-    <string name="purpose_msg">Please, specify purpose of call from %1s </string>
     <string name="version_template" translatable="false">%1s v.%2s</string>
 
     // Hints
@@ -37,17 +38,20 @@
     <string name="unknown_error">Sorry, error occurred!</string>
     <string name="not_found">Nobody was found</string>
     <string name="auth_request">Login, please</string>
-    <string name="authenticating">Wait please …</string>
+    <string name="wait_please">Wait please …</string>
     <string name="login_success">Login success</string>
     <string name="login_failed">Login failed. Wrong login or password</string>
-    <string name="explain_title">Specify the purpose of the call</string>
+    <string name="registering_the_call">Registering the call</string>
+    <string name="purpose_msg">Please, specify purpose of call from %1s </string>
 
     // Purposes
-    <string name="book_appointment">Make an appointment</string>
-    <string name="address_label">Ask address</string>
+    <string name="make_appointment">Make an appointment</string>
+    <string name="change_appointment">Change appointment</string>
+    <string name="ask_address">Ask address</string>
     <string name="additional_info">Additional information</string>
-    <string name="others">Other</string>
+    <string name="other">Other</string>
 
+    //Registration string
     <string name="register_new_patient">Register new patient with phone %1s</string>
     <string name="required_error">Required</string>
 
@@ -56,7 +60,6 @@
     <string name="common_settings_category_title">Common</string>
     <string name="notification_pref_title">Notification type</string>
     <string name="no_power_mangement_access">I haven\'t got access to go to settings. Please goto settings and manually disable battery optimization and allow background activity, please</string>
-    <string name="autoclose_title">Auto-close \"Add new customer\" request</string>
 
     <string name="permissions_overline">Please, give us these\n</string>
 
@@ -65,5 +68,4 @@
     <string name="read_call_log_desc">Access to call log</string>
     <string name="huawei_use_component_desc">Access special HUAWEI settings page</string>
     <string name="foreground_permission_desc">Permission to work on background</string>
-    <string name="registering_the_call">Registering the call</string>
 </resources>

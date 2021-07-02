@@ -113,7 +113,7 @@ fun LoginForm(
                     Text(text = stringResource(id = R.string.login_failed), color = Color.Red)
                 }
                 is AuthState.Authenticating -> {
-                    Text(text = stringResource(id = R.string.authenticating))
+                    Text(text = stringResource(id = R.string.wait_please))
                 }
                 AuthState.ConnectionFailed -> {
                     Text(text = stringResource(id = R.string.no_internet_connection))

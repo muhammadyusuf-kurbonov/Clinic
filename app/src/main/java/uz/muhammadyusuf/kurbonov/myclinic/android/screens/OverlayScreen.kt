@@ -127,7 +127,6 @@ fun OverlayContent(
     customerState: CustomerState,
     reportState: ReportState,
     retry: () -> Unit = {},
-    requestPurpose: () -> Unit = {},
     finish: () -> Unit = {}
 ) {
     if ((authState is AuthState.ConnectionFailed) or
@@ -194,7 +193,6 @@ fun OverlayContent(
             }
         }
     } else {
-        val phone = LocalPhoneNumberProvider.current
         when (reportState) {
             ReportState.AskToAddNewCustomer -> {
                 NewCustomerScreen(
@@ -206,12 +204,7 @@ fun OverlayContent(
             ReportState.Default -> {
             }
             is ReportState.PurposeRequested -> {
-                SimpleActionButton(
-                    label = stringResource(id = R.string.purpose_msg, phone),
-                    buttonLabel = "Open dialog"
-                ) {
-                    requestPurpose()
-                }
+                PurposeScreen()
             }
             ReportState.Sending -> Text(
                 text = stringResource(R.string.registering_the_call),
