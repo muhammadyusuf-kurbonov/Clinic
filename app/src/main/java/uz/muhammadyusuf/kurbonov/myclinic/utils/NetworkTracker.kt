@@ -15,15 +15,15 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import javax.net.SocketFactory
 
+@ExperimentalCoroutinesApi
 class NetworkTracker(context: Context) {
     private val manager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
     private val validNetworks = mutableListOf<Network>()
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val connectedToInternet = callbackFlow {
 
-        offer(true)
+        this.trySend(true).isSuccess
 
         val networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
@@ -47,8 +47,8 @@ class NetworkTracker(context: Context) {
             }
 
             fun commit() {
-                Timber.tag(TAG_NETWORK_TRACKER).d("Network state is ${validNetworks.isNotEmpty()}")
-                offer(validNetworks.isNotEmpty())
+                Timber.d("Network state is ${validNetworks.isNotEmpty()}")
+                trySend(validNetworks.isNotEmpty())
             }
         }
 
@@ -64,18 +64,18 @@ class NetworkTracker(context: Context) {
 
     private fun ping(): Boolean {
         return try {
-            Timber.tag(TAG_NETWORK_TRACKER).d("PINGING google.")
+            Timber.d("PINGING google.")
 
             val socket =
                 SocketFactory.getDefault().createSocket() ?: throw IOException("Socket is null.")
             socket.connect(InetSocketAddress("8.8.8.8", 53), 1500)
             socket.close()
 
-            Timber.tag(TAG_NETWORK_TRACKER).d("PING success.")
+            Timber.d("PING success.")
             true
         } catch (e: IOException) {
             e.printStackTrace()
-            Timber.tag(TAG_NETWORK_TRACKER).e("No internet connection. $e")
+            Timber.d("No internet connection. $e")
             false
         }
     }

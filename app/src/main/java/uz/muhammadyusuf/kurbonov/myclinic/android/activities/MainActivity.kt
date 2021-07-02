@@ -1,271 +1,112 @@
 package uz.muhammadyusuf.kurbonov.myclinic.android.activities
 
-import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.ComponentName
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.TextView
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationManagerCompat
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import com.google.firebase.crashlytics.FirebaseCrashlytics
-import kotlinx.coroutines.runBlocking
-import timber.log.Timber
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import uz.muhammadyusuf.kurbonov.myclinic.App
-import uz.muhammadyusuf.kurbonov.myclinic.BuildConfig
 import uz.muhammadyusuf.kurbonov.myclinic.R
-import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker
-import uz.muhammadyusuf.kurbonov.myclinic.android.works.BackgroundCheckWorker.Companion.AUTO_START_PREF_KEY
-import uz.muhammadyusuf.kurbonov.myclinic.di.API
-import uz.muhammadyusuf.kurbonov.myclinic.utils.initTimber
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
-
+import uz.muhammadyusuf.kurbonov.myclinic.android.SystemFunctionsProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.LoginScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.MainScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.PermissionScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.screens.ServiceTestScreen
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissions
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
+import uz.muhammadyusuf.kurbonov.myclinic.core.Action
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
+import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
+import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
+import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
+import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 
 class MainActivity : AppCompatActivity() {
 
-    companion object {
-        @Suppress("SpellCheckingInspection")
-        private val POWER_MANAGER_INTENTS = arrayOf(
-            //region HAWEI
-            Intent().setComponent(
-                ComponentName(
-                    "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.optimize.process.ProtectActivity"
-                )
-            ),
-            Intent().setComponent(
-                ComponentName(
-                    "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
-                )
-            ),
-            Intent().setComponent(
-                ComponentName(
-                    "com.huawei.systemmanager",
-                    "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"
-                )
-            ),
-            //endregion
+    @ExperimentalPermissionsApi
+    @Composable
+    fun MainActivityCompose(
+        navController: NavHostController,
+        appStatesController: AppStatesController
+    ) {
 
-            //region XIAOMI
-            Intent().setComponent(
-                ComponentName(
-                    "com.miui.securitycenter",
-                    "com.miui.permcenter.autostart.AutoStartManagementActivity"
-                )
-            ),
-            Intent("miui.intent.action.POWER_HIDE_MODE_APP_LIST").addCategory(Intent.CATEGORY_DEFAULT),
-            Intent("miui.intent.action.OP_AUTO_START").addCategory(Intent.CATEGORY_DEFAULT),
-            Intent().setComponent(
-                ComponentName(
-                    "com.miui.securitycenter",
-                    "com.miui.powercenter.PowerSettings"
-                )
-            ),
-            //endregion
+        CompositionLocalProvider(
+            LocalNavigation provides navController,
+            LocalAppControllerProvider provides appStatesController
+        ) {
+            AppTheme {
+                NavHost(navController = navController, startDestination = "main") {
+                    composable("main") {
+                        val permissionsGranted =
+                            rememberMultiplePermissionsState(allAppPermissions.toList())
+                                .allPermissionsGranted and
+                                    Settings.canDrawOverlays(LocalContext.current)
 
-            //region LETV
-            Intent().setComponent(
-                ComponentName(
-                    "com.letv.android.letvsafe",
-                    "com.letv.android.letvsafe.AutobootManageActivity"
-                )
-            ),
-            //endregion
+                        MainScreen(permissionsGranted)
+                    }
+                    composable("permissions") { PermissionScreen() }
+                    composable("login") { LoginScreen() }
 
+                    // TODO: Remove, it's for test
+                    composable("service_test") { ServiceTestScreen() }
+                }
+                val authState = AppStateStore.authState.collectAsState()
+                val tokenIsEmpty = provider.readPreference("token", "").isEmpty()
 
-            //region COLOROS
-            Intent().setComponent(
-                ComponentName(
-                    "com.coloros.safecenter",
-                    "com.coloros.safecenter.permission.startup.StartupAppListActivity"
-                )
-            ),
-            Intent().setComponent(
-                ComponentName(
-                    "com.coloros.safecenter",
-                    "com.coloros.safecenter.startupapp.StartupAppListActivity"
-                )
-            ),
-            //endregion
+                LaunchedEffect(key1 = Unit) {
+                    val route = intent.extras?.getString("route", null)
+                    if (route != null)
+                        navController.navigate(route)
+                }
 
-
-            //region OPPO
-            Intent().setComponent(
-                ComponentName(
-                    "com.oppo.safe",
-                    "com.oppo.safe.permission.startup.StartupAppListActivity"
-                )
-            ),
-            //endregion
-
-
-            //region IQOO
-            Intent().setComponent(
-                ComponentName(
-                    "com.iqoo.secure",
-                    "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"
-                )
-            ),
-            Intent().setComponent(
-                ComponentName(
-                    "com.iqoo.secure",
-                    "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager"
-                )
-            ),
-            //endregion
-
-
-            //region VIVO
-            Intent().setComponent(
-                ComponentName(
-                    "com.vivo.permissionmanager",
-                    "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"
-                )
-            ),
-            //endregion
-
-
-            //region SAMSUNG
-            Intent().setComponent(
-                ComponentName(
-                    "com.samsung.android.lool",
-                    "com.samsung.android.sm.ui.battery.BatteryActivity"
-                )
-            ),
-            //endregion
-
-            //region HTC
-            Intent().setComponent(
-                ComponentName(
-                    "com.htc.pitroad",
-                    "com.htc.pitroad.landingpage.activity.LandingPageActivity"
-                )
-            ),
-            //endregion
-
-
-            //region ASUS
-            Intent().setComponent(
-                ComponentName(
-                    "com.asus.mobilemanager",
-                    "com.asus.mobilemanager.MainActivity"
-                )
-            ),
-            //endregion
-
-        )
-
-    }
-
-    private val permissionsRequest =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            val notGrantedPermissions = mutableListOf<String>()
-
-            it.keys.filter { permission ->
-                permission !in arrayListOf(
-                    "android.permission.READ_PRIVILEGED_PHONE_STATE"
-                )
-            }.forEach { permission ->
-                if (it[permission] != true)
-                    notGrantedPermissions.add(permission)
-            }
-
-            if (notGrantedPermissions.isNotEmpty())
-                mainTextView.text =
-                    getString(R.string.not_granted, notGrantedPermissions.joinToString())
-            }
-
-    private val overlayRequest =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!Settings.canDrawOverlays(this)) {
-                    mainTextView.setText(R.string.main_label_ask_permission)
+                if ((authState.value is AuthState.AuthRequired) or tokenIsEmpty) {
+                    LaunchedEffect(key1 = "started") {
+                        navController.navigate("login")
+                    }
                 }
             }
         }
-
-
-    private val mainTextView: TextView by lazy {
-        findViewById(R.id.tvMain)
     }
 
+    private lateinit var appStatesController: AppStatesController
+    private lateinit var provider: SystemFunctionsProvider
+    private lateinit var navController: NavHostController
 
+    @ExperimentalPermissionsApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        initTimber()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
-        }
-
-        permissionsRequest.launch(
-            mutableListOf(
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.READ_CALL_LOG,
-                "android.permission.READ_PRIVILEGED_PHONE_STATE",
-            ).apply {
-                if (Build.MANUFACTURER.contains("huawei", false))
-                    add("com.huawei.permission.external_app_settings.USE_COMPONENT")
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                    add(Manifest.permission.FOREGROUND_SERVICE)
-            }.toTypedArray()
-        )
-
-        findViewById<TextView>(R.id.tvVersion).text = getString(
-            R.string.version_template,
-            getString(R.string.app_name),
-            BuildConfig.VERSION_NAME
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(this)) {
-                // ask for setting
-                overlayRequest.launch(
-                    Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:$packageName")
-                    )
-                )
-            }
-        }
-
-        requestUnrestrictedBackgroundService()
-    }
-
-    private fun verifyToken() {
-        val token = API.getToken()
-
-        if (token.trim().isEmpty() or token.isBlank()) {
-            startActivity(Intent(this, LoginActivity::class.java))
-        } else {
-            mainTextView.text = getString(
-                R.string.main_label_text,
-                App.pref.getString("user.email", "(login again to see it)")
+        setContent {
+            navController = rememberNavController()
+            provider = SystemFunctionsProvider()
+            appStatesController = AppStatesController(
+                lifecycleScope.coroutineContext,
+                provider,
+                AppRepository(provider.readPreference("token", ""))
             )
+            if (provider.readPreference("token", "").isNotEmpty())
+                AppStateStore.updateAuthState(AuthState.AuthSuccess)
+            MainActivityCompose(navController = navController, appStatesController)
         }
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        verifyToken()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -276,15 +117,12 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mnLogout -> {
-                App.pref.edit()
-                    .putString("token", "")
-                    .putString("user.email", "")
-                    .apply()
-
-                startActivity(Intent(this, LoginActivity::class.java))
+                appStatesController.handle(Action.Logout)
             }
-            R.id.mnSettings -> {
-                startActivity(Intent(this, SettingsActivity::class.java))
+//            R.id.mnSettings -> {
+//            }
+            R.id.mnPermissions -> {
+                navController.navigate("permissions")
             }
         }
         return super.onOptionsItemSelected(item)
@@ -309,74 +147,5 @@ class MainActivity : AppCompatActivity() {
         channel.enableVibration(true)
         NotificationManagerCompat.from(applicationContext)
             .createNotificationChannel(channel)
-    }
-
-    private fun requestUnrestrictedBackgroundService(): Boolean {
-        WorkManager.getInstance(this).enqueue(
-            PeriodicWorkRequestBuilder<BackgroundCheckWorker>(25, TimeUnit.MINUTES)
-                .build()
-        )
-
-        var success = true
-        val pref = App.pref
-        val lastUpdate = pref.getLong(AUTO_START_PREF_KEY, -1)
-        val updated = if (lastUpdate == -1L) {
-            val editor = pref.edit()
-            editor.putLong(AUTO_START_PREF_KEY, System.currentTimeMillis())
-            editor.apply()
-            false
-        } else lastUpdate != -1L &&
-                TimeUnit.MILLISECONDS.toMinutes(
-                    System.currentTimeMillis() - lastUpdate
-                ) <= 30
-        if (!updated) {
-            for (intent in POWER_MANAGER_INTENTS)
-                if (packageManager.resolveActivity(
-                        intent,
-                        PackageManager.MATCH_DEFAULT_ONLY
-                    ) != null
-                ) {
-                    runBlocking {
-                        success = success && suspendCoroutine { cont ->
-                            val dialog = AlertDialog.Builder(this@MainActivity)
-                            val powerManagement =
-                                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                                    if (it.resultCode == RESULT_OK) {
-                                        val editor = pref.edit()
-                                        editor.putLong(
-                                            AUTO_START_PREF_KEY,
-                                            System.currentTimeMillis()
-                                        )
-                                        cont.resume(true)
-                                        editor.apply()
-                                    } else {
-                                        cont.resume(false)
-                                    }
-                                }
-                            dialog.setMessage(getString(R.string.ask_background_permission))
-                                .setPositiveButton(android.R.string.ok) { _, _ ->
-                                    try {
-                                        powerManagement.launch(intent)
-                                    } catch (e: SecurityException) {
-                                        Timber.d("Battery optimization is forbidden in ${Build.MANUFACTURER} + ${Build.BRAND} + ${Build.MODEL}")
-                                        FirebaseCrashlytics.getInstance().recordException(e)
-                                        AlertDialog.Builder(this@MainActivity)
-                                            .setMessage(getString(R.string.no_power_mangement_access))
-                                            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                                                dialog.dismiss()
-                                                cont.resume(true)
-                                            }.show()
-                                    }
-                                }
-                                .setNegativeButton(android.R.string.cancel) { _, _ ->
-                                    cont.resume(false)
-                                    finish()
-                                }
-                            dialog.show()
-                        }
-                    }
-                }
-        }
-        return success
     }
 }

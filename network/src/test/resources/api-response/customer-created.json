@@ -1,0 +1,23 @@
+{
+  "elementaryExam": {
+    "map": []
+  },
+  "userId": [],
+  "tags": [],
+  "balance": 0,
+  "_id": "60cde9a39564185e47279209",
+  "first_name": "Ivan",
+  "last_name": "Ivanov",
+  "phone": "+998911112233",
+  "deleted": false,
+  "companyId": "5dc2bf249a76124f5374648b",
+  "createdAt": "2021-06-19T12:57:07.574Z",
+  "updatedAt": "2021-06-19T12:57:07.574Z",
+  "__v": 0,
+  "avatar": {},
+  "schedule": [],
+  "source": {},
+  "can_update": true,
+  "blocked": false,
+  "can_delete": true
+}
