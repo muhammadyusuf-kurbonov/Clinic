@@ -49,6 +49,7 @@ fun LoginForm(
     var password by remember {
         mutableStateOf("")
     }
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -58,46 +59,31 @@ fun LoginForm(
             modifier = Modifier.align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = ""
-            )
-            Text(
-                text = stringResource(id = R.string.app_name),
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(4.dp),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.h6
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            EmailField(
-                state = email,
-                onValueChange = {
-                    email = it
-                },
-                loginState
-            )
-
-            PasswordField(
-                state = password,
-                onValueChange = {
-                    password = it
-                }, loginState
-            )
-
-            Button(onClick = {
-                login(
-                    email,
-                    password
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = ""
                 )
-            }, enabled = loginState.value !is AuthState.Authenticating) {
                 Text(
-                    text = stringResource(id = R.string.login),
-                    style = MaterialTheme.typography.button
+                    text = stringResource(id = R.string.app_name),
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(4.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.h6
                 )
-            }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                EmailField(
+                    state = email,
+                    onValueChange = {
+                        email = it
+                    },
+                    loginState
+                )
 
             when (loginState.value) {
                 is AuthState.AuthSuccess -> {
@@ -119,8 +105,48 @@ fun LoginForm(
                 }
                 AuthState.ConnectionFailed -> {
                     Text(text = stringResource(id = R.string.no_internet_connection))
+                PasswordField(
+                    state = password,
+                    onValueChange = {
+                        password = it
+                    }, loginState
+                )
+
+                Button(onClick = {
+                    login(
+                        email,
+                        password
+                    )
+                }, enabled = loginState.value !is AuthState.Authenticating) {
+                    Text(
+                        text = stringResource(id = R.string.login),
+                        style = MaterialTheme.typography.button
+                    )
                 }
-                else -> {
+
+                when (loginState.value) {
+                    is AuthState.AuthSuccess -> {
+                        Text(
+                            text = stringResource(id = R.string.login_success),
+                            color = Color.Green
+                        )
+                        val navController = LocalNavigation.current
+                        LaunchedEffect(key1 = "navigate") {
+                            delay(2000)
+                            navController.navigate("main")
+                        }
+                    }
+                    is AuthState.AuthFailed -> {
+                        Text(text = stringResource(id = R.string.login_failed), color = Color.Red)
+                    }
+                    is AuthState.Authenticating -> {
+                        Text(text = stringResource(id = R.string.wait_please))
+                    }
+                    AuthState.ConnectionFailed -> {
+                        Text(text = stringResource(id = R.string.no_internet_connection))
+                    }
+                    else -> {
+                    }
                 }
             }
         }

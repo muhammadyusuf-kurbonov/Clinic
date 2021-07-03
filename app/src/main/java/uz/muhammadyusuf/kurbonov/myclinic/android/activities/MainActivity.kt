@@ -1,21 +1,16 @@
 package uz.muhammadyusuf.kurbonov.myclinic.android.activities
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -23,7 +18,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import uz.muhammadyusuf.kurbonov.myclinic.App
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.screens.LoginScreen
@@ -109,6 +103,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        if (navController.currentBackStackEntry?.destination?.route != "main") {
+            navController.navigate("main") {
+                popUpTo(0)
+            }
+        } else
+            super.onBackPressed()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_option_menu, menu)
         return super.onCreateOptionsMenu(menu)
@@ -126,26 +129,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel() {
-        val lowChannel = NotificationChannel(
-            App.NOTIFICATION_CHANNEL_ID,
-            "Low notifications of app 32Desk.com",
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        lowChannel.enableVibration(false)
-        NotificationManagerCompat.from(applicationContext)
-            .createNotificationChannel(lowChannel)
-
-        val channel = NotificationChannel(
-            App.HEADUP_NOTIFICATION_CHANNEL_ID,
-            "Notifications of app 32Desk.com",
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        channel.enableVibration(true)
-        NotificationManagerCompat.from(applicationContext)
-            .createNotificationChannel(channel)
     }
 }
