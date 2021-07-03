@@ -39,11 +39,15 @@ jobs:
       - name: Build
         run: ./gradlew assembleDebug
 
+      - name: Zip build
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r repo.zip ./
       - name: Upload build
         uses: actions/upload-artifact@v2
         with:
           name: workflow_build
-          path: ./
+          path: repo.zip
           retention-days: 1
 
   unitTests:
@@ -54,6 +58,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: workflow_build
+      - name: Unzip downloaded archive
+        uses: montudor/action-zip@v1
+        with:
+          args: unzip -qq repo.zip -d ./
 
       - name: Unit Test
         run: ./gradlew test
@@ -70,6 +78,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: workflow_build
+      - name: Unzip downloaded archive
+        uses: montudor/action-zip@v1
+        with:
+          args: unzip -qq repo.zip -d ./
 
       - name: run android tests
         uses: reactivecircus/android-emulator-runner@v2
