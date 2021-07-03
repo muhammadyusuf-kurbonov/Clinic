@@ -33,7 +33,10 @@ jobs:
           FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
         run: echo $FIREBASE_SECRET > ./app/google-services.json
 
-      - name: Unit Test
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build
         run: ./gradlew assembleDebug
 
       - name: Upload build
