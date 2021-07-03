@@ -6,6 +6,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import com.google.accompanist.insets.ProvideWindowInsets
 
 val PRIMARY_LIGHT_COLOR = Color(0xFF30C0FF)
 val PRIMARY_VARIANT_LIGHT_COLOR = Color(0xFF196D91)
@@ -60,8 +61,10 @@ fun AppTheme(
     MaterialTheme(
         if (isSystemInDarkTheme()) darkColors else lightColors
     ) {
-        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colors.onSurface) {
-            content()
+        ProvideWindowInsets {
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colors.onSurface) {
+                content()
+            }
         }
     }
 }

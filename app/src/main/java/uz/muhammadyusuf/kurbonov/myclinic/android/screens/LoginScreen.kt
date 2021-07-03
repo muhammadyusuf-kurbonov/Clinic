@@ -19,7 +19,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.insets.navigationBarsWithImePadding
 import kotlinx.coroutines.delay
 import uz.muhammadyusuf.kurbonov.myclinic.R
@@ -50,12 +49,15 @@ fun LoginForm(
     var password by remember {
         mutableStateOf("")
     }
-    ProvideWindowInsets {
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsWithImePadding()
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .navigationBarsWithImePadding()
+    ) {
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
                 modifier = Modifier.align(Alignment.Center),
@@ -83,6 +85,26 @@ fun LoginForm(
                     loginState
                 )
 
+            when (loginState.value) {
+                is AuthState.AuthSuccess -> {
+                    Text(
+                        text = stringResource(id = R.string.login_success),
+                        color = Color.Green
+                    )
+                    val navController = LocalNavigation.current
+                    LaunchedEffect(key1 = "navigate") {
+                        delay(2000)
+                        navController.navigate("main")
+                    }
+                }
+                is AuthState.AuthFailed -> {
+                    Text(text = stringResource(id = R.string.login_failed), color = Color.Red)
+                }
+                is AuthState.Authenticating -> {
+                    Text(text = stringResource(id = R.string.wait_please))
+                }
+                AuthState.ConnectionFailed -> {
+                    Text(text = stringResource(id = R.string.no_internet_connection))
                 PasswordField(
                     state = password,
                     onValueChange = {
@@ -128,6 +150,7 @@ fun LoginForm(
                 }
             }
         }
+
     }
 }
 
