@@ -200,7 +200,13 @@ fun OverlayContent(
                 )
             }
             ReportState.ConnectionFailed -> {
-            } //implemented before
+                SimpleActionButton(
+                    label = stringResource(id = R.string.no_internet_connection),
+                    buttonLabel = stringResource(id = android.R.string.ok)
+                ) {
+                    finish()
+                }
+            }
             ReportState.Default -> {
             }
             is ReportState.PurposeRequested -> {
