@@ -19,7 +19,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.imePadding
+import com.google.accompanist.insets.navigationBarsWithImePadding
 import kotlinx.coroutines.delay
 import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
@@ -49,11 +49,10 @@ fun LoginForm(
     var password by remember {
         mutableStateOf("")
     }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .imePadding()
+            .navigationBarsWithImePadding()
     ) {
         Column(
             modifier = Modifier.align(Alignment.Center),
@@ -102,7 +101,10 @@ fun LoginForm(
 
             when (loginState.value) {
                 is AuthState.AuthSuccess -> {
-                    Text(text = stringResource(id = R.string.login_success), color = Color.Green)
+                    Text(
+                        text = stringResource(id = R.string.login_success),
+                        color = Color.Green
+                    )
                     val navController = LocalNavigation.current
                     LaunchedEffect(key1 = "navigate") {
                         delay(2000)
@@ -122,6 +124,7 @@ fun LoginForm(
                 }
             }
         }
+
     }
 }
 
