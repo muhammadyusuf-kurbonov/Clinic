@@ -129,6 +129,17 @@ fun OverlayContent(
     retry: () -> Unit = {},
     finish: () -> Unit = {}
 ) {
+
+    if (reportState is ReportState.ConnectionFailed) {
+        SimpleActionButton(
+            label = stringResource(R.string.call_cant_registered_no_internet),
+            buttonLabel = stringResource(id = android.R.string.ok)
+        ) {
+            finish()
+        }
+        return
+    }
+
     if ((authState is AuthState.ConnectionFailed) or
         (customerState is CustomerState.ConnectionFailed)
     ) {
