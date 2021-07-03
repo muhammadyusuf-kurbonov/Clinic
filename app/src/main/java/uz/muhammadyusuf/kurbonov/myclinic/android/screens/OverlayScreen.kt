@@ -85,7 +85,7 @@ fun OverlayScreen() {
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier
-                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colors.background, shape = RoundedCornerShape(8.dp))
                 .border(1.dp, MaterialTheme.colors.primary, shape = RoundedCornerShape(8.dp))
         ) {
 

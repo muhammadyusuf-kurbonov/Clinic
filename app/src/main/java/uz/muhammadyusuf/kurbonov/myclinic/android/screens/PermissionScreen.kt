@@ -39,6 +39,9 @@ import uz.muhammadyusuf.kurbonov.myclinic.R
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.POWER_MANAGER_INTENTS
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissions
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissionsDescriptions
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.permissionGranted
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.permissionNeutral
+import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.permissionNotGranted
 
 @ExperimentalPermissionsApi
 @Composable
@@ -148,7 +151,10 @@ fun PermissionScreen() = Column(modifier = Modifier.padding(8.dp)) {
                         .fillMaxWidth()
                         .background(
                             Brush.horizontalGradient(
-                                listOf(Color.White, Color.Yellow)
+                                listOf(
+                                    MaterialTheme.colors.background,
+                                    MaterialTheme.colors.permissionNeutral
+                                )
                             )
                         )
                         .clickable {
@@ -211,7 +217,11 @@ fun PermissionItem(
             .fillMaxWidth()
             .background(
                 Brush.horizontalGradient(
-                    listOf(Color.White, if (hasPermission) Color.Green else Color.Red)
+                    listOf(
+                        MaterialTheme.colors.background,
+                        if (hasPermission) MaterialTheme.colors.permissionGranted
+                        else MaterialTheme.colors.permissionNotGranted
+                    )
                 )
             )
             .clickable {
