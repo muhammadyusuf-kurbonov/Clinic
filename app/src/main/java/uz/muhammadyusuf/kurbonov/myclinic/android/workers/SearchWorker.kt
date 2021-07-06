@@ -24,11 +24,10 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.screens.OverlayScreen
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalPhoneNumberProvider
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
+import uz.muhammadyusuf.kurbonov.myclinic.appComponent
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
-import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.ReportState
-import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 
 class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
     appContext,
@@ -41,14 +40,15 @@ class SearchWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
     @ExperimentalAnimationApi
     override suspend fun doWork(): Result = withContext(Dispatchers.Default) {
 
-        val phone = inputData.getString("phone") ?: throw IllegalStateException("No phone sent")
+        var phone = inputData.getString("phone") ?: throw IllegalStateException("No phone sent")
 
         val provider = SystemFunctionsProvider()
-        val appViewModel = AppStatesController(
-            coroutineContext,
-            provider,
-            AppRepository(provider.readPreference("token", ""))
-        )
+        val appViewModel = applicationContext
+            .appComponent()
+            .appStatesControllerFactory()
+            .factory(this.coroutineContext).create()
+
+        if (phone.length < 13 && !phone.startsWith("+998")) phone = "+998$phone"
 
         appViewModel.handle(Action.Search(phone))
 

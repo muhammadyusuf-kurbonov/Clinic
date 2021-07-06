@@ -3,8 +3,10 @@ package uz.muhammadyusuf.kurbonov.myclinic.android
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.paperdb.Paper
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
+import javax.inject.Inject
 
-class SystemFunctionsProviderImpl : SystemFunctionsProvider {
+
+class SystemFunctionsProviderImpl @Inject constructor() : SystemFunctionsProvider {
     override fun onError(throwable: Throwable): Boolean {
         FirebaseCrashlytics.getInstance().recordException(throwable)
         return true
