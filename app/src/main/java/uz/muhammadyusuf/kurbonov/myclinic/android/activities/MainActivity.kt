@@ -28,12 +28,12 @@ import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalAppControllerProvi
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.LocalNavigation
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.allAppPermissions
 import uz.muhammadyusuf.kurbonov.myclinic.android.shared.theme.AppTheme
+import uz.muhammadyusuf.kurbonov.myclinic.appComponent
 import uz.muhammadyusuf.kurbonov.myclinic.core.Action
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStateStore
 import uz.muhammadyusuf.kurbonov.myclinic.core.AppStatesController
 import uz.muhammadyusuf.kurbonov.myclinic.core.SystemFunctionsProvider
 import uz.muhammadyusuf.kurbonov.myclinic.core.states.AuthState
-import uz.muhammadyusuf.kurbonov.myclinic.network.AppRepository
 
 class MainActivity : AppCompatActivity() {
 
@@ -92,11 +92,11 @@ class MainActivity : AppCompatActivity() {
         setContent {
             navController = rememberNavController()
             provider = SystemFunctionsProvider()
-            appStatesController = AppStatesController(
-                lifecycleScope.coroutineContext,
-                provider,
-                AppRepository(provider.readPreference("token", ""))
-            )
+            appStatesController = appComponent()
+                .appStatesControllerFactory()
+                .factory(lifecycleScope.coroutineContext)
+                .create()
+
             if (provider.readPreference("token", "").isNotEmpty())
                 AppStateStore.updateAuthState(AuthState.AuthSuccess)
             MainActivityCompose(navController = navController, appStatesController)
