@@ -173,7 +173,7 @@ fun PasswordField(
                         id = if (isPasswordVisible)
                             R.drawable.ic_baseline_visibility_off_24 else
                             R.drawable.ic_baseline_visibility_24
-                    ), contentDescription = ""
+                    ), contentDescription = "switch password visibility"
                 )
             }
         },
