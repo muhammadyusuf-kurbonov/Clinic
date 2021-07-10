@@ -83,6 +83,9 @@ fun NewCustomerForm(
             modifier = Modifier.padding(4.dp),
             value = firstName,
             onValueChange = { firstName = it },
+            label = {
+                Text(text = stringResource(id = R.string.first_name_hint))
+            },
             singleLine = true,
             isError = state == RegisterState.VerificationFailed
         )
@@ -90,6 +93,9 @@ fun NewCustomerForm(
             modifier = Modifier.padding(4.dp),
             value = lastName,
             onValueChange = { lastName = it },
+            label = {
+                Text(text = stringResource(id = R.string.last_name_hint))
+            },
             singleLine = true,
             isError = state == RegisterState.VerificationFailed
         )
@@ -98,6 +104,9 @@ fun NewCustomerForm(
             value = phoneFormatted,
             onValueChange = { phone = it.replace("() -", "") },
             singleLine = true,
+            label = {
+                Text(text = stringResource(id = R.string.password_hint))
+            },
             isError = state == RegisterState.VerificationFailed,
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Phone
