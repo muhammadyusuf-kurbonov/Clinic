@@ -229,7 +229,7 @@ fun OverlayContent(
             )
             ReportState.Submitted -> {
                 Text(
-                    text = "The call is registered",
+                    text = stringResource(R.string.the_call_is_registered),
                     style = MaterialTheme.typography.subtitle2,
                     color = Color.Green
                 )

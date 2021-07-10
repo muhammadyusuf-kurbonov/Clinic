@@ -69,5 +69,6 @@
     <string name="huawei_use_component_desc">Access special HUAWEI settings page</string>
     <string name="foreground_permission_desc">Permission to work on background</string>
     <string name="power_management_options_description">Power management options for background activity</string>
-    <string name="call_cant_registered_no_internet">Call can\'t be registered. No internet connection</string>
+    <string name="call_cant_registered_no_internet">Call can\'t be registered in 32Desk. No internet connection</string>
+    <string name="the_call_is_registered">The call is registered</string>
 </resources>
