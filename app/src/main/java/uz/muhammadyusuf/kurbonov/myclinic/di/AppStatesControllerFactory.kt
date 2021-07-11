@@ -10,7 +10,7 @@ import kotlin.coroutines.CoroutineContext
 
 class AppStatesControllerFactory @AssistedInject constructor(
     @Assisted("CoroutineContext") private val context: CoroutineContext,
-    @Local private val repository: AppRepository,
+    private val repository: AppRepository,
     private val provider: SystemFunctionsProvider
 ) {
 
