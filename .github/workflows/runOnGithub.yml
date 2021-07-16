@@ -34,6 +34,12 @@ jobs:
 
       #      - name: Unit Test
       #        run: ./gradlew test
+      - name: setup sudo
+        run: |
+          apt-get update && \
+                apt-get -y install sudo
+          useradd -m docker && echo "docker:docker" | chpasswd && adduser docker sudo
+
 
       - name: run tests
         uses: reactivecircus/android-emulator-runner@v2
