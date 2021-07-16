@@ -29,8 +29,14 @@ jobs:
 
       #      - name: Unit Test
       #        run: ./gradlew test
-      - name: "Run UI Tests"
-        uses: vgaidarji/android-github-actions-emulator@v1.0.1
+
+      - run: apt update && apt install sudo
+
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: ./gradlew connectedCheck
 
       - name: Android Test Report
         uses: asadmansr/android-test-report-action@v1.2.0
