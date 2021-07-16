@@ -45,7 +45,7 @@ jobs:
         uses: malinskiy/action-android/emulator-run-cmd@release/0.1.2
         with:
           cmd: ./gradlew checkAndroidConnected
-          api: 25
+          api: 30
 
       - name: Android Test Report
         uses: asadmansr/android-test-report-action@v1.2.0
