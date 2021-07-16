@@ -36,6 +36,15 @@ jobs:
       - name: Unit Test
         run: ./gradlew test
 
+      - name: install tools to download docker
+        run: |
+          apt-get install \
+              apt-transport-https \
+              ca-certificates \
+              curl \
+              gnupg \
+              lsb-release
+
       - name: install docker
         uses: docker-practice/actions-setup-docker@master
 
