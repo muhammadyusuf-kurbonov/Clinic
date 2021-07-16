@@ -48,7 +48,8 @@ jobs:
               lsb-release
 
           curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-          apt-get install docker-ce docker-ce-cli containerd.io
+          apt-get -qq update
+          apt-get -qq install docker-ce docker-ce-cli containerd.io
 
 
       - name: run emulator
