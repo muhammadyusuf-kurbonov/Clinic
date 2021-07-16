@@ -30,7 +30,7 @@ jobs:
       #      - name: Unit Test
       #        run: ./gradlew test
 
-      - run: apt update && apt install sudo
+      - run: apt update && apt install sudo && apt -qq install curl
 
       # Download & install the Android SDK.
       - uses: malinskiy/action-android/install-sdk@release/0.1.2
