@@ -38,9 +38,9 @@ jobs:
 
       - name: install tools to download docker
         run: |
-          apt-get update
+          apt-get -qq update
 
-          apt-get install \
+          apt-get -qq install \
               apt-transport-https \
               ca-certificates \
               curl \
