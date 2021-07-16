@@ -34,35 +34,35 @@ jobs:
         run: echo $FIREBASE_SECRET > ./app/google-services.json
 
       - name: Create adbkey
-        run: echo "-----BEGIN PRIVATE KEY-----
-  MIIEugIBADANBgkqhkiG9w0BAQEFAASCBKQwggSgAgEAAoIBAQC/JQMPDnvc7yxI
-  CsL6UhSqHMwSVUwMC3LtdxzokfZdDQ3pCZgCjiy1rNBlWWTdyrzBsEM4b4Llvsfl
-  ITbGi9EYxpZjWGrbpFjYcgWy7ujUMEtMHZQtoAF7RtGIQaEffnfcHzvy25wBPnnS
-  /N2C0ZiF20DmkIPK9KFONIrWSSUkfonhk/O04BNeSfo6i7sNLx5jSwLHJSfk2zQQ
-  odlisjokVUU5k/HDf7QRf4ubJ8bLHicb8YiCYPFvB5B4PIriaD28tSICtF9qvpSP
-  k5F6dd902XETu/vLkyfikb5t2mpEjikCLN+7zOwO3nR59FQCcmUTaEoVoRYqOjJy
-  lJIbmKSTAgMBAAECgf8DXCMxoI+M0qd0nLvQqqCyXM85g0ZS7+CVTAK2E9rAx/n2
-  nrSNVvJyPxdqsKeVPnsS7IZB97PVVgUtgef0lYCXbuY12NgIBFuLcnWnL4voLvEj
-  5WE1bBqakCQewQiUBSUWOXZUTofvfammi8tZAVYtBC2f3+pxJtuvBD1shtygR5Fc
-  0KjVqzhuJSEgNw2bTZH2VoN9w9cMpXeL6ui5Rrh7jQ7DCHBkQD0JkIlfZiuQMH/v
-  YfjojtGAI58xbBee4FwJHlNopJZ2D4W9guqYcuJ1Zzgor9AIfAui5xjnCEfvlRXr
-  cOo4v7oTUMvOPHDIyR+WmjDycgWhH0kxEw+QlrECgYEA5Q4SROAvyszv9+teM4vD
-  ZmjgfXBJ8MYUt8xlXsJVBE0MvSpXIZkQ6pe24db4kjdKcIoh8YCDthnCysb9PgPk
-  60M1FcpwNRD2xhj/oLf+J2OcycT6uFlMa1EysNV+6Mo5CAEcDqWDPGgF/LX7oaju
-  3bkMg4/pgqX60SyChq/VtTECgYEA1aFHid50Qu5WnZDqdTRFNxwWjw4ds3Th/4Ow
-  x+snfHJ/IO2jKcpK8fbEdHKCGkZ6y+3U28dCG5CTJJJLg1ISrNAWJx2ZsqasS5EZ
-  QAMHEquH3KltjETs7pRRw1gYLfPiIOMaOZswK2uKcN6VW9reHL9L4Cic5Jh9Fobn
-  PGNClQMCgYBSfXjS2TIdBSU+0cMBKUpbrVV7l17pmUyIzNGNCMt5Ww5FaeQrM2bG
-  NZElUDgA4GysjvKeeLv2btyaDoPRO7HLkE6j5F34nn1g5kvZY6niIZurhocMsQw2
-  ce2hhaHI0FstqMij9bOHo6bUVe2jUKWFsEjzcHaWGJR1lGQFgXmjYQKBgCTqes9D
-  RrnuL7+ItEtOngtY6jkMSmuhbhBWdG0HoMorivZoukJVd7/6UZaB1yOtPDkTPy4/
-  b5gN0q+GLFBkFWARkVJvFgk+LhXc3A0ouMcsJw0lpg2QN5U+wiZMidkfBNuEAxsj
-  Sx6ltcWtYQf/eVRkZjs1KW+DPlJvO3Q+/tl7AoGAFPNqb4YStua7HDjwA3rweTsV
-  5neM/6t1uOcAJAeeuwIwHx/Zx4ldTzhA/cFGejnfHrxAF2gfw+jgWD7ZpLfR7DTZ
-  5Y5Wa/8x32aqlq8N7xT866vcszCij1JKvwr65muBrWDxkKU+tEbo0wPusrGWyBv6
-  X+HRU4K1CRbDr4X7Oj0=
-  -----END PRIVATE KEY-----
-  " > ~/.android/adbkey
+        run: |
+          echo "-----BEGIN PRIVATE KEY-----
+              MIIEugIBADANBgkqhkiG9w0BAQEFAASCBKQwggSgAgEAAoIBAQC/JQMPDnvc7yxI
+              CsL6UhSqHMwSVUwMC3LtdxzokfZdDQ3pCZgCjiy1rNBlWWTdyrzBsEM4b4Llvsfl
+              ITbGi9EYxpZjWGrbpFjYcgWy7ujUMEtMHZQtoAF7RtGIQaEffnfcHzvy25wBPnnS
+              /N2C0ZiF20DmkIPK9KFONIrWSSUkfonhk/O04BNeSfo6i7sNLx5jSwLHJSfk2zQQ
+              odlisjokVUU5k/HDf7QRf4ubJ8bLHicb8YiCYPFvB5B4PIriaD28tSICtF9qvpSP
+              k5F6dd902XETu/vLkyfikb5t2mpEjikCLN+7zOwO3nR59FQCcmUTaEoVoRYqOjJy
+              lJIbmKSTAgMBAAECgf8DXCMxoI+M0qd0nLvQqqCyXM85g0ZS7+CVTAK2E9rAx/n2
+              nrSNVvJyPxdqsKeVPnsS7IZB97PVVgUtgef0lYCXbuY12NgIBFuLcnWnL4voLvEj
+              5WE1bBqakCQewQiUBSUWOXZUTofvfammi8tZAVYtBC2f3+pxJtuvBD1shtygR5Fc
+              0KjVqzhuJSEgNw2bTZH2VoN9w9cMpXeL6ui5Rrh7jQ7DCHBkQD0JkIlfZiuQMH/v
+              YfjojtGAI58xbBee4FwJHlNopJZ2D4W9guqYcuJ1Zzgor9AIfAui5xjnCEfvlRXr
+              cOo4v7oTUMvOPHDIyR+WmjDycgWhH0kxEw+QlrECgYEA5Q4SROAvyszv9+teM4vD
+              ZmjgfXBJ8MYUt8xlXsJVBE0MvSpXIZkQ6pe24db4kjdKcIoh8YCDthnCysb9PgPk
+              60M1FcpwNRD2xhj/oLf+J2OcycT6uFlMa1EysNV+6Mo5CAEcDqWDPGgF/LX7oaju
+              3bkMg4/pgqX60SyChq/VtTECgYEA1aFHid50Qu5WnZDqdTRFNxwWjw4ds3Th/4Ow
+              x+snfHJ/IO2jKcpK8fbEdHKCGkZ6y+3U28dCG5CTJJJLg1ISrNAWJx2ZsqasS5EZ
+              QAMHEquH3KltjETs7pRRw1gYLfPiIOMaOZswK2uKcN6VW9reHL9L4Cic5Jh9Fobn
+              PGNClQMCgYBSfXjS2TIdBSU+0cMBKUpbrVV7l17pmUyIzNGNCMt5Ww5FaeQrM2bG
+              NZElUDgA4GysjvKeeLv2btyaDoPRO7HLkE6j5F34nn1g5kvZY6niIZurhocMsQw2
+              ce2hhaHI0FstqMij9bOHo6bUVe2jUKWFsEjzcHaWGJR1lGQFgXmjYQKBgCTqes9D
+              RrnuL7+ItEtOngtY6jkMSmuhbhBWdG0HoMorivZoukJVd7/6UZaB1yOtPDkTPy4/
+              b5gN0q+GLFBkFWARkVJvFgk+LhXc3A0ouMcsJw0lpg2QN5U+wiZMidkfBNuEAxsj
+              Sx6ltcWtYQf/eVRkZjs1KW+DPlJvO3Q+/tl7AoGAFPNqb4YStua7HDjwA3rweTsV
+              5neM/6t1uOcAJAeeuwIwHx/Zx4ldTzhA/cFGejnfHrxAF2gfw+jgWD7ZpLfR7DTZ
+              5Y5Wa/8x32aqlq8N7xT866vcszCij1JKvwr65muBrWDxkKU+tEbo0wPusrGWyBv6
+              X+HRU4K1CRbDr4X7Oj0=
+              -----END PRIVATE KEY-----" > ~/.android/adbkey
 
 
 
