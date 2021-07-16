@@ -33,11 +33,13 @@ jobs:
           FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
         run: echo $FIREBASE_SECRET > ./app/google-services.json
 
-      - name: Unit Test
-        run: ./gradlew test
+      #      - name: Unit Test
+      #        run: ./gradlew test
 
       - name: install tools to download docker
         run: |
+          apt-get update
+
           apt-get install \
               apt-transport-https \
               ca-certificates \
