@@ -2,44 +2,10 @@ name: Run Unit tests
 on: [ push ]
 
 jobs:
-  unitTests:
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt'
-          java-version: 11
-
-      - name: Cache gradle deps cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}3
-          restore-keys: ${{ runner.os }}-gradle-3
-
-
-      - name: "Gradle wrapper verify"
-        uses: gradle/wrapper-validation-action@v1
-
-      - name: Decode google-services.json
-        env:
-          FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
-        run: echo $FIREBASE_SECRET > ./app/google-services.json
-
-      - name: Unit Test
-        run: ./gradlew test
-
-      - name: Android Test Report
-        uses: asadmansr/android-test-report-action@v1.2.0
-        if: ${{ always() }} # IMPORTANT: run Android Test Report regardless
-
   androidTests:
     runs-on: self-hosted
+    container:
+      image: docker://fabernovel/android:api-29-v1.1.1
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -66,6 +32,13 @@ jobs:
         env:
           FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
         run: echo $FIREBASE_SECRET > ./app/google-services.json
+
+      - name: Unit Test
+        run: ./gradlew test
+
+      - name: Android Test Report
+        uses: asadmansr/android-test-report-action@v1.2.0
+        if: ${{ always() }} # IMPORTANT: run Android Test Report regardless
 
 
       - name: run android tests
