@@ -2,11 +2,6 @@ name: Run Unit tests
 on: [ push ]
 
 jobs:
-
-  runEmulator:
-    runs-on: self-hosted
-
-
   androidTests:
     runs-on: self-hosted
     container:
