@@ -32,6 +32,15 @@ jobs:
 
       - run: apt update && apt install sudo
 
+      # Download & install the Android SDK.
+      - uses: malinskiy/action-android/install-sdk@release/0.1.2
+
+      # Set up platform tools like adb.
+      - run: sdkmanager platform-tools
+
+      # Start ADB (and verify that pathing is working correctly).
+      - run: adb devices
+
       - name: run tests
         uses: malinskiy/action-android/emulator-run-cmd@release/0.1.2
         with:
