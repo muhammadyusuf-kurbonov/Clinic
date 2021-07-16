@@ -24,7 +24,7 @@ jobs:
 
 
       - name: "Gradle wrapper verify"
-      - uses: gradle/wrapper-validation-action@v1
+        uses: gradle/wrapper-validation-action@v1
 
       - name: Decode google-services.json
         env:
@@ -60,7 +60,7 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-3
 
       - name: "Gradle wrapper verify"
-      - uses: gradle/wrapper-validation-action@v1
+        uses: gradle/wrapper-validation-action@v1
 
       - name: Decode google-services.json
         env:
