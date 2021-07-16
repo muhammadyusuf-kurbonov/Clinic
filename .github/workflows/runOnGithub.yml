@@ -36,7 +36,7 @@ jobs:
       #      - name: Unit Test
       #        run: ./gradlew test
 
-      - name: install tools to download docker
+      - name: install docker
         run: |
           apt-get -qq update
 
@@ -47,8 +47,9 @@ jobs:
               gnupg \
               lsb-release
 
-      - name: install docker
-        uses: docker-practice/actions-setup-docker@master
+          curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+          apt-get install docker-ce docker-ce-cli containerd.io
+
 
       - name: run emulator
         run: docker run -d -e ADBKEY="$(cat ~/.android/adbkey)" --device /dev/kvm --publish 8554:8554/tcp --publish 5555:5555/tcp us-docker.pkg.dev/android-emulator-268719/images/30-google-x64:30.1.2
