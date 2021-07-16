@@ -32,8 +32,14 @@ jobs:
           FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
         run: echo $FIREBASE_SECRET > ./app/google-services.json
 
-      - name: Unit Test
-        run: ./gradlew test
+      #      - name: Unit Test
+      #        run: ./gradlew test
+
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: ./gradlew connectedCheck
 
       - name: Android Test Report
         uses: asadmansr/android-test-report-action@v1.2.0
