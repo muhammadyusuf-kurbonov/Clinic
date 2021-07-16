@@ -33,10 +33,12 @@ jobs:
       - run: apt update && apt install sudo
 
       - name: run tests
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: malinskiy/action-android/emulator-run-cmd@release/0.1.2
         with:
-          api-level: 29
-          script: ./gradlew connectedCheck
+          cmd: ./gradlew checkAndroidConnected
+          api: 25
+          tag: default
+          abi: x86
 
       - name: Android Test Report
         uses: asadmansr/android-test-report-action@v1.2.0
