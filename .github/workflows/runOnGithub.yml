@@ -42,7 +42,4 @@ jobs:
 
 
       - name: run android tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          script: ./gradlew connectedCheck
+        run: adb connect localhost:5555 && ./gradlew connectedCheck
