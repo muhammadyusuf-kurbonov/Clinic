@@ -37,8 +37,6 @@ jobs:
         with:
           cmd: ./gradlew checkAndroidConnected
           api: 25
-          tag: default
-          abi: x86
 
       - name: Android Test Report
         uses: asadmansr/android-test-report-action@v1.2.0
