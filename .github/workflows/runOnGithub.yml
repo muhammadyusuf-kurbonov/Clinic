@@ -35,6 +35,7 @@ jobs:
 
       - name: Create adbkey
         run: |
+          mkdir -p ~/.android
           echo "-----BEGIN PRIVATE KEY-----
               MIIEugIBADANBgkqhkiG9w0BAQEFAASCBKQwggSgAgEAAoIBAQC/JQMPDnvc7yxI
               CsL6UhSqHMwSVUwMC3LtdxzokfZdDQ3pCZgCjiy1rNBlWWTdyrzBsEM4b4Llvsfl
