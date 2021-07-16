@@ -17,15 +17,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ./gradle/wrapper
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}3
           restore-keys: ${{ runner.os }}-gradle-3
 
 
-      - name: "Gradle wrapper install"
-        run: gradle wrapper
+      - name: "Gradle wrapper verify"
       - uses: gradle/wrapper-validation-action@v1
 
       - name: Decode google-services.json
@@ -56,14 +54,12 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ./gradle/wrapper
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}3
           restore-keys: ${{ runner.os }}-gradle-3
 
-      - name: "Gradle wrapper install"
-        run: gradle wrapper
+      - name: "Gradle wrapper verify"
       - uses: gradle/wrapper-validation-action@v1
 
       - name: Decode google-services.json
