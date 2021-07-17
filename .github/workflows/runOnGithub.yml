@@ -4,12 +4,19 @@ on: [ push ]
 jobs:
   Unit-tests:
     runs-on: self-hosted
-    container:
-      image: docker://fabernovel/android:api-29-v1.1.1
     timeout-minutes: 20
     steps:
       - name: checkout
         uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt' # See 'Supported distributions' for available options
+          java-version: '11'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
 
       - name: Cache gradle deps cache
         uses: actions/cache@v2
@@ -28,19 +35,8 @@ jobs:
           FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
         run: echo $FIREBASE_SECRET > ./app/google-services.json
 
-      #      - name: Unit Test
-      #        run: ./gradlew test
-
-      - run: apt update && apt install sudo && apt -qq -y install curl
-
-      # Download & install the Android SDK.
-      - uses: malinskiy/action-android/install-sdk@release/0.1.2
-
-      # Set up platform tools like adb.
-      - run: sdkmanager platform-tools
-
-      # Start ADB (and verify that pathing is working correctly).
-      - run: adb devices
+      - name: Unit Test
+        run: ./gradlew test
 
       - name: run tests
         uses: malinskiy/action-android/emulator-run-cmd@release/0.1.2
