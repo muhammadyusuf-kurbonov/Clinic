@@ -39,10 +39,10 @@ jobs:
         run: ./gradlew test
 
       - name: run tests
-        uses: malinskiy/action-android/emulator-run-cmd@release/0.1.2
+        uses: reactivecircus/android-emulator-runner@v2
         with:
-          cmd: ./gradlew checkAndroidConnected
-          api: 30
+          api-level: 29
+          script: ./gradlew connectedCheck
 
       - name: Android Test Report
         uses: asadmansr/android-test-report-action@v1.2.0
