@@ -35,14 +35,19 @@ jobs:
           FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
         run: echo $FIREBASE_SECRET > ./app/google-services.json
 
-      - name: Unit Test
-        run: ./gradlew test
+      - name: mkdir for avd devices
+        run: mkdir -p ~/.android/avd
 
       - name: run tests
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@v2.14.3
+        env:
+          ANDROID_AVD_HOME: ~/.android/avd
         with:
           api-level: 29
           script: ./gradlew connectedCheck
+
+      - name: Unit Test
+        run: ./gradlew test
 
       - name: Android Test Report
         uses: asadmansr/android-test-report-action@v1.2.0
